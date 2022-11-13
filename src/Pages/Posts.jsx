@@ -95,41 +95,43 @@ export default function Posts() {
                     })
                 }
             </div>
-            <div>
-                <div className={"md:w-[700px] lg:w-[300px] border border-2 rounded-xl border-green-500 p-4 bg-white shadow-lg"}>
-                    <h1 className={"text-center font-semibold text-lg pb-2 border border-black border-0 border-b-2 capitalize"}>
-                        learan or die
-                    </h1>
-                    <p className={"mt-4"}>
-                        The value of life lies not in the length of days, but in the use we make of them
-                        <br/>
-                        人生的價值不在長短，在於每個沒有遺憾的當下。
-                    </p>
-                    <button
-                        className={"flex cursor-pointer border bg-emerald-500 w-full py-2 px-2 rounded-lg mt-6 items-center justify-center gap-2 text-gray-100 hover:bg-blue-500 transition-colors duration-500"}>
-                        <BsFillPenFill/>
-                        <span className={"font-semibold text-lg"}>寫一篇</span>
-                    </button>
-                </div>
-                <div className={"md:w-[700px] lg:w-[300px] rounded-xl p-4 bg-white mt-5 shadow-lg"}>
-                    <div
-                        className={"flex justify-center border border-black border-0 border-b-2 pb-2 items-center gap-1"}>
-                        <AiFillTags className={"text-xl"}/>
-                        <h1 className={"font-semibold text-lg capitalize"}>
-                            熱門標籤
+            <div className={"relative md:w-[700px]] lg:w-[300px]"}>
+                <div className={"lg:fixed lg:top-30"}>
+                    <div className={"md:w-[700px] lg:w-[300px] border border-2 rounded-xl border-green-500 p-4 bg-white shadow-lg"}>
+                        <h1 className={"text-center font-semibold text-lg pb-2 border border-black border-0 border-b-2 capitalize"}>
+                            learan or die
                         </h1>
+                        <p className={"mt-4"}>
+                            The value of life lies not in the length of days, but in the use we make of them
+                            <br/>
+                            人生的價值不在長短，在於每個沒有遺憾的當下。
+                        </p>
+                        <button
+                            className={"flex cursor-pointer border bg-emerald-500 w-full py-2 px-2 rounded-lg mt-6 items-center justify-center gap-2 text-gray-100 hover:bg-blue-500 transition-colors duration-500"}>
+                            <BsFillPenFill/>
+                            <span className={"font-semibold text-lg"}>寫一篇</span>
+                        </button>
                     </div>
-                    <div className={"mt-4 flex flex-wrap gap-2"}>
-                        {
-                            [...Array(10)].map((e, i) => {
-                                return (
-                                    <div
-                                        className={"py-1 px-3 border border-2 border-blue-400 rounded-2xl text-xs font-semibold bg-slate-200 hover:bg-slate-300 transition-colors duration-300 cursor-pointer"}>
-                                        {Math.random().toString(36).slice(7)}
-                                    </div>
-                                )
-                            })
-                        }
+                    <div className={"md:w-[700px] lg:w-[300px] rounded-xl p-4 bg-white mt-5 shadow-lg"}>
+                        <div
+                            className={"flex justify-center border border-black border-0 border-b-2 pb-2 items-center gap-1"}>
+                            <AiFillTags className={"text-xl"}/>
+                            <h1 className={"font-semibold text-lg capitalize"}>
+                                熱門標籤
+                            </h1>
+                        </div>
+                        <div className={"mt-4 flex flex-wrap gap-2"}>
+                            {
+                                [...Array(10)].map((e, i) => {
+                                    return (
+                                        <div
+                                            className={"py-1 px-3 border border-2 border-blue-400 rounded-2xl text-xs font-semibold bg-slate-200 hover:bg-slate-300 transition-colors duration-300 cursor-pointer"}>
+                                            {Math.random().toString(36).slice(7)}
+                                        </div>
+                                    )
+                                })
+                            }
+                        </div>
                     </div>
                 </div>
             </div>
