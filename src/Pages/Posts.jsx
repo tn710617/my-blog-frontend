@@ -10,7 +10,7 @@ import {BsFillPenFill} from "react-icons/bs";
 export default function Posts() {
 
     return (
-        <div className={"flex mx-3 flex-col items-center lg:flex-row lg:items-start lg:justify-center mt-8 gap-6"}>
+        <div className={"flex mx-3 flex-col items-center lg:flex-row lg:items-start lg:justify-center mt-8 gap-6 mb-12"}>
             <div className={"w-full md:w-[700px]"}>
                 <div className={"flex flex-col-reverse gap-4 md:flex-row md:gap-0 justify-between"}>
                     <div className={"flex flex-row justify-items-start items-center bg-gray-300 rounded-xl px-1 py-1"}>

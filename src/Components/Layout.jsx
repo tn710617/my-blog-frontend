@@ -2,6 +2,7 @@ import Nav from "./Nav";
 import {Outlet} from "react-router-dom";
 import blurAtom from "../States/blur";
 import {useRecoilState} from "recoil";
+import Footer from "./Footer";
 
 export default function Layout() {
     const [blur] = useRecoilState(blurAtom)
@@ -9,6 +10,7 @@ export default function Layout() {
         <div className={""}>
             <Nav/>
             <Outlet/>
+            <Footer/>
         </div>
     )
 
