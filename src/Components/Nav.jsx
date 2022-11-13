@@ -15,7 +15,7 @@ export default function Nav() {
     const [showSearchBox, setShowSearchBox] = useState(false)
     return (
         <>
-            <div className={"bg-gray-50 shadow-lg"}>
+            <div className={"bg-gray-50 shadow-lg sticky top-0"}>
                 <nav className={"flex justify-between px-5 py-3 items-center"}>
                     <button
                         type={"button"}
@@ -79,7 +79,7 @@ export default function Nav() {
                 onClick={() => setShowSearchBox(false)}
             >
                 <div
-                    className={"relative top-20 m-auto w-96 bg-white flex gap-2 items-center border-4 rounded-xl px-4 py-2 text-xl text-gray-400 border hover:border-indigo-200"}>
+                    className={"relative top-20 m-auto w-64 sm:w-96 bg-white flex gap-2 items-center border-4 rounded-xl px-4 py-2 text-xl text-gray-400 border hover:border-indigo-200"}>
                     <div>
                         <BsSearch/>
                     </div>
