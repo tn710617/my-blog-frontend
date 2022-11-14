@@ -5,17 +5,29 @@ import {BiLogInCircle} from "react-icons/bi";
 import {AiOutlineMenu} from "react-icons/ai";
 import {AiOutlineClose} from "react-icons/ai";
 import {BsFillMoonStarsFill} from "react-icons/bs";
-import {useState} from "react";
+import {useEffect, useState} from "react";
 import {BsSearch} from "react-icons/bs";
 import {BsFillSunFill} from "react-icons/bs";
+import {useRecoilState} from "recoil";
+import searchBox from "../States/SearchBox";
 
 export default function Nav() {
     const [showMobileNavBar, setShowMobileNavBar] = useState(false)
     const [darkMode, setDarkMode] = useState(false)
-    const [showSearchBox, setShowSearchBox] = useState(false)
+    const [showSearchBox, setShowSearchBox] = useRecoilState(searchBox)
+
+    useEffect(() => {
+        if (showSearchBox) {
+            document.body.style.overflow = 'hidden'
+        } else {
+            document.body.style.overflow = 'unset'
+        }
+
+    }, [showSearchBox])
+
     return (
         <>
-            <div className={"bg-gray-50 shadow-lg sticky top-0"}>
+            <div className={"bg-gray-50/80 backdrop-blur-sm shadow-lg sticky top-0"}>
                 <nav className={"flex justify-between px-5 py-3 items-center"}>
                     <button
                         type={"button"}
@@ -45,11 +57,11 @@ export default function Nav() {
                         </div>
                     </div>
                     <div className={"flex gap-5 items-center"}>
-                        <button role={"button"} className={"cursor-pointer"} onClick={() => setDarkMode(!darkMode)}>
+                        <button className={"cursor-pointer"} onClick={() => setDarkMode(!darkMode)}>
                             {darkMode ? <BsFillSunFill className={"text-xl hover:text-yellow-400"}/> :
                                 <BsFillMoonStarsFill className={"text-lg hover:text-purple-600"}/>}
                         </button>
-                        <button role={"button"} className={"cursor-pointer"}
+                        <button className={"cursor-pointer"}
                                 onClick={() => setShowSearchBox(!showSearchBox)}>
                             <FcSearch className={"text-4xl p-2 rounded hover:bg-gray-200"}/>
                         </button>
@@ -75,8 +87,10 @@ export default function Nav() {
                 </div>
             </div>
             <div
-                className={`absolute left-0 top-0 w-screen h-screen backdrop-blur-sm ${showSearchBox ? '' : 'hidden'}`}
-                onClick={() => setShowSearchBox(false)}
+                className={`absolute left-0 top-0 w-screen h-screen backdrop-blur-sm z-10 ${showSearchBox ? '' : 'hidden'}`}
+                onClick={() => {
+                    setShowSearchBox(false)
+                }}
             >
                 <div
                     className={"relative top-20 m-auto w-64 sm:w-96 bg-white flex gap-2 items-center border-4 rounded-xl px-4 py-2 text-xl text-gray-400 border hover:border-indigo-200"}>
