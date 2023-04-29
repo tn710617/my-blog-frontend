@@ -9,12 +9,16 @@
     "@toast-ui/react-editor": "^3.2.3",
     "codemirror": "5.58.3",
     "react": "^18.2.0",
+    "react-copy-to-clipboard": "^5.1.0",
     "react-dom": "^18.2.0",
     "react-icons": "^4.6.0",
     "react-markdown": "^8.0.7",
     "react-router-dom": "^6.4.3",
     "react-scripts": "5.0.1",
+    "react-syntax-highlighter": "^15.5.0",
     "recoil": "^0.7.6",
+    "rehype-raw": "^6.1.1",
+    "remark-gfm": "^3.0.1",
     "web-vitals": "^2.1.4"
   },
   "scripts": {

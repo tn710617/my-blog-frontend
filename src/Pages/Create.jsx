@@ -1,17 +1,16 @@
 import {BsFillPenFill} from "react-icons/bs";
 import Tagify from "@yaireo/tagify"
-import {useRef, useState, useEffect, useCallback} from "react";
+import {useRef, useState, useEffect} from "react";
 import {BsSave2Fill} from "react-icons/bs";
 import {BiReset} from "react-icons/bi";
 import {Editor} from '@toast-ui/react-editor';
-import ReactMarkdown from 'react-markdown';
 import 'codemirror/lib/codemirror.css';
 import '@toast-ui/editor/dist/toastui-editor.css';
 
 export default function Create() {
     const inputRef = useRef();
     const editorRef = useRef()
-    const [markdownContent, setMarkdownContent] = useState('');
+    const [, setMarkdownContent] = useState('');
     const [markdownContentLen, setMarkdownContentLen] = useState(0)
 
     const handleChange = () => {
@@ -54,13 +53,6 @@ export default function Create() {
                             <option>生活雜記</option>
                             <option>程式技術</option>
                         </select>
-                        <div className={"absolute right-1 bottom-2 pointer-events-none"}>
-                            {/*<svg className="h-8 w-8 text-black" width="24" height="24" viewBox="0 0 24 24"*/}
-                            {/*     stroke="currentColor" fill="none">*/}
-                            {/*    <path stroke="none" d="M0 0h24v24H0z"/>*/}
-                            {/*    <polyline points="6 9 12 15 18 9"/>*/}
-                            {/*</svg>*/}
-                        </div>
                     </div>
                     <div>
                         <input

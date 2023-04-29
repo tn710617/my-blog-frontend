@@ -63,10 +63,6 @@ export default function Posts() {
                                         })
 
                                     }
-                                    <div
-                                        className={"py-1 px-3 border border-2 border-blue-400 rounded-2xl text-xs font-semibold bg-slate-200 hover:bg-slate-300 transition-colors duration-300 cursor-pointer"}>
-                                        PHPSTORM
-                                    </div>
                                 </div>
                                 <div className={"mt-4 flex flex-wrap items-center text-gray-400 gap-3"}>
                                     <div className={"flex cursor-pointer hover:text-gray-500 items-center"}>
@@ -90,7 +86,6 @@ export default function Posts() {
                                     </div>
                                 </div>
                             </div>
-
                         )
                     })
                 }
