@@ -5,7 +5,6 @@ import {FaCheckSquare} from "react-icons/fa";
 export default function CodeCopyBtn({children}) {
     const [copyOk, setCopyOk] = React.useState(false);
 
-    const iconColor = copyOk ? '#0af20a' : '#ddd';
     const icon = copyOk ? <FaCheckSquare className={"text-white"}/> : <FaCopy/>;
 
     const handleClick = (e) => {
@@ -19,7 +18,7 @@ export default function CodeCopyBtn({children}) {
 
     return (
         <div className="text-white absolute right-2 top-3 text-2xl cursor-pointer transition-all duration-300 ease-in-out hover:transform hover:scale-110 hover:opacity-90">
-            <button onClick={handleClick} style={{color: iconColor}}>{icon}</button>
+            <button onClick={handleClick}>{icon}</button>
         </div>
     )
 }

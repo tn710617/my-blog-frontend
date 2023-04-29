@@ -21,10 +21,3 @@ code {
   all: revert;
 }
 
-blockquote {
-  margin: 0 !important;
-  padding-left: 1em !important;
-  border-left: 0.3em rgb(193 207 220) solid !important;
-  color: rgb(85, 105, 126) !important;
-  font-style: italic !important;
-}

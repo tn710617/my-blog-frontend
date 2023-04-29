@@ -27,7 +27,7 @@ export default function Nav() {
 
     return (
         <>
-            <div className={"bg-gray-50/80 backdrop-blur-sm shadow-lg sticky top-0"}>
+            <div className={"bg-gray-50/80 backdrop-blur-sm z-50 shadow-lg sticky top-0"}>
                 <nav className={"flex justify-between px-5 py-3 items-center"}>
                     <button
                         type={"button"}

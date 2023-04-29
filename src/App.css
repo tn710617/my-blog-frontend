@@ -53,3 +53,11 @@
   box-shadow: -10px 0px 13px -7px #000000, 10px 0px 13px -7px #000000, 35px -23px 2px -16px rgba(0, 0, 0, 0);
   position: relative;
 }
+
+blockquote {
+  margin: 0 !important;
+  padding-left: 1em !important;
+  border-left: 0.3em rgb(193 207 220) solid !important;
+  color: rgb(85, 105, 126) !important;
+  font-style: italic !important;
+}
