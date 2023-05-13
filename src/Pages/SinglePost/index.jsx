@@ -4,9 +4,6 @@ import {FcCalendar} from "react-icons/fc";
 import {FaUser} from "react-icons/fa";
 import {AiFillTags} from "react-icons/ai";
 import PostBody from "./PostBody";
-import {atomDark} from "react-syntax-highlighter/src/styles/prism";
-import {Prism as SyntaxHighlighter} from 'react-syntax-highlighter'
-import {CopyToClipboard} from "react-copy-to-clipboard";
 import {useState} from "react";
 import fakeMarkdownContent from "./fakeMarkdownContent";
 
@@ -14,7 +11,7 @@ export default function SinglePost() {
 
     const content = fakeMarkdownContent()
 
-    const [markdownContent, setMarkdownContent] = useState(content)
+    const [markdownContent] = useState(content)
 
     return (
         <div className={"m-4 flex lg:space-x-5"}>
