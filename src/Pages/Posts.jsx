@@ -6,11 +6,13 @@ import {GiComputing} from "react-icons/gi";
 import {FcCalendar} from "react-icons/fc";
 import {FaUser} from "react-icons/fa";
 import {BsFillPenFill} from "react-icons/bs";
+import Pagination from "../Components/Pagination";
 
 export default function Posts() {
 
     return (
-        <div className={"flex mx-3 flex-col items-center lg:flex-row lg:items-start lg:justify-center mt-8 gap-6 mb-12"}>
+        <div
+            className={"flex mx-3 flex-col items-center lg:flex-row lg:items-start lg:justify-center mt-8 gap-6 mb-12"}>
             <div className={"w-full md:w-[700px]"}>
                 <div className={"flex flex-col-reverse gap-4 md:flex-row md:gap-0 justify-between"}>
                     <div className={"flex flex-row justify-items-start items-center bg-gray-300 rounded-xl px-1 py-1"}>
@@ -35,64 +37,75 @@ export default function Posts() {
                         <span className={"font-bold"}>程式技術:</span><span className={"text-sm"}>程式學習日記</span>
                     </div>
                 </div>
-                {
-                    [...Array(10)].map((p, i) => {
-                        return (
-                            <div className={"mt-6 p-6 rounded-xl bg-white shadow-xl"}>
-                                <div className={"cursor-pointer group"}>
-                                    <div
-                                        className={"font-bold text-xl mb-2 border border-0 border-b-2 border-b-transparent group-hover:border-blue-400"}>PhpStorm
-                                        上跑 pest/phpunit 測試, sail 版本
-                                    </div>
-                                    <p className={"text-gray-400 group-hover:text-gray-500"}>## # 遇到的問題 已經設定過這樣的連線有好幾次經驗了,
-                                        但今天卻卡了一天, 遇到一個問題, 那就是試過任何方法,
-                                        只要涉及到測試資料庫的 DB 連線, 就會跳 `php_network_getaddresses: getaddrinfo for mysql
-                                        failed:...</p>
+                <div>
+                    {
+                        [...Array(10)].map((p, i) => {
+                            return (
+                                <div className={"mt-6 p-6 rounded-xl bg-white shadow-xl"} key={i}>
+                                    <div className={"cursor-pointer group"}>
+                                        <div
+                                            className={"font-bold text-xl mb-2 border border-0 border-b-2 border-b-transparent group-hover:border-blue-400"}>PhpStorm
+                                            上跑 pest/phpunit 測試, sail 版本
+                                        </div>
+                                        <p className={"text-gray-400 group-hover:text-gray-500"}>## # 遇到的問題
+                                            已經設定過這樣的連線有好幾次經驗了,
+                                            但今天卻卡了一天, 遇到一個問題, 那就是試過任何方法,
+                                            只要涉及到測試資料庫的 DB 連線, 就會跳 `php_network_getaddresses:
+                                            getaddrinfo
+                                            for mysql
+                                            failed:...</p>
 
-                                </div>
-                                <div className={"flex mt-4 flex-wrap items-center gap-2"}>
-                                    <AiFillTags className={"text-xl text-gray-400 cursor-pointer"}/>
-                                    {
-                                        [...Array(10)].map((e, i) => {
-                                            return (
-                                                <div
-                                                    className={"py-1 px-3 border border-2 border-blue-400 rounded-2xl text-xs font-semibold bg-slate-200 hover:bg-slate-300 transition-colors duration-300 cursor-pointer"}>
-                                                    {Math.random().toString(36).slice(7)}
-                                                </div>
-                                            )
-                                        })
+                                    </div>
+                                    <div className={"flex mt-4 flex-wrap items-center gap-2"}>
+                                        <AiFillTags className={"text-xl text-gray-400 cursor-pointer"}/>
+                                        {
+                                            [...Array(10)].map((e, i) => {
+                                                return (
+                                                    <div
+                                                        key={i}
+                                                        className={"py-1 px-3 border border-2 border-blue-400 rounded-2xl text-xs font-semibold bg-slate-200 hover:bg-slate-300 transition-colors duration-300 cursor-pointer"}>
+                                                        {Math.random().toString(36).slice(7)}
+                                                    </div>
+                                                )
+                                            })
 
-                                    }
+                                        }
+                                    </div>
+                                    <div className={"mt-4 flex flex-wrap items-center text-gray-400 gap-3"}>
+                                        <div className={"flex cursor-pointer hover:text-gray-500 items-center"}>
+                                            <GiComputing/>
+                                            <span className={"ml-2"}>程式技術</span>
+                                        </div>
+                                        <span>•</span>
+                                        <div className={"flex cursor-pointer hover:text-gray-500 items-center"}>
+                                            <FaUser/>
+                                            <span className={"ml-2"}>Ray</span>
+                                        </div>
+                                        <span>•</span>
+                                        <div className={"flex cursor-pointer hover:text-gray-500 items-center"}>
+                                            <FcCalendar/>
+                                            <span className={"ml-2"}>2022-10-17</span>
+                                        </div>
+                                        <span>•</span>
+                                        <div className={"flex cursor-pointer hover:text-gray-500 items-center"}>
+                                            <TfiCommentsSmiley/>
+                                            <span className={"ml-2"}>0</span>
+                                        </div>
+                                    </div>
                                 </div>
-                                <div className={"mt-4 flex flex-wrap items-center text-gray-400 gap-3"}>
-                                    <div className={"flex cursor-pointer hover:text-gray-500 items-center"}>
-                                        <GiComputing/>
-                                        <span className={"ml-2"}>程式技術</span>
-                                    </div>
-                                    <span>•</span>
-                                    <div className={"flex cursor-pointer hover:text-gray-500 items-center"}>
-                                        <FaUser/>
-                                        <span className={"ml-2"}>Ray</span>
-                                    </div>
-                                    <span>•</span>
-                                    <div className={"flex cursor-pointer hover:text-gray-500 items-center"}>
-                                        <FcCalendar/>
-                                        <span className={"ml-2"}>2022-10-17</span>
-                                    </div>
-                                    <span>•</span>
-                                    <div className={"flex cursor-pointer hover:text-gray-500 items-center"}>
-                                        <TfiCommentsSmiley/>
-                                        <span className={"ml-2"}>0</span>
-                                    </div>
-                                </div>
-                            </div>
-                        )
-                    })
-                }
+                            )
+                        })
+                    }
+
+                </div>
+                <div className={"mt-4"}>
+                    <Pagination/>
+                </div>
             </div>
             <div className={"relative md:w-[700px]] lg:w-[300px]"}>
                 <div className={"lg:fixed lg:top-30"}>
-                    <div className={"md:w-[700px] lg:w-[300px] border border-2 rounded-xl border-green-500 p-4 bg-white shadow-lg"}>
+                    <div
+                        className={"md:w-[700px] lg:w-[300px] border border-2 rounded-xl border-green-500 p-4 bg-white shadow-lg"}>
                         <h1 className={"text-center font-semibold text-lg pb-2 border border-black border-0 border-b-2 capitalize"}>
                             learan or die
                         </h1>
@@ -120,6 +133,7 @@ export default function Posts() {
                                 [...Array(10)].map((e, i) => {
                                     return (
                                         <div
+                                            key={i}
                                             className={"py-1 px-3 border border-2 border-blue-400 rounded-2xl text-xs font-semibold bg-slate-200 hover:bg-slate-300 transition-colors duration-300 cursor-pointer"}>
                                             {Math.random().toString(36).slice(7)}
                                         </div>
