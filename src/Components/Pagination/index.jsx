@@ -4,15 +4,13 @@ import {range} from 'lodash'
 import CurrentPage from "./CurrentPage";
 import Page from "./Page";
 
-export default function Pagination() {
+export default function Pagination({currentPage, setCurrentPage, totalPosts, totalPages}) {
     const DISPLAY_PAGES = 10
-    const [currentPage, setCurrentPage] = React.useState(1)
-    const [postPerPage] = React.useState(10)
+    const displayPages = React.useMemo(() => {
+        return totalPages > DISPLAY_PAGES ? DISPLAY_PAGES : totalPages
+    }, [DISPLAY_PAGES, totalPages])
+
     const [startPage, setStartPage] = React.useState(1)
-    const [totalPosts] = React.useState(200)
-    const [totalPages] = React.useState(() => {
-        return Math.ceil(totalPosts / postPerPage)
-    })
 
     React.useLayoutEffect(() => {
         if (currentPage >= startPage + 6 && startPage + DISPLAY_PAGES - 1 < totalPages) {
@@ -24,7 +22,7 @@ export default function Pagination() {
                 return currentPage - 5 > 0 ? currentPage - 5 : 1
             })
         }
-    }, [currentPage, DISPLAY_PAGES, totalPages])
+    }, [currentPage, DISPLAY_PAGES, totalPages, startPage])
 
     const handleNextPageClick = () => {
         if (currentPage === totalPages) return
@@ -78,7 +76,7 @@ export default function Pagination() {
                             <FaChevronLeft className="h-5 w-5" aria-hidden="true"/>
                         </button>
                         {
-                            range(startPage, startPage + DISPLAY_PAGES).map((page) => {
+                            range(startPage, startPage + displayPages).map((page) => {
                                 if (page === currentPage) {
                                     return <CurrentPage key={page} page={page}/>
                                 }

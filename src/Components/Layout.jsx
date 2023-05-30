@@ -1,13 +1,18 @@
 import Nav from "./Nav";
 import {Outlet} from "react-router-dom";
 import Footer from "./Footer";
+import {Toaster} from "react-hot-toast";
 
 export default function Layout() {
     return (
-        <div className={"relative flex flex-col justify-between min-h-screen selection:bg-green-300 selection:text-green-900"}>
-            <Nav/>
-            <Outlet/>
+        <div
+            className={"relative flex flex-col justify-between min-h-screen selection:bg-green-300 selection:text-green-900"}>
+            <div>
+                <Nav/>
+                <Outlet/>
+            </div>
             <Footer/>
+            <Toaster/>
         </div>
     )
 

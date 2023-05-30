@@ -6,14 +6,27 @@ import "@yaireo/tagify/dist/tagify.css";
 import reportWebVitals from './reportWebVitals';
 import {BrowserRouter} from "react-router-dom";
 import {RecoilRoot} from "recoil";
+import {QueryClient, QueryClientProvider} from "@tanstack/react-query";
+import {ReactQueryDevtools} from "@tanstack/react-query-devtools";
+
+const queryClient = new QueryClient({
+    defaultOptions: {
+        queries: {
+            retry: false
+        }
+    }
+})
 
 const root = ReactDOM.createRoot(document.getElementById('root'));
 root.render(
     <React.StrictMode>
         <RecoilRoot>
-            <BrowserRouter basename={process.env.PUBLIC_URL}>
-                <App/>
-            </BrowserRouter>
+            <QueryClientProvider client={queryClient}>
+                <BrowserRouter basename={process.env.PUBLIC_URL}>
+                    <App/>
+                    <ReactQueryDevtools initialIsOpen={false}/>
+                </BrowserRouter>
+            </QueryClientProvider>
         </RecoilRoot>
     </React.StrictMode>
 );

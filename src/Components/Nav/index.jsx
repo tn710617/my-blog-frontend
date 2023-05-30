@@ -1,4 +1,4 @@
-import logo from "../Images/favicon.png"
+import logo from "../../Images/favicon.png"
 import {GiSpookyHouse} from "react-icons/gi";
 import {FcSearch} from "react-icons/fc";
 import {BiLogInCircle} from "react-icons/bi";
@@ -6,24 +6,35 @@ import {AiOutlineMenu} from "react-icons/ai";
 import {AiOutlineClose} from "react-icons/ai";
 import {BsFillMoonStarsFill} from "react-icons/bs";
 import {useEffect, useState} from "react";
-import {BsSearch} from "react-icons/bs";
 import {BsFillSunFill} from "react-icons/bs";
 import {useRecoilState} from "recoil";
-import searchBox from "../States/SearchBox";
+import searchBox from "../../States/SearchBox";
+import {Link} from "react-router-dom";
+import {useCategories} from "../../APIs/categories";
+import Categories from "./Categories";
+import SearchBoxComponent from "./SearchBoxComponent";
 
 export default function Nav() {
     const [showMobileNavBar, setShowMobileNavBar] = useState(false)
     const [darkMode, setDarkMode] = useState(false)
-    const [showSearchBox, setShowSearchBox] = useRecoilState(searchBox)
+    const [showSearchBoxComponent, setShowSearchBoxComponent] = useRecoilState(searchBox)
+    const [showSearchResultDropdown, setShowSearchResultDropdown] = useState(false)
+
+    const indexCategories = useCategories()
+
+    const handleSearchBoxButtonClick = () => {
+        setShowSearchBoxComponent(!showSearchBoxComponent)
+        setShowSearchResultDropdown(true)
+    }
 
     useEffect(() => {
-        if (showSearchBox) {
+        if (showSearchBoxComponent) {
             document.body.style.overflow = 'hidden'
         } else {
             document.body.style.overflow = 'unset'
         }
 
-    }, [showSearchBox])
+    }, [showSearchBoxComponent])
 
     return (
         <>
@@ -36,33 +47,22 @@ export default function Nav() {
                     >
                         {showMobileNavBar ? <AiOutlineClose/> : <AiOutlineMenu/>}
                     </button>
-                    <div className={"hidden md:flex gap-2 items-center cursor-pointer"}>
+                    <div className={"hidden md:flex gap-2 items-center cursor-pointer group relative"}>
                         <img alt={'icon'} src={logo} className={"w-10"}/>
                         <div className={"text-2xl font-black"}>Learn or Die</div>
+                        <Link to={"/"} className={"after:absolute after:inset-0"}/>
                     </div>
-                    <div className={"hidden lg:flex gap-4 text-lg text-gray-400"}>
-                        <div className={"flex items-center hover:text-blue-400 hover:cursor-pointer relative gap-2"}>
-                            <GiSpookyHouse/>
-                            <div className={"peer"}>全部文章</div>
-                            <span
-                                className={"absolute w-full h-1 rounded-full transition-all bg-blue-400 duration-300 top-12 opacity-0 peer-hover:top-11 peer-hover:opacity-100"}></span>
-                        </div>
-                        <div className={"flex items-center"}>
-                            <GiSpookyHouse/>
-                            生活記事
-                        </div>
-                        <div className={"flex items-center"}>
-                            <GiSpookyHouse/>
-                            程式技術
-                        </div>
-                    </div>
+                    {
+                        indexCategories.isSuccess &&
+                        <Categories categories={indexCategories.data}/>
+                    }
                     <div className={"flex gap-5 items-center"}>
                         <button className={"cursor-pointer"} onClick={() => setDarkMode(!darkMode)}>
                             {darkMode ? <BsFillSunFill className={"text-xl hover:text-yellow-400"}/> :
                                 <BsFillMoonStarsFill className={"text-lg hover:text-purple-600"}/>}
                         </button>
                         <button className={"cursor-pointer"}
-                                onClick={() => setShowSearchBox(!showSearchBox)}>
+                                onClick={handleSearchBoxButtonClick}>
                             <FcSearch className={"text-4xl p-2 rounded hover:bg-gray-200"}/>
                         </button>
                         <div
@@ -86,27 +86,10 @@ export default function Nav() {
                     </div>
                 </div>
             </div>
-            <div
-                className={`absolute left-0 top-0 w-screen h-screen backdrop-blur-sm z-10 ${showSearchBox ? '' : 'hidden'}`}
-                onClick={() => {
-                    setShowSearchBox(false)
-                }}
-            >
-                <div
-                    className={"relative top-20 m-auto w-64 sm:w-96 bg-white flex gap-2 items-center border-4 rounded-xl px-4 py-2 text-xl text-gray-400 border hover:border-indigo-200"}>
-                    <div>
-                        <BsSearch/>
-                    </div>
-                    <input
-                        type={'text'}
-                        placeholder={"搜尋文章"}
-                        className={"border-0 outline-0 w-full focus:text-black peer"}
-                        onClick={(e) => {
-                            e.stopPropagation()
-                        }}
-                    />
-                </div>
-            </div>
+            <SearchBoxComponent showSearchBoxComponent={showSearchBoxComponent}
+                                setShowSearchBoxComponent={setShowSearchBoxComponent}
+                                showSearchResultDropdown={showSearchResultDropdown}
+                                setShowSearchResultDropdown={setShowSearchResultDropdown}/>
         </>
     )
 }
