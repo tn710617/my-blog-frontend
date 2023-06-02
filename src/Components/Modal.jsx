@@ -1,13 +1,16 @@
-import {Fragment, useState} from 'react'
+import {Fragment} from 'react'
 import {Dialog, Transition} from '@headlessui/react'
 import {AiOutlineCheck} from "react-icons/ai";
+import Spinner from "./Spinner";
+import {useRecoilState} from "recoil";
+import loginModalAtom from "../States/loginModalAtom";
 
-export default function Modal({open, title, body, goBackButtonText, handleGoBackButtonClick}) {
-    const [, setOpen] = useState(false)
+export default function Modal({open, title, body, goBackButtonText, handleGoBackButtonClick, isLoading = false}) {
+    const [, setOpen] = useRecoilState(loginModalAtom)
 
     return (
         <Transition.Root show={open} as={Fragment}>
-            <Dialog as="div" className="relative z-10" onClose={setOpen}>
+            <Dialog as="div" className="relative z-10" onClose={() => setOpen(false)}>
                 <Transition.Child
                     as={Fragment}
                     enter="ease-out duration-300"
@@ -56,7 +59,11 @@ export default function Modal({open, title, body, goBackButtonText, handleGoBack
                                         className="inline-flex w-full justify-center rounded-md bg-indigo-600 px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-indigo-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600"
                                         onClick={handleGoBackButtonClick}
                                     >
-                                        {goBackButtonText}
+                                        {
+                                            isLoading
+                                                ? <Spinner/>
+                                                : goBackButtonText
+                                        }
                                     </button>
                                 </div>
                             </Dialog.Panel>

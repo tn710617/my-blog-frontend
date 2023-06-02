@@ -2,6 +2,7 @@ import Nav from "./Nav";
 import {Outlet} from "react-router-dom";
 import Footer from "./Footer";
 import {Toaster} from "react-hot-toast";
+import LoginModal from "./LoginModal";
 
 export default function Layout() {
     return (
@@ -13,6 +14,7 @@ export default function Layout() {
             </div>
             <Footer/>
             <Toaster/>
+            <LoginModal/>
         </div>
     )
 

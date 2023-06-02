@@ -99,8 +99,8 @@ export default function CreatePost() {
         <div className={"m-4 flex justify-center lg:space-x-5"}>
             <Modal title={"成功建立文章"} open={showPostCreatedModal} goBackButtonText={"回到首頁"}
                    handleGoBackButtonClick={handleModalGoBackButtonClick}/>
-            <div className={"lg:block hidden lg:w-1/6"}/>
-            <div className={"flex flex-col items-center w-full"}>
+            <div className={"lg:block hidden lg:w-1/6 xl:w-2/6"}/>
+            <div className={"flex flex-col items-center w-full m-auto"}>
                 <div className={"flex items-center justify-center gap-3 mb-3 text-2xl"}>
                     <BsFillPenFill/>
                     <h1>新增文章</h1>
@@ -166,7 +166,7 @@ export default function CreatePost() {
 
                 </form>
             </div>
-            <div className={"w-1/6 justify-center lg:block my-auto hidden relative"}>
+            <div className={"lg:w-1/6 xl:w-2/6 justify-center lg:block my-auto hidden relative"}>
                 <div className={"fixed flex flex-col gap-3"}>
                     <div>{markdownContentLen} / 30000</div>
                     <div className={"p-4 bg-blue-500 inline-block w-[60px] text-center rounded-xl"}

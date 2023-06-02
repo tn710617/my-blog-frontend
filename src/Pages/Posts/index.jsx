@@ -11,9 +11,11 @@ import {Link} from "react-router-dom";
 import PopularTags from "./PopularTags";
 import {useIndexPopularTags} from "../../APIs/tags";
 import PostsInfo from "./PostsInfo";
+import loginAtom from "../../States/LoginAtom";
 
 export default function Posts() {
     const [categoryId] = useRecoilState(CategoryAtom)
+    const [isLogIn] = useRecoilState(loginAtom)
     const [currentPage, setCurrentPage] = useState(1)
     const [sort, setSort] = useState("created_at")
     const [tags, setTags] = useState([])
@@ -81,12 +83,15 @@ export default function Posts() {
                             <br/>
                             人生的價值不在長短，在於每個沒有遺憾的當下。
                         </p>
-                        <button
-                            className={"flex cursor-pointer border bg-emerald-500 w-full py-2 px-2 rounded-lg mt-6 items-center justify-center gap-2 text-gray-100 hover:bg-blue-500 transition-colors duration-500 relative"}>
-                            <BsFillPenFill/>
-                            <Link to={"create-post"}
-                                  className={"font-semibold text-lg after:absolute after:inset-0"}>寫一篇</Link>
-                        </button>
+                        {
+                            isLogIn &&
+                            <button
+                                className={"flex cursor-pointer border bg-emerald-500 w-full py-2 px-2 rounded-lg mt-6 items-center justify-center gap-2 text-gray-100 hover:bg-blue-500 transition-colors duration-500 relative"}>
+                                <BsFillPenFill/>
+                                <Link to={"create-post"}
+                                      className={"font-semibold text-lg after:absolute after:inset-0"}>寫一篇</Link>
+                            </button>
+                        }
                     </div>
                     <div className={"md:w-[700px] lg:w-[300px] rounded-xl p-4 bg-white mt-5 shadow-lg"}>
                         <div

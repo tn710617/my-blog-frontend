@@ -1,5 +1,6 @@
-import axios from "./axios";
+import getAxios from "./axios";
 import {useQuery} from "@tanstack/react-query";
+const axios = getAxios({}, 'v1')
 
 export function useIndexPopularTags(options = {}) {
     return useQuery(['popular-tags'], async () => {

@@ -2,10 +2,13 @@ import React from "react";
 import CategoryIcon from "../CategoryIcon";
 import {useRecoilState} from "recoil";
 import categoryAtom from "../../States/Category";
+import {useNavigate} from "react-router-dom";
 
 export default function Categories({categories}) {
+    const navigate = useNavigate()
     const [category, setCategory] = useRecoilState(categoryAtom)
     const handleCategoryOnClick = (e) => {
+        navigate('/')
         setCategory(e.target.value)
     }
 
