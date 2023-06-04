@@ -9,6 +9,7 @@ import MetaMaskInstalledAtom from "../States/MetaMaskInstalled";
 import useAxiosPrivate from "./axiosPrivate";
 import {useIntl} from "react-intl";
 import LoginAtom from "../States/LoginAtom";
+import toast from "react-hot-toast";
 
 const axiosV1 = getAxios({}, 'v1')
 const axios = getAxios({})
@@ -80,6 +81,8 @@ export function useLoginWithMetaMask() {
         }, onSuccess: (data, variables, context) => {
             setIsLoggedIn(true)
             loginInLocalStorage()
+        }, onError: (error, variables, context) => {
+            toast.error(intl.formatMessage({id: 'toast.login.unauthenticated'}))
         }
     })
 }

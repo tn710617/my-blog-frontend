@@ -5,6 +5,7 @@ import Posts from "./Pages/Posts";
 import SinglePost from "./Pages/SinglePost";
 import CreatePost from "./Pages/CreatePost";
 import ProtectedRoute from "./Components/ProtectedRoute";
+import EditPost from "./Pages/EditPost";
 
 function App() {
     return (
@@ -13,6 +14,7 @@ function App() {
                 <Route path={"/"} element={<Posts/>}/>
                 <Route element={<ProtectedRoute/>}>
                     <Route path={"/create-post"} element={<CreatePost/>}/>
+                    <Route path={"/edit-post"} element={<EditPost/>}/>
                 </Route>
                 <Route path={"/single-post"} element={<SinglePost/>}/>
             </Route>

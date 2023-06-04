@@ -7,7 +7,7 @@ const axios = getAxios({}, 'v1')
 
 export function useCategories(options = {}) {
     const intl = useIntl()
-    return useQuery(['categories'], async () => {
+    return useQuery(['categories', 'locale', intl.locale], async () => {
         const queryObject = {
             locale: intl.locale,
         }

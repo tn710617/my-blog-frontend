@@ -3,9 +3,11 @@ import {BsSearch} from "react-icons/bs";
 import SearchResultDropdown from "./SearchResultDropdown";
 import {DebounceInput} from "react-debounce-input";
 import {useIndexPosts} from "../../APIs/posts";
+import {useIntl} from "react-intl";
 
 export default function SearchBoxInput({showSearchResultDropdown, setShowSearchResultDropdown, setShowSearchBoxComponent}) {
     const searchBoxInputIdPrefix = React.useId()
+    const intl = useIntl()
     const [searchTerm, setSearchTerm] = React.useState("")
     const indexPosts = useIndexPosts({}, 1, null, [], null, searchTerm)
 
@@ -33,7 +35,7 @@ export default function SearchBoxInput({showSearchResultDropdown, setShowSearchR
                 <DebounceInput
                     id={`${searchBoxInputIdPrefix}-search-box`}
                     type={'text'}
-                    placeholder={"搜尋文章"}
+                    placeholder={intl.formatMessage({id: "nav.search_box.placeholder"})}
                     className={"border-0 outline-0 w-full focus:text-black peer"}
                     onChange={handleSearchBoxInputChanged}
                     debounceTimeout={1000}

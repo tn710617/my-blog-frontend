@@ -3,8 +3,10 @@ import React from "react";
 import {range} from 'lodash'
 import CurrentPage from "./CurrentPage";
 import Page from "./Page";
+import {useIntl} from "react-intl";
 
 export default function Pagination({currentPage, setCurrentPage, totalPosts, totalPages}) {
+    const intl = useIntl()
     const DISPLAY_PAGES = 10
     const displayPages = React.useMemo(() => {
         return totalPages > DISPLAY_PAGES ? DISPLAY_PAGES : totalPages
@@ -60,9 +62,9 @@ export default function Pagination({currentPage, setCurrentPage, totalPosts, tot
             <div className="hidden sm:flex sm:flex-1 sm:items-center sm:justify-between">
                 <div>
                     <p className="text-sm text-gray-700">
-                        顯示 <span className="font-medium">1</span> to <span
+                        {intl.formatMessage({id: "index_posts.pagination.show"})} <span className="font-medium">1</span> to <span
                         className="font-medium">{totalPages}</span> of{' '}
-                        <span className="font-medium">{totalPosts}</span> 結果
+                        <span className="font-medium">{totalPosts}</span> {intl.formatMessage({id: "index_posts.pagination.results"})}
                     </p>
                 </div>
                 <div>

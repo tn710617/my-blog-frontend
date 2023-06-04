@@ -19,7 +19,6 @@ export default function ProtectedRoute({redirectPath = '/'}) {
     useIsLoggedIn({onSuccess: handleCheckIsLoggedInSuccess})
 
     useEffect(() => {
-        console.log('isLoggedInGlobally', isLoggedInGlobally)
         if (!isLoginInLocalStorage()) {
             navigate(redirectPath, {state: {from: location}, replace: true});
         }

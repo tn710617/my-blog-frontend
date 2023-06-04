@@ -1,3 +1,4 @@
+import React from "react";
 import {BsFillPenFill} from "react-icons/bs";
 import Tagify from "@yaireo/tagify"
 import {useRef, useState, useEffect} from "react";
@@ -8,51 +9,67 @@ import 'codemirror/lib/codemirror.css';
 import '@toast-ui/editor/dist/toastui-editor.css';
 import {useTags} from "../../APIs/tags";
 import {useCategories} from "../../APIs/categories";
-import {useStorePost} from "../../APIs/posts";
+import {useUpdatePost, useShowPost} from "../../APIs/posts";
 import PostTitleInput from "../../Components/PostTitleInput";
-import Modal from "../../Components/Modal";
 import {useNavigate} from "react-router-dom";
-import {handleStorePostError} from "./handlers";
+import {handleUpdatePostError, handleUpdatePostSuccess} from "./handlers";
 import DateInput from "../../Components/DateInput";
 import IsPublicSelect from "../../Components/IsPublicSelect";
 import {useIntl} from "react-intl";
 import LocaleSelect from "../../Components/LocaleSelect";
 import CategorySelection from "../../Components/CategorySelection";
+import {useSearchParams} from "react-router-dom";
+import dayjs from "dayjs";
 
-export default function CreatePost() {
-
-    const [showPostCreatedModal, setShowPostCreatedModal] = useState(false)
+export default function EditPost() {
+    const [isTagifyLoaded, setIsTagifyLoaded] = useState(false)
+    const [isMarkdownLoaded, setIsMarkdownLoaded] = useState(false)
+    const [isTagInputLoaded, setIsTagInputLoaded] = useState(false)
+    const [resetNumber, setResetNumber] = useState(1)
+    const [searchParams] = useSearchParams()
+    const postId = searchParams.get("post_id")
+    const showPost = useShowPost(postId, {
+        enabled: !!postId,
+    })
+    const updatePost = useUpdatePost()
     const tagInputRef = useRef();
     const editorRef = useRef()
     const [markdownContentLen, setMarkdownContentLen] = useState(0)
-    const defaultForm = {tag_ids: [], post_title: '', post_content: '', category_id: "1", is_public: true, locale: "zh-TW"}
+
+    const defaultForm = {
+        tag_ids: [],
+        post_title: '',
+        post_content: '',
+        category_id: "",
+        is_public: true,
+        locale: "zh-TW",
+        created_at: ""
+    }
+
     const [form, setForm] = useState(defaultForm)
     const tags = useTags()
     const categories = useCategories()
-    const storePost = useStorePost()
     const [postTitleValid, setPostTitleValid] = useState(true)
     const navigate = useNavigate()
     const intl = useIntl()
 
-
     const handleResetButtonClick = (event) => {
         event.preventDefault()
-        const editorInstance = editorRef.current.getInstance();
-        const tagify = tagInputRef.current.__tagify
-        editorInstance.setMarkdown("")
-        tagify.removeAllTags()
-        setForm(defaultForm)
+        setIsTagInputLoaded(false)
+        setIsMarkdownLoaded(false)
+        setResetNumber(prev => prev + 1)
     }
 
-    const handleStoreButtonSuccess = () => {
-        setShowPostCreatedModal(true)
-    }
-
-    const handleStoreButtonClick = (event) => {
+    const handleUpdateButtonClick = async (event) => {
         event.preventDefault()
-        storePost.mutate(form, {
-            onError: (error) => handleStorePostError(error, setPostTitleValid),
-            onSuccess: handleStoreButtonSuccess
+        console.log('form', form)
+        const data = {
+            ...form,
+            postId
+        }
+        await updatePost.mutateAsync(data, {
+            onSuccess: () => handleUpdatePostSuccess(postId, intl, navigate),
+            onError: (error) => handleUpdatePostError(error, setPostTitleValid),
         })
     }
 
@@ -78,40 +95,70 @@ export default function CreatePost() {
         setForm({...form, tag_ids: tagIdsArray})
     }
 
-    const handleModalGoBackButtonClick = () => {
-        setShowPostCreatedModal(false)
-        navigate("/single-post?post_id=" + storePost.data.id)
-    }
+    console.log(form)
 
     useEffect(() => {
-        let whitelist = []
-
         if (tags.status === 'success') {
-            whitelist = tags.data.map((tag) => tag.tag_name)
+            const whitelist = tags.data.map((tag) => tag.tag_name)
+            const tagify = new Tagify(tagInputRef.current, {
+                whitelist: whitelist,
+                enforceWhitelist: true,
+                dropdown: {
+                    enabled: 1,
+                }
+            });
+
+            setIsTagifyLoaded(true)
+
+            return () => {
+                tagify.destroy()
+            }
+        }
+    }, [tags.status, tags.data]);
+
+    useEffect(() => {
+        if (tags.status === 'success' && showPost.status === 'success' && isTagifyLoaded) {
+            const tagify = tagInputRef.current.__tagify
+            tagify.removeAllTags()
+            tagify.addTags(showPost.data.tags.map(tag => tag.tag_name))
+            setIsTagInputLoaded(true)
         }
 
-        const tagify = new Tagify(tagInputRef.current, {
-            whitelist: whitelist,
-            enforceWhitelist: true,
-            dropdown: {
-                enabled: 1,
-            }
-        });
-        return () => {
-            tagify.destroy();
-        };
-    }, [tags.status, tags.data]);
+    }, [tags.status, tags.data, showPost.data, resetNumber, isTagifyLoaded, setIsTagInputLoaded, showPost.status])
+
+    useEffect(() => {
+        if (showPost.status === 'success' && isTagInputLoaded) {
+            editorRef.current.getInstance().setMarkdown(showPost.data.post_content)
+            setIsMarkdownLoaded(true)
+        }
+    }, [showPost.status, editorRef, resetNumber, isTagInputLoaded, setIsMarkdownLoaded, showPost.data])
+
+    useEffect(() => {
+        if (showPost.status === 'success' && isMarkdownLoaded) {
+            setForm(prev => {
+                return {
+                    ...prev,
+                    tag_ids: showPost.data.tag_ids,
+                    post_title: showPost.data.post_title,
+                    post_content: showPost.data.post_content,
+                    category_id: showPost.data.category_id,
+                    is_public: showPost.data.is_public,
+                    locale: showPost.data.locale,
+                    created_at: dayjs(showPost.data.created_at).toISOString().slice(0, -1),
+                }
+            })
+        }
+
+    }, [showPost.status, showPost.data, resetNumber, isMarkdownLoaded])
+
 
     return (
         <div className={"m-4 flex justify-center lg:space-x-5"}>
-            <Modal title={intl.formatMessage({id: "store_post.post_created_modal.title"})} open={showPostCreatedModal}
-                   goBackButtonText={intl.formatMessage({id: "store_post.post_created_modal.back_button_text"})}
-                   handleGoBackButtonClick={handleModalGoBackButtonClick}/>
             <div className={"lg:block hidden lg:w-1/6 xl:w-2/6"}/>
             <div className={"flex flex-col items-center w-full m-auto"}>
                 <div className={"flex items-center justify-center gap-3 mb-3 text-2xl"}>
                     <BsFillPenFill/>
-                    <h1>{intl.formatMessage({id: "store_post.title"})}</h1>
+                    <h1>{intl.formatMessage({id: "edit_post.title"})}</h1>
                 </div>
                 <form
                     className={"flex flex-col gap-5 rounded-xl shadow-xl w-full m-auto bg-gray-50 px-4 py-7"}>
@@ -157,7 +204,7 @@ export default function CreatePost() {
                             </div>
                             <div className={"py-2 px-4 bg-blue-500 w-[113px] text-center rounded-lg"}
                                  role={"button"}
-                                 onClick={handleStoreButtonClick}
+                                 onClick={handleUpdateButtonClick}
                             >
                                 <button className={"text-2xl text-white flex justify-center items-center gap-2"}>
                                     <BsSave2Fill/>{intl.formatMessage({id: "store_post.save_button"})}
@@ -175,10 +222,10 @@ export default function CreatePost() {
                     <div>{markdownContentLen} / 30000</div>
                     <div className={"p-4 bg-blue-500 inline-block w-[60px] text-center rounded-xl"}
                          role={"button"}
-                         onClick={handleStoreButtonClick}
+                         onClick={handleUpdateButtonClick}
                     >
                         <button className={"text-2xl text-white"}
-                        ><BsSave2Fill className={storePost.isLoading ? "animate-spin" : ''}/></button>
+                        ><BsSave2Fill className={updatePost.isLoading ? "animate-spin" : ''}/></button>
                     </div>
                     <div className={"p-3 bg-red-500 inline-block w-[60px] text-center rounded-xl"} role={"button"}
                          onClick={handleResetButtonClick}

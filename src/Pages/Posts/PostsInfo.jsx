@@ -1,7 +1,9 @@
 import React from "react";
 import {MdArticle, MdUpdate} from "react-icons/md";
+import {useIntl} from "react-intl";
 
 export default function PostsInfo({setSort, sort}) {
+    const intl = useIntl()
     const isCurrentSort = (value) => {
         return sort === value
     }
@@ -13,7 +15,7 @@ export default function PostsInfo({setSort, sort}) {
                 onClick={(e) => setSort(e.target.value)}
             >
                 <MdArticle/>
-                最新文章
+                {intl.formatMessage({id: "posts_info.latest_posts_title"})}
             </button>
             <button
                 className={"flex items-center m-0 gap-1 px-4 rounded-xl py-2 cursor-pointer " + (isCurrentSort("updated_at") ? "bg-white" : "hover:bg-white")}
@@ -21,7 +23,7 @@ export default function PostsInfo({setSort, sort}) {
                 onClick={(e) => setSort(e.target.value)}
             >
                 <MdUpdate/>
-                最近更新
+                {intl.formatMessage({id: "posts_info.recently_updated_posts_title"})}
             </button>
             {/*<div*/}
             {/*    className={"flex items-center m-0 gap-1 py-2 px-4 rounded-xl cursor-pointer hover:bg-white"}>*/}

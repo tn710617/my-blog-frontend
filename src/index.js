@@ -8,10 +8,7 @@ import {BrowserRouter} from "react-router-dom";
 import {RecoilRoot} from "recoil";
 import {QueryClient, QueryClientProvider} from "@tanstack/react-query";
 import {ReactQueryDevtools} from "@tanstack/react-query-devtools";
-import {IntlProvider} from "react-intl";
-import zhTW from "./locales/zh-TW.json";
-
-const locale = navigator.language
+import SetLocale from "./Components/SetLocale";
 
 const queryClient = new QueryClient({
     defaultOptions: {
@@ -27,9 +24,9 @@ root.render(
         <RecoilRoot>
             <QueryClientProvider client={queryClient}>
                 <BrowserRouter basename={process.env.PUBLIC_URL}>
-                    <IntlProvider locale={locale} key={locale} messages={zhTW}>
+                    <SetLocale>
                         <App/>
-                    </IntlProvider>
+                    </SetLocale>
                     <ReactQueryDevtools initialIsOpen={false}/>
                 </BrowserRouter>
             </QueryClientProvider>

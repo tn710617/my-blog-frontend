@@ -1,19 +1,24 @@
 import {AiFillTags} from "react-icons/ai";
 import {BsFillPenFill} from "react-icons/bs";
+
 import Pagination from "../../Components/Pagination";
-import {useRecoilState} from "recoil";
-import CategoryAtom from "../../States/Category";
-import {useCategories} from "../../APIs/categories";
-import {useMemo, useState} from "react";
-import {useIndexPosts} from "../../APIs/posts";
 import PostCard from "./PostCard";
-import {Link} from "react-router-dom";
 import PopularTags from "./PopularTags";
-import {useIndexPopularTags} from "../../APIs/tags";
 import PostsInfo from "./PostsInfo";
+
+import {useRecoilState} from "recoil";
+import {useMemo, useState} from "react";
+import {Link} from "react-router-dom";
+import {useIntl} from "react-intl";
+
+import {useCategories} from "../../APIs/categories";
+import {useIndexPosts} from "../../APIs/posts";
+
+import CategoryAtom from "../../States/Category";
 import loginAtom from "../../States/LoginAtom";
 
 export default function Posts() {
+    const intl = useIntl()
     const [categoryId] = useRecoilState(CategoryAtom)
     const [isLogIn] = useRecoilState(loginAtom)
     const [currentPage, setCurrentPage] = useState(1)
@@ -21,7 +26,6 @@ export default function Posts() {
     const [tags, setTags] = useState([])
     const indexCategory = useCategories()
     const indexPosts = useIndexPosts({}, currentPage, categoryId, tags, sort)
-    const indexPopularTags = useIndexPopularTags()
     const currentCategory = useMemo(() => {
         if (indexCategory.status === 'success') {
             return indexCategory.data.find(({id}) => parseInt(id) === parseInt(categoryId))
@@ -79,9 +83,7 @@ export default function Posts() {
                             learan or die
                         </h1>
                         <p className={"mt-4"}>
-                            The value of life lies not in the length of days, but in the use we make of them
-                            <br/>
-                            人生的價值不在長短，在於每個沒有遺憾的當下。
+                            {intl.formatMessage({id: "index_posts.motto"})}
                         </p>
                         {
                             isLogIn &&
@@ -89,7 +91,7 @@ export default function Posts() {
                                 className={"flex cursor-pointer border bg-emerald-500 w-full py-2 px-2 rounded-lg mt-6 items-center justify-center gap-2 text-gray-100 hover:bg-blue-500 transition-colors duration-500 relative"}>
                                 <BsFillPenFill/>
                                 <Link to={"create-post"}
-                                      className={"font-semibold text-lg after:absolute after:inset-0"}>寫一篇</Link>
+                                      className={"font-semibold text-lg after:absolute after:inset-0"}>{intl.formatMessage({id: "index_posts.store_post_button"})}</Link>
                             </button>
                         }
                     </div>
@@ -98,14 +100,11 @@ export default function Posts() {
                             className={"flex justify-center border border-black border-0 border-b-2 pb-2 items-center gap-1"}>
                             <AiFillTags className={"text-xl"}/>
                             <h1 className={"font-semibold text-lg capitalize"}>
-                                熱門標籤
+                                {intl.formatMessage({id: "index_posts.popular_tags"})}
                             </h1>
                         </div>
                         <div className={"mt-4"}>
-                            {
-                                indexPopularTags.isSuccess &&
-                                <PopularTags tags={tags} setTags={setTags}/>
-                            }
+                            <PopularTags tags={tags} setTags={setTags}/>
                         </div>
                     </div>
                 </div>

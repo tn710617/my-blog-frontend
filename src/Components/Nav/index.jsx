@@ -1,6 +1,5 @@
 import logo from "../../Images/favicon.png"
 import {FcSearch} from "react-icons/fc";
-import {BiLogInCircle} from "react-icons/bi";
 import {AiOutlineMenu} from "react-icons/ai";
 import {AiOutlineClose} from "react-icons/ai";
 import {BsFillMoonStarsFill} from "react-icons/bs";
@@ -14,16 +13,25 @@ import Categories from "./Categories";
 import SearchBoxComponent from "./SearchBoxComponent";
 import MobileCategories from "./MobileCategories";
 import {useLoginWithMetaMask, useLogout} from "../../APIs/auth";
-import {BiLogOut} from "react-icons/bi";
-import {isLoginInLocalStorage} from "../../helpers";
+import {isLoginInLocalStorage, setLocaleInLocalStorage} from "../../helpers";
+import LogoutButton from "./LogoutButton";
+import LoginButton from "./LoginButton";
+import localeAtom from "../../States/localeAtom";
 
 export default function Nav() {
     const [showMobileNavBar, setShowMobileNavBar] = useState(false)
     const [darkMode, setDarkMode] = useState(false)
     const [showSearchBoxComponent, setShowSearchBoxComponent] = useRecoilState(searchBox)
     const [showSearchResultDropdown, setShowSearchResultDropdown] = useState(false)
+    const [locale, setLocale] = useRecoilState(localeAtom)
 
     const indexCategories = useCategories()
+
+    const handleLocaleSelectionChanged = (e) => {
+        const locale = e.target.value
+        setLocale(locale)
+        setLocaleInLocalStorage(locale)
+    }
 
     const handleSearchBoxButtonClick = () => {
         setShowSearchBoxComponent(!showSearchBoxComponent)
@@ -63,6 +71,13 @@ export default function Nav() {
                         <Categories categories={indexCategories.data}/>
                     }
                     <div className={"flex gap-5 items-center"}>
+                        <select
+                            value={locale}
+                            onChange={handleLocaleSelectionChanged}
+                            className={"bg-gray-100 outline-0 appearance-none"}>
+                            <option value={'zh-TW'}>中文</option>
+                            <option value={'en'}>English</option>
+                        </select>
                         <button className={"cursor-pointer"} onClick={() => setDarkMode(!darkMode)}>
                             {darkMode ? <BsFillSunFill className={"text-xl hover:text-yellow-400"}/> :
                                 <BsFillMoonStarsFill className={"text-lg hover:text-purple-600"}/>}
@@ -73,29 +88,11 @@ export default function Nav() {
                         </button>
                         {
                             isLoginInLocalStorage() ?
-                                <button
-                                    onClick={async () => await logout.mutateAsync({}, {onSuccess: (data) => console.log('成功登出')})}
-                                    className={"flex text-red-400 items-center gap-2 border border-1 border-red-400 px-3 py-1 rounded-lg cursor-pointer hover:bg-red-400 hover:text-white"}>
-                                    {
-                                        logout.isLoading
-                                            ? <BiLogOut className={"text-xl animate-spin"}/>
-                                            : <BiLogOut className={"text-xl"}/>
-                                    }
-                                    <span className={"text-lg"}>芝麻關門</span>
-
-                                </button>
+                                <LogoutButton onClick={async () => await logout.mutateAsync()}
+                                              isLoading={logout.isLoading}/>
                                 :
-                                <button
-                                    onClick={async () => await login.mutateAsync({}, {onSuccess: (data) => console.log('成功登入')})}
-                                    className={"flex text-emerald-400 items-center gap-2 border border-1 border-green-400 px-3 py-1 rounded-lg cursor-pointer hover:bg-green-400 hover:text-white"}>
-                                    {
-                                        login.isLoading
-                                            ? <BiLogInCircle className={"text-xl animate-spin"}/>
-                                            : <BiLogInCircle className={"text-xl"}/>
-
-                                    }
-                                    <span className={"text-lg"}>芝麻開門</span>
-                                </button>
+                                <LoginButton onClick={async () => await login.mutateAsync()}
+                                             isLoading={login.isLoading}/>
                         }
                     </div>
                 </nav>
