@@ -2,7 +2,7 @@ import getAxios from "./axios";
 import {useMutation, useQuery} from "@tanstack/react-query";
 import {ethers} from "ethers";
 import {useLocation} from "react-router-dom";
-import {isMobile} from "react-device-detect";
+import {isBrowser, isMobile} from "react-device-detect";
 import {getMetamaskDAppDeepLink, loginInLocalStorage, logoutInLocalStorage} from "../helpers";
 import {useRecoilState} from "recoil";
 import useAxiosPrivate from "./axiosPrivate";
@@ -21,8 +21,11 @@ export function useIsLoggedIn() {
     })
 }
 
-export async function getCsrfToken() {
-    return await axios.get('csrf-cookie')
+export function useCsrfToken() {
+    return useMutation(async () => {
+        const res = await axios.get('csrf-cookie')
+        return res.data.data
+    })
 }
 
 export function useLogout() {
@@ -43,6 +46,7 @@ export function useLoginWithMetaMask() {
     const location = useLocation()
     const intl = useIntl()
     const [, setIsLoggedIn] = useRecoilState(LoginAtom)
+    const getCsrfToken = useCsrfToken()
     return useMutation({
         mutationFn: async () => {
             if (typeof window.ethereum === 'undefined') {
@@ -65,7 +69,9 @@ export function useLoginWithMetaMask() {
 
             const signature = await signer.signMessage(message)
 
-            await getCsrfToken()
+            if (isBrowser) {
+                await getCsrfToken.mutateAsync()
+            }
 
             const res = await axiosV1.post('login/metamask', {
                 signature: signature,
