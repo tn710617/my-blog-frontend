@@ -25,7 +25,14 @@ export default function CreatePost() {
     const tagInputRef = useRef();
     const editorRef = useRef()
     const [markdownContentLen, setMarkdownContentLen] = useState(0)
-    const defaultForm = {tag_ids: [], post_title: '', post_content: '', category_id: "1", is_public: true, locale: "zh-TW"}
+    const defaultForm = {
+        tag_ids: [],
+        post_title: '',
+        post_content: '',
+        category_id: "2",
+        is_public: true,
+        locale: "zh-TW"
+    }
     const [form, setForm] = useState(defaultForm)
     const tags = useTags()
     const categories = useCategories()
@@ -33,7 +40,6 @@ export default function CreatePost() {
     const [postTitleValid, setPostTitleValid] = useState(true)
     const navigate = useNavigate()
     const intl = useIntl()
-
 
     const handleResetButtonClick = (event) => {
         event.preventDefault()
