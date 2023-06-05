@@ -1,4 +1,4 @@
-import logo from "../../Images/favicon.png"
+import logo from "../../Images/favicon-compressed.png"
 import {FcSearch} from "react-icons/fc";
 import {AiOutlineMenu} from "react-icons/ai";
 import {AiOutlineClose} from "react-icons/ai";
