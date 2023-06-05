@@ -28,5 +28,6 @@
   "posts_info.latest_posts_title": "Latest Posts",
   "posts_info.recently_updated_posts_title": "Recently Updated",
   "toast.login.unauthenticated": "Oops, wrong spell!",
-  "toast.login.metaMaskNotInstalled": "The door is carved with the word \"MetaMask,\" which appears to be suggesting something..."
+  "toast.login.metaMaskNotInstalled": "The door is carved with the word \"MetaMask,\" which appears to be suggesting something...",
+  "toast.store_post.post_created": "Successfully created an article"
 }

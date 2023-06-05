@@ -18,6 +18,7 @@ import IsPublicSelect from "../../Components/IsPublicSelect";
 import {useIntl} from "react-intl";
 import LocaleSelect from "../../Components/LocaleSelect";
 import CategorySelection from "../../Components/CategorySelection";
+import toast from "react-hot-toast";
 
 export default function CreatePost() {
 
@@ -51,7 +52,8 @@ export default function CreatePost() {
     }
 
     const handleStoreButtonSuccess = () => {
-        setShowPostCreatedModal(true)
+        toast.success(intl.formatMessage({id: 'toast.store_post.post_created'}))
+        navigate('/')
     }
 
     const handleStoreButtonClick = (event) => {
