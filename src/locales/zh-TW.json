@@ -27,5 +27,6 @@
   "nav.search_box.placeholder": "搜尋文章/標題",
   "posts_info.latest_posts_title": "最新文章",
   "posts_info.recently_updated_posts_title": "最近更新",
-  "toast.login.unauthenticated": "哎呀, 您詠唱的咒語不對哦"
+  "toast.login.unauthenticated": "哎呀, 您詠唱的咒語不對哦",
+  "toast.login.metaMaskNotInstalled": "這道門上刻著 MetaMask, 似乎在暗示著什麼..."
 }

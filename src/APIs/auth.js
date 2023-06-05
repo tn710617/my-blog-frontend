@@ -5,7 +5,6 @@ import {useLocation} from "react-router-dom";
 import {isMobile} from "react-device-detect";
 import {getMetamaskDAppDeepLink, loginInLocalStorage, logoutInLocalStorage} from "../helpers";
 import {useRecoilState} from "recoil";
-import MetaMaskInstalledAtom from "../States/MetaMaskInstalled";
 import useAxiosPrivate from "./axiosPrivate";
 import {useIntl} from "react-intl";
 import LoginAtom from "../States/LoginAtom";
@@ -41,7 +40,6 @@ export function useLogout() {
 }
 
 export function useLoginWithMetaMask() {
-    const [, setIsMetaMaskInstalled] = useRecoilState(MetaMaskInstalledAtom)
     const location = useLocation()
     const intl = useIntl()
     const [, setIsLoggedIn] = useRecoilState(LoginAtom)
@@ -50,11 +48,9 @@ export function useLoginWithMetaMask() {
             if (typeof window.ethereum === 'undefined') {
                 if (isMobile) {
                     window.location.replace(getMetamaskDAppDeepLink(location))
-                    return;
                 }
 
-                setIsMetaMaskInstalled(false)
-                return;
+                throw new Error('MetaMask is not installed.')
             }
 
             const provider = new ethers.BrowserProvider(window.ethereum)
@@ -82,6 +78,11 @@ export function useLoginWithMetaMask() {
             setIsLoggedIn(true)
             loginInLocalStorage()
         }, onError: (error, variables, context) => {
+            if (error.message === 'MetaMask is not installed.') {
+                toast(intl.formatMessage({id: 'toast.login.metaMaskNotInstalled'}))
+                return;
+            }
+
             toast.error(intl.formatMessage({id: 'toast.login.unauthenticated'}))
         }
     })
