@@ -39,9 +39,10 @@
   },
   "scripts": {
     "start": "env-cmd -f .env.local react-scripts start",
-    "build-production": "env-cmd -f .env.production react-scripts build",
+    "build-production": "GENERATE_SOURCEMAP=false env-cmd -f .env.production react-scripts build",
     "build": "react-scripts build",
     "test": "react-scripts test",
+    "deploy": "sh ./scripts/deploy.sh",
     "eject": "react-scripts eject",
     "lint": "eslint src --ext .js,.jsx,.ts,.tsx"
   },
