@@ -17,6 +17,7 @@ function App() {
                     <Route path={"/edit-post"} element={<EditPost/>}/>
                 </Route>
                 <Route path={"/single-post"} element={<SinglePost/>}/>
+                <Route path="*" element={<Posts/>}/>
             </Route>
         </Routes>
     );
