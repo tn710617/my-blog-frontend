@@ -38,7 +38,7 @@
     "web-vitals": "^2.1.4"
   },
   "scripts": {
-    "start": "env-cmd -f .env.local react-scripts start",
+    "start": "GENERATE_SOURCEMAP=false env-cmd -f .env.local react-scripts start",
     "build-production": "GENERATE_SOURCEMAP=false env-cmd -f .env.production react-scripts build",
     "build": "react-scripts build",
     "test": "react-scripts test",
