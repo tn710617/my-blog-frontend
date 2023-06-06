@@ -8,7 +8,7 @@ export default function LoginModal() {
     const loginWithMetaMask = useLoginWithMetaMask()
     const [showLoginModal, setShowLoginModal] = useRecoilState(loginModalAtom)
     const handleGoBackButtonClick = async () => {
-        await loginWithMetaMask.mutateAsync({}, {onSuccess: () => console.log('成功登入')})
+        await loginWithMetaMask.mutateAsync()
         setShowLoginModal(false)
     }
     return (

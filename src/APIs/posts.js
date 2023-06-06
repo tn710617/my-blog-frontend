@@ -10,7 +10,6 @@ export function useUpdatePost() {
     const axiosPrivate = useAxiosPrivate()
     return useMutation({
         mutationFn: async (data) => {
-            console.log('data', data)
             const res = await axiosPrivate.put(`posts/${data.postId}`, data)
             return res.data.data
         },

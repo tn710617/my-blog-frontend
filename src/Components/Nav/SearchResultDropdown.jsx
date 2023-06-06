@@ -3,7 +3,6 @@ import NoSearchResult from "./NoSearchResult";
 import SearchResult from "./SearchResult";
 
 export default function SearchResultDropdown({searchTerm, searchedPosts, setShowSearchBoxComponent}) {
-    console.log("searchedPosts", searchedPosts)
     return (
         <div className={"max-h-screen overflow-y-auto"}>
             <hr className={"mt-1 mb-1"}/>

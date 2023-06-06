@@ -16,6 +16,8 @@ export default function PostBody({content}) {
         {children}
     </blockquote>
 
+    const UlComponent = (props) => <ul className="list-disc pl-4 list-[revert]">{props.children}</ul>
+
     return (
         <ReactMarkdown
             className='post-markdown markdown'
@@ -25,6 +27,7 @@ export default function PostBody({content}) {
             components={{
                 blockquote: Blockquote,
                 pre: Pre,
+                ul: UlComponent,
                 code({
                          node,
                          inline,

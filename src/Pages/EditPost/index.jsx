@@ -62,7 +62,6 @@ export default function EditPost() {
 
     const handleUpdateButtonClick = async (event) => {
         event.preventDefault()
-        console.log('form', form)
         const data = {
             ...form,
             postId
@@ -95,7 +94,6 @@ export default function EditPost() {
         setForm({...form, tag_ids: tagIdsArray})
     }
 
-    console.log(form)
 
     useEffect(() => {
         if (tags.status === 'success') {
