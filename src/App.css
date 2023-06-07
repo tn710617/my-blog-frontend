@@ -61,3 +61,26 @@ blockquote {
   color: rgb(85, 105, 126) !important;
   font-style: italic !important;
 }
+
+tr th:not(:last-child) {
+  border-right: none;
+}
+
+tr td:not(:last-child) {
+  border-right: none;
+}
+
+tr th:first-child {
+  border-top-left-radius: 10px;
+}
+
+tr th:last-child {
+  border-top-right-radius: 10px;
+}
+
+table tr:last-child td:first-child {
+  border-bottom-left-radius: 10px;
+}
+table tr:last-child td:last-child {
+  border-bottom-right-radius: 10px;
+}
