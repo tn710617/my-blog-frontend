@@ -1,4 +1,4 @@
-import React, {useLayoutEffect} from "react";
+import React, {useEffect, useLayoutEffect} from "react";
 import PostBody from "./PostBody";
 import {useNavigate, useSearchParams} from "react-router-dom";
 import {useShowPost} from "../../APIs/posts";
@@ -20,6 +20,12 @@ export default function SinglePost() {
     const {isSuccess, data} = useShowPost(postId, {
         enabled: !!postId,
     })
+
+    useEffect(() => {
+        if (!postId) {
+            navigate("/")
+        }
+    }, [postId, navigate])
 
     useLayoutEffect(() => {
         if (isSuccess && locale !== data.locale) {

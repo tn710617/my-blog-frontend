@@ -15,6 +15,7 @@ export default function LoginModal() {
         <Modal title={"請登入"} open={showLoginModal} handleGoBackButtonClick={handleGoBackButtonClick}
                goBackButtonText={"請按此登入"} body={""}
                isLoading={loginWithMetaMask.isLoading}
+               onHide={() => setShowLoginModal(false)}
         />
     )
 }

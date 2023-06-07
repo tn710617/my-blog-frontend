@@ -1,16 +1,70 @@
 import {Fragment} from 'react'
 import {Dialog, Transition} from '@headlessui/react'
 import {AiOutlineCheck} from "react-icons/ai";
+import {FaSkullCrossbones} from "react-icons/fa";
 import Spinner from "./Spinner";
-import {useRecoilState} from "recoil";
-import loginModalAtom from "../States/loginModalAtom";
 
-export default function Modal({open, title, body, goBackButtonText, handleGoBackButtonClick, isLoading = false}) {
-    const [, setOpen] = useRecoilState(loginModalAtom)
+export default function Modal({
+                                  open,
+                                  title,
+                                  body,
+                                  goBackButtonText,
+                                  handleGoBackButtonClick,
+                                  isLoading = false,
+                                  onHide,
+                                  type = "danger"
+                              }) {
+
+    const Mark = () => {
+        switch (type) {
+            case "info":
+                return <div
+                    className="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-green-100">
+                    <AiOutlineCheck className="h-6 w-6 text-green-600" aria-hidden="true"/>
+                </div>
+            case "danger":
+                return <div
+                    className="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-red-100">
+                    <FaSkullCrossbones className="h-6 w-6 text-red-600" aria-hidden="true"/>
+                </div>
+            default:
+                return <div
+                    className="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-green-100">
+                    <AiOutlineCheck className="h-6 w-6 text-green-600" aria-hidden="true"/>
+                </div>
+        }
+    }
+
+    const getVariableMainButtonClass = () => {
+        switch (type) {
+            case "info":
+                return "bg-indigo-600 hover:bg-indigo-500 focus-visible:outline-indigo-600"
+            case "danger":
+                return "bg-red-600 hover:bg-red-500 focus-visible:outline-red-600"
+            default:
+                return "bg-indigo-600 hover:bg-indigo-500 focus-visible:outline-indigo-600"
+        }
+    }
+
+    const MainButton = () => {
+        return (
+            <button
+                type="button"
+                className={"inline-flex w-full justify-center rounded-md px-3 py-2 text-sm font-semibold text-white shadow-sm focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 " + getVariableMainButtonClass()}
+                onClick={handleGoBackButtonClick}
+            >
+                {
+                    isLoading
+                        ? <Spinner/>
+                        : goBackButtonText
+                }
+            </button>
+        )
+    }
 
     return (
         <Transition.Root show={open} as={Fragment}>
-            <Dialog as="div" className="relative z-10" onClose={() => setOpen(false)}>
+            <Dialog as="div" className="relative z-10" onClose={onHide}>
                 <Transition.Child
                     as={Fragment}
                     enter="ease-out duration-300"
@@ -37,10 +91,9 @@ export default function Modal({open, title, body, goBackButtonText, handleGoBack
                             <Dialog.Panel
                                 className="relative transform overflow-hidden rounded-lg bg-white px-4 pb-4 pt-5 text-left shadow-xl transition-all sm:my-8 sm:w-full sm:max-w-sm sm:p-6">
                                 <div>
-                                    <div
-                                        className="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-green-100">
-                                        <AiOutlineCheck className="h-6 w-6 text-green-600" aria-hidden="true"/>
-                                    </div>
+                                    {
+                                        <Mark/>
+                                    }
                                     <div className="mt-3 text-center sm:mt-5">
                                         <Dialog.Title as="h3"
                                                       className="text-base font-semibold leading-6 text-gray-900">
@@ -54,17 +107,7 @@ export default function Modal({open, title, body, goBackButtonText, handleGoBack
                                     </div>
                                 </div>
                                 <div className="mt-5 sm:mt-6">
-                                    <button
-                                        type="button"
-                                        className="inline-flex w-full justify-center rounded-md bg-indigo-600 px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-indigo-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600"
-                                        onClick={handleGoBackButtonClick}
-                                    >
-                                        {
-                                            isLoading
-                                                ? <Spinner/>
-                                                : goBackButtonText
-                                        }
-                                    </button>
+                                    <MainButton/>
                                 </div>
                             </Dialog.Panel>
                         </Transition.Child>
