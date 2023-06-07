@@ -8,6 +8,7 @@ import {useRecoilState} from "recoil";
 import localeAtom from "../../States/localeAtom";
 import EditButton from "./EditButton";
 import isLoggedInAtom from "../../States/LoginAtom";
+import DeleteButton from "./DeleteButton";
 
 export default function SinglePost() {
     const [isLoggedIn] = useRecoilState(isLoggedInAtom)
@@ -34,7 +35,11 @@ export default function SinglePost() {
                 <div className={"font-semibold text-4xl"}>{data.post_title}</div>
                 {
                     isLoggedIn &&
-                    <EditButton postId={postId}/>
+                    <div className={"flex gap-2 text-gray-400"}>
+                        <EditButton postId={postId}/>
+                        <span>•</span>
+                        <DeleteButton postId={postId}/>
+                    </div>
                 }
                 <PostMetadata postData={data}/>
                 <PostTags tags={data.tags}/>

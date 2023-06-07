@@ -22,6 +22,7 @@
   "index_posts.pagination.show": "show",
   "index_posts.pagination.results": "results",
   "show_post.edit_button": "Edit",
+  "show_post.delete_button": "Delete",
   "nav.login_button": "Login",
   "nav.logout_button": "Logout",
   "nav.search_box.placeholder": "Search content & title",
@@ -29,5 +30,6 @@
   "posts_info.recently_updated_posts_title": "Recently Updated",
   "toast.login.unauthenticated": "Oops, wrong spell!",
   "toast.login.metaMaskNotInstalled": "The door is carved with the word \"MetaMask,\" which appears to be suggesting something...",
-  "toast.store_post.post_created": "Successfully created an article"
+  "toast.store_post.post_created": "Successfully created an article",
+  "toast.delete_post.post_deleted": "Successfully deleted the article"
 }

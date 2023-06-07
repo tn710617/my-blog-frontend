@@ -6,6 +6,16 @@ import useAxiosPrivate from "./axiosPrivate";
 
 const axios = getAxios({}, 'v1')
 
+export function useDeletePost() {
+    const axiosPrivate = useAxiosPrivate()
+    return useMutation({
+        mutationFn: async (postId) => {
+            const res = await axiosPrivate.delete(`posts/${postId}`)
+            return res.data.data
+        },
+    })
+}
+
 export function useUpdatePost() {
     const axiosPrivate = useAxiosPrivate()
     return useMutation({

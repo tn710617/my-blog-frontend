@@ -22,6 +22,7 @@
   "index_posts.pagination.show": "顯示",
   "index_posts.pagination.results": "結果",
   "show_post.edit_button": "編輯",
+  "show_post.delete_button": "刪除",
   "nav.login_button": "芝麻開門",
   "nav.logout_button": "芝麻關門",
   "nav.search_box.placeholder": "搜尋文章/標題",
@@ -29,5 +30,6 @@
   "posts_info.recently_updated_posts_title": "最近更新",
   "toast.login.unauthenticated": "哎呀, 您詠唱的咒語不對哦",
   "toast.login.metaMaskNotInstalled": "這道門上刻著 MetaMask, 似乎在暗示著什麼...",
-  "toast.store_post.post_created": "成功建立文章"
+  "toast.store_post.post_created": "成功建立文章",
+  "toast.delete_post.post_deleted": "成功刪除文章"
 }
