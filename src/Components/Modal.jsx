@@ -12,7 +12,7 @@ export default function Modal({
                                   handleGoBackButtonClick,
                                   isLoading = false,
                                   onHide,
-                                  type = "danger"
+                                  type = "info"
                               }) {
 
     const Mark = () => {
