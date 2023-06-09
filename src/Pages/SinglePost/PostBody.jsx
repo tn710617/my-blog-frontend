@@ -18,7 +18,8 @@ export default function PostBody({content}) {
 
     const UlComponent = (props) => <ul className="list-disc pl-4 list-[revert]">{props.children}</ul>
 
-    const tableComponent = (props) => <table style={{borderCollapse: "separate", borderSpacing: "0"}}>{props.children}</table>
+    const tableComponent = (props) => <table
+        style={{borderCollapse: "separate", borderSpacing: "0"}}>{props.children}</table>
     const thComponent = (props) => <th className="border border-slate-500 bg-gray-400 p-2">{props.children}</th>
     const tdComponent = (props) => <td className="border border-slate-500 p-2">{props.children}</td>
 

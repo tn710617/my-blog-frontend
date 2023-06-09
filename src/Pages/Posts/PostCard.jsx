@@ -3,6 +3,7 @@ import lodash from "lodash";
 import PostTags from "../../Components/PostTags";
 import PostMetadata from "../../Components/PostMetadata";
 import {useNavigate} from "react-router-dom";
+import removeMd from "remove-markdown";
 
 export default function PostCard({post}) {
     const navigate = useNavigate()
@@ -18,7 +19,7 @@ export default function PostCard({post}) {
                 <div
                     className={"font-bold text-xl mb-2 border border-0 border-b-2 border-b-transparent group-hover:border-blue-400"}>{post_title}
                 </div>
-                <p className={"text-gray-400 group-hover:text-gray-500"}>{lodash.truncate(post_content, {
+                <p className={"text-gray-400 group-hover:text-gray-500"}>{lodash.truncate(removeMd(post_content), {
                     length: 200,
                     omission: "..."
                 })}</p>
