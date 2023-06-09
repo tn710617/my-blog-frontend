@@ -4,6 +4,7 @@ import remarkGfm from 'remark-gfm';
 import {Prism as SyntaxHighlighter} from 'react-syntax-highlighter'
 import {a11yDark} from 'react-syntax-highlighter/dist/cjs/styles/prism'
 import CodeCopyBtn from './CodeCopyBtn';
+import HeaderComponent from "./HeaderComponent";
 
 export default function PostBody({content}) {
     // Add the CodeCopyBtn component to our PRE element
@@ -35,6 +36,11 @@ export default function PostBody({content}) {
                 ul: UlComponent,
                 th: thComponent,
                 td: tdComponent,
+                h2: HeaderComponent,
+                h3: HeaderComponent,
+                h4: HeaderComponent,
+                h5: HeaderComponent,
+                h6: HeaderComponent,
                 table: tableComponent,
                 code({
                          node,
