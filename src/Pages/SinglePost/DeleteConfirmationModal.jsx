@@ -11,7 +11,7 @@ export default function DeleteConfirmationModal({open, handleGoBackButtonClick, 
                open={open}
                handleGoBackButtonClick={handleGoBackButtonClick}
                onHide={onHide}
-
+               type={'danger'}
         />
     )
 }
