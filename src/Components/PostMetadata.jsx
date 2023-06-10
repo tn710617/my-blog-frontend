@@ -3,24 +3,52 @@ import CategoryIcon from "./CategoryIcon";
 import {MdFiberNew} from "react-icons/md";
 import {GrUpdate} from "react-icons/gr";
 import {FormattedDate} from "react-intl";
+import {useNavigate} from "react-router-dom";
+import {useRecoilState} from "recoil";
+import categoryAtom from "../States/Category";
+import postSortAtom from "../States/postSortAtom";
 
 export default function PostMetadata({postData}) {
+    const navigate = useNavigate()
+    const [, setCurrentCategory] = useRecoilState(categoryAtom)
+    const [, setPostSort] = useRecoilState(postSortAtom)
+    const handleCategoryClick = () => {
+        setCurrentCategory(postData.category_id)
+        navigate('/')
+    }
+
+    const handleCreatedAtOnClick = () => {
+        setPostSort("created_at")
+        navigate('/')
+    }
+
+    const handleUpdatedAtOnClick = () => {
+        setPostSort("updated_at")
+        navigate('/')
+    }
+
     return (
         <div className={"flex flex-wrap items-center text-gray-400 gap-3"}>
-            <div className={"flex cursor-pointer hover:text-gray-500 items-center"}>
+            <button className={"flex hover:text-gray-500 items-center"}
+                    onClick={handleCategoryClick}
+            >
                 <CategoryIcon category_id={postData.category_id}/>
                 <span className={"ml-2 capitalize"}>{postData.category.category_name}</span>
-            </div>
+            </button>
             <span>•</span>
-            <div className={"flex gap-2 cursor-pointer hover:text-gray-500 items-center"}>
+            <button className={"flex gap-2 hover:text-gray-500 items-center"}
+                    onClick={handleCreatedAtOnClick}
+            >
                 <MdFiberNew className={"text-xl text-black"}/>
                 <FormattedDate value={postData.created_at} year={"numeric"} month={"long"} day={"numeric"}/>
-            </div>
+            </button>
             <span>•</span>
-            <div className={"flex gap-2 cursor-pointer hover:text-gray-500 items-center"}>
+            <button className={"flex gap-2 hover:text-gray-500 items-center"}
+                    onClick={handleUpdatedAtOnClick}
+            >
                 <GrUpdate/>
                 <FormattedDate value={postData.updated_at} year={"numeric"} month={"long"} day={"numeric"}/>
-            </div>
+            </button>
         </div>
 
     )

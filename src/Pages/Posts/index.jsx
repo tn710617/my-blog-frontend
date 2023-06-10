@@ -16,13 +16,14 @@ import {useIndexPosts} from "../../APIs/posts";
 
 import CategoryAtom from "../../States/Category";
 import loginAtom from "../../States/LoginAtom";
+import postSortAtom from "../../States/postSortAtom";
 
 export default function Posts() {
     const intl = useIntl()
     const [categoryId] = useRecoilState(CategoryAtom)
     const [isLogIn] = useRecoilState(loginAtom)
     const [currentPage, setCurrentPage] = useState(1)
-    const [sort, setSort] = useState("created_at")
+    const [sort, setSort] = useRecoilState(postSortAtom)
     const [tags, setTags] = useState([])
     const indexCategory = useCategories()
     const indexPosts = useIndexPosts({}, currentPage, categoryId, tags, sort)
