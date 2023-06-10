@@ -3,6 +3,7 @@ import {Outlet} from "react-router-dom";
 import Footer from "./Footer";
 import {Toaster} from "react-hot-toast";
 import LoginModal from "./LoginModal";
+import CheckLogin from "./CheckLogin";
 
 export default function Layout() {
     return (
@@ -14,6 +15,7 @@ export default function Layout() {
             </div>
             <Footer/>
             <Toaster/>
+            <CheckLogin/>
             <LoginModal/>
         </div>
     )

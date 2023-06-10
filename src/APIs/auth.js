@@ -13,12 +13,12 @@ import toast from "react-hot-toast";
 const axiosV1 = getAxios({}, 'v1')
 const axios = getAxios({})
 
-export function useIsLoggedIn() {
+export function useIsLoggedIn(options = {}) {
     const axiosPrivate = useAxiosPrivate()
     return useQuery(['is-logged-in'], async () => {
         await axiosPrivate.get('is-logged-in')
         return 'success'
-    })
+    }, {...options})
 }
 
 export function useCsrfToken() {
