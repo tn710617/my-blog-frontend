@@ -8,6 +8,7 @@ import TdComponent from "./TdComponent";
 import UlComponent from "./UlComponent";
 import PreComponent from "./PreComponent";
 import CodeComponent from "./CodeComponent";
+import ImgComponent from "./ImgComponent";
 
 export default function PostBody({content}) {
     return (
@@ -17,6 +18,7 @@ export default function PostBody({content}) {
             rehypePlugins={[rehypeRaw]}
             remarkPlugins={[remarkGfm]}
             components={{
+                img: ImgComponent,
                 pre: PreComponent,
                 ul: UlComponent,
                 th: ThComponent,
