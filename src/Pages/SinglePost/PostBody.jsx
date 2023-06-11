@@ -9,6 +9,7 @@ import UlComponent from "./UlComponent";
 import PreComponent from "./PreComponent";
 import CodeComponent from "./CodeComponent";
 import ImgComponent from "./ImgComponent";
+import AComponent from "./AComponent";
 
 export default function PostBody({content}) {
     return (
@@ -18,6 +19,7 @@ export default function PostBody({content}) {
             rehypePlugins={[rehypeRaw]}
             remarkPlugins={[remarkGfm]}
             components={{
+                a: AComponent,
                 img: ImgComponent,
                 pre: PreComponent,
                 ul: UlComponent,
