@@ -1,26 +1,23 @@
-import getAxios from "./axios";
 import {useMutation, useQuery} from "@tanstack/react-query";
 import queryString from "query-string";
 import {useIntl} from "react-intl";
-import useAxiosPrivate from "./axiosPrivate";
-
-const axios = getAxios({}, 'v1')
+import useAxios from "./useAxios";
 
 export function useDeletePost() {
-    const axiosPrivate = useAxiosPrivate()
+    const axios = useAxios()
     return useMutation({
         mutationFn: async (postId) => {
-            const res = await axiosPrivate.delete(`posts/${postId}`)
+            const res = await axios.delete(`posts/${postId}`)
             return res.data.data
         },
     })
 }
 
 export function useUpdatePost() {
-    const axiosPrivate = useAxiosPrivate()
+    const axios = useAxios()
     return useMutation({
         mutationFn: async (data) => {
-            const res = await axiosPrivate.put(`posts/${data.postId}`, data)
+            const res = await axios.put(`posts/${data.postId}`, data)
             return res.data.data
         },
     })
@@ -28,6 +25,7 @@ export function useUpdatePost() {
 
 export function useIndexPosts(options = {}, page = 1, categoryId = null, tagIds = [], sort = null, search = null) {
     const intl = useIntl()
+    const axios = useAxios()
     return useQuery(['posts', 'category', categoryId, 'tags', tagIds, 'sort', sort, 'page', page, 'search', search, 'locale', intl.locale], async () => {
         const queryObject = {
             category_id: categoryId,
@@ -48,6 +46,7 @@ export function useIndexPosts(options = {}, page = 1, categoryId = null, tagIds 
 
 export function useShowPost(id, options = {}) {
     const intl = useIntl()
+    const axios = useAxios()
     return useQuery(['posts', id, 'locale', intl.locale], async () => {
         const queryObject = {
             locale: intl.locale
@@ -61,9 +60,9 @@ export function useShowPost(id, options = {}) {
 }
 
 export function useStorePost() {
+    const axios = useAxios()
     return useMutation(async (data) => {
         const res = await axios.post('posts', data)
         return res.data.data
     })
 }
-

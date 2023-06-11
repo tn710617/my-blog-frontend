@@ -4,25 +4,36 @@ import {useRecoilState} from "recoil";
 import loginModalAtom from "../States/loginModalAtom";
 import {logoutInLocalStorage} from "../helpers";
 import loginAtom from "../States/LoginAtom";
+import {useNavigate} from "react-router-dom";
 
-const normalAxios = getAxios({}, 'v1')
+const version = process.env.REACT_APP_API_VERSION
+const normalAxios = getAxios({}, version)
 const axiosPrecognitive = getAxios({
     "precognitive": "true"
-}, 'v1')
+}, version)
 
-const useAxiosPrivate = (isPrecognitive = false) => {
+const useAxios = (isPrecognitive = false) => {
 
     const axios = isPrecognitive ? axiosPrecognitive : normalAxios;
+    const navigate = useNavigate()
     const [, setShowLoginModal] = useRecoilState(loginModalAtom)
     const [, setIsLoggedIn] = useRecoilState(loginAtom)
 
     useEffect(() => {
         const responseIntercept = axios.interceptors.response.use(response => response,
             async (error) => {
+                const prevRequest = error?.config;
+
                 if (error?.response?.status === 401) {
-                    setShowLoginModal(true)
+                    if (prevRequest.url !== 'is-logged-in') {
+                        setShowLoginModal(true)
+                    }
                     setIsLoggedIn(false)
                     logoutInLocalStorage()
+                }
+
+                if (error?.response?.status === 403) {
+                    navigate('/')
                 }
                 return Promise.reject(error)
             }
@@ -31,9 +42,9 @@ const useAxiosPrivate = (isPrecognitive = false) => {
         return () => {
             axios.interceptors.response.eject(responseIntercept);
         }
-    }, [axios, setShowLoginModal, setIsLoggedIn])
+    }, [axios, setShowLoginModal, setIsLoggedIn, navigate])
 
     return axios;
 }
 
-export default useAxiosPrivate;
+export default useAxios;

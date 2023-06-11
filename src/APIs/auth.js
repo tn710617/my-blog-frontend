@@ -1,27 +1,25 @@
-import getAxios from "./axios";
 import {useMutation, useQuery} from "@tanstack/react-query";
 import {ethers} from "ethers";
 import {useLocation} from "react-router-dom";
 import {isBrowser, isMobile} from "react-device-detect";
 import {getMetamaskDAppDeepLink, loginInLocalStorage, logoutInLocalStorage} from "../helpers";
 import {useRecoilState} from "recoil";
-import useAxiosPrivate from "./axiosPrivate";
+import getAxios from "./axios";
+import useAxios from "./useAxios";
 import {useIntl} from "react-intl";
 import LoginAtom from "../States/LoginAtom";
 import toast from "react-hot-toast";
 
-const axiosV1 = getAxios({}, 'v1')
-const axios = getAxios({})
-
 export function useIsLoggedIn(options = {}) {
-    const axiosPrivate = useAxiosPrivate()
+    const axios = useAxios()
     return useQuery(['is-logged-in'], async () => {
-        await axiosPrivate.get('is-logged-in')
+        await axios.get('is-logged-in')
         return 'success'
     }, {...options})
 }
 
 export function useCsrfToken() {
+    const axios = getAxios()
     return useMutation(async () => {
         const res = await axios.get('csrf-cookie')
         return res.data.data
@@ -30,9 +28,9 @@ export function useCsrfToken() {
 
 export function useLogout() {
     const [, setIsLoggedIn] = useRecoilState(LoginAtom)
-    const axiosPrivate = useAxiosPrivate()
+    const axios = useAxios()
     return useMutation(async () => {
-        const res = await axiosPrivate.post('logout')
+        const res = await axios.post('logout')
         return res.data.data
     }, {
         onSuccess: (data, variables, context) => {
@@ -47,6 +45,8 @@ export function useLoginWithMetaMask() {
     const intl = useIntl()
     const [, setIsLoggedIn] = useRecoilState(LoginAtom)
     const getCsrfToken = useCsrfToken()
+    const loginMessage = useLoginMessage()
+    const axios = useAxios()
     return useMutation({
         mutationFn: async () => {
             if (typeof window.ethereum === 'undefined') {
@@ -65,7 +65,7 @@ export function useLoginWithMetaMask() {
 
             const address = await signer.getAddress()
 
-            const message = await getLoginMessage(intl.locale)
+            const message = await loginMessage.mutateAsync(intl.locale)
 
             const signature = await signer.signMessage(message)
 
@@ -73,7 +73,7 @@ export function useLoginWithMetaMask() {
                 await getCsrfToken.mutateAsync()
             }
 
-            const res = await axiosV1.post('login/metamask', {
+            const res = await axios.post('login/metamask', {
                 signature: signature,
                 address: address
             })
@@ -94,11 +94,16 @@ export function useLoginWithMetaMask() {
     })
 }
 
-export async function getLoginMessage(locale) {
-    const res = await axiosV1.get('to-be-signed-message', {
-        params: {
-            locale: locale
+export function useLoginMessage() {
+    const axios = useAxios()
+    return useMutation({
+        mutationFn: async (locale) => {
+            const res = await axios.get('to-be-signed-message', {
+                params: {
+                    locale: locale
+                }
+            })
+            return res.data.data.to_be_signed_message
         }
     })
-    return res.data.data.to_be_signed_message
 }

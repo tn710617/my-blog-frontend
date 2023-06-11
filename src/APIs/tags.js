@@ -1,12 +1,11 @@
-import getAxios from "./axios";
 import {useQuery} from "@tanstack/react-query";
 import {useIntl} from "react-intl";
 import queryString from "query-string";
-
-const axios = getAxios({}, 'v1')
+import useAxios from "./useAxios";
 
 export function useIndexPopularTags(options = {}) {
     const intl = useIntl()
+    const axios = useAxios()
     return useQuery(['popular-tags', 'locale', intl.locale], async () => {
         const queryObject = {
             locale: intl.locale
@@ -21,6 +20,7 @@ export function useIndexPopularTags(options = {}) {
 
 export function useTags(options = {}) {
     const intl = useIntl()
+    const axios = useAxios()
     return useQuery(['tags', 'locale', intl.locale], async () => {
         const queryObject = {
             locale: intl.locale

@@ -1,12 +1,11 @@
-import getAxios from "./axios";
 import queryString from "query-string";
 import {useQuery} from "@tanstack/react-query";
 import {useIntl} from "react-intl";
-
-const axios = getAxios({}, 'v1')
+import useAxios from "./useAxios";
 
 export function useCategories(options = {}) {
     const intl = useIntl()
+    const axios = useAxios()
     return useQuery(['categories', 'locale', intl.locale], async () => {
         const queryObject = {
             locale: intl.locale,
