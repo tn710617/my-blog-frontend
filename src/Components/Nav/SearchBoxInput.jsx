@@ -36,7 +36,7 @@ export default function SearchBoxInput({showSearchResultDropdown, setShowSearchR
                     id={`${searchBoxInputIdPrefix}-search-box`}
                     type={'text'}
                     placeholder={intl.formatMessage({id: "nav.search_box.placeholder"})}
-                    className={"border-0 outline-0 w-full focus:text-black peer"}
+                    className={"border-0 outline-none w-full focus:text-black peer"}
                     onChange={handleSearchBoxInputChanged}
                     debounceTimeout={1000}
                     forceNotifyByEnter={true}
