@@ -25,3 +25,23 @@ export function getLocaleFromLocalStorage() {
 export function setLocaleInLocalStorage(locale) {
     localStorage.setItem('locale_learn_or_die', locale)
 }
+
+export function cachePostForm(form) {
+    localStorage.setItem('cached_post_form_learn_or_die', JSON.stringify(form))
+}
+
+export function clearCachedPostForm() {
+    if (localStorage.getItem('cached_post_form_learn_or_die') === null) {
+        return
+    }
+
+    localStorage.removeItem('cached_post_form_learn_or_die')
+}
+
+export function getCachedPostForm() {
+    if (localStorage.getItem('cached_post_form_learn_or_die') === null) {
+        return null
+    }
+
+    return JSON.parse(localStorage.getItem('cached_post_form_learn_or_die'))
+}

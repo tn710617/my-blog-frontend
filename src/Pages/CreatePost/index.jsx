@@ -19,9 +19,12 @@ import {useIntl} from "react-intl";
 import LocaleSelect from "../../Components/LocaleSelect";
 import CategorySelection from "../../Components/CategorySelection";
 import toast from "react-hot-toast";
+import {cachePostForm, clearCachedPostForm, getCachedPostForm} from "../../helpers";
 
 export default function CreatePost() {
-
+    const [isTagifyLoaded, setIsTagifyLoaded] = useState(false)
+    const [, setIsMarkdownLoaded] = useState(false)
+    const [isTagInputLoaded, setIsTagInputLoaded] = useState(false)
     const [showPostCreatedModal, setShowPostCreatedModal] = useState(false)
     const tagInputRef = useRef();
     const editorRef = useRef()
@@ -32,9 +35,11 @@ export default function CreatePost() {
         post_content: '',
         category_id: "2",
         is_public: true,
-        locale: "zh-TW"
+        locale: "zh-TW",
+        created_at: ""
     }
-    const [form, setForm] = useState(defaultForm)
+
+    const [form, setForm] = useState(getCachedPostForm() || defaultForm)
     const tags = useTags()
     const categories = useCategories()
     const storePost = useStorePost()
@@ -53,6 +58,7 @@ export default function CreatePost() {
 
     const handleStoreButtonSuccess = () => {
         toast.success(intl.formatMessage({id: 'toast.store_post.post_created'}))
+        clearCachedPostForm()
         navigate('/')
     }
 
@@ -92,23 +98,51 @@ export default function CreatePost() {
     }
 
     useEffect(() => {
-        let whitelist = []
+        cachePostForm(form)
+    }, [form])
 
+
+    useEffect(() => {
         if (tags.status === 'success') {
-            whitelist = tags.data.map((tag) => tag.tag_name)
+            const whitelist = tags.data.map((tag) => tag.tag_name)
+            const tagify = new Tagify(tagInputRef.current, {
+                whitelist: whitelist,
+                enforceWhitelist: true,
+                dropdown: {
+                    enabled: 1,
+                }
+            });
+
+            setIsTagifyLoaded(true)
+
+            return () => {
+                tagify.destroy()
+            }
+        }
+    }, [tags.status, tags.data]);
+
+    useEffect(() => {
+        if (tags.status === 'success' && isTagifyLoaded) {
+            const tagIdsArray = form.tag_ids
+            const tagNamesArray = tagIdsArray.map(tagId => {
+                const tagObjectsArray = tags.data
+                return tagObjectsArray.find(tagObject => tagObject.id === tagId).tag_name
+            })
+
+            const tagify = tagInputRef.current.__tagify
+            tagify.removeAllTags()
+            tagify.addTags(tagNamesArray)
+            setIsTagInputLoaded(true)
         }
 
-        const tagify = new Tagify(tagInputRef.current, {
-            whitelist: whitelist,
-            enforceWhitelist: true,
-            dropdown: {
-                enabled: 1,
-            }
-        });
-        return () => {
-            tagify.destroy();
-        };
-    }, [tags.status, tags.data]);
+    }, [tags.status, tags.data, isTagifyLoaded, setIsTagInputLoaded])
+
+    useEffect(() => {
+        if (isTagInputLoaded) {
+            editorRef.current.getInstance().setMarkdown(form.post_content)
+            setIsMarkdownLoaded(true)
+        }
+    }, [editorRef, isTagInputLoaded, setIsMarkdownLoaded])
 
     return (
         <div className={"m-4 flex justify-center lg:space-x-5"}>
