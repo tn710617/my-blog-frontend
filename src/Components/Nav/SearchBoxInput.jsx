@@ -9,7 +9,7 @@ export default function SearchBoxInput({showSearchResultDropdown, setShowSearchR
     const searchBoxInputIdPrefix = React.useId()
     const intl = useIntl()
     const [searchTerm, setSearchTerm] = React.useState("")
-    const indexPosts = useIndexPosts({}, 1, null, [], null, searchTerm)
+    const indexPosts = useIndexPosts({enabled: searchTerm.length !== 0}, 1, null, [], null, searchTerm)
     const searchBoxInputRef = React.useRef()
 
     const handleSearchBoxComponentInternallyClicked = (event) => {
