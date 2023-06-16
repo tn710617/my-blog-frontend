@@ -20,6 +20,7 @@ import LocaleSelect from "../../Components/LocaleSelect";
 import CategorySelection from "../../Components/CategorySelection";
 import toast from "react-hot-toast";
 import {cachePostForm, clearCachedPostForm, getCachedPostForm} from "../../helpers";
+import PublishMediumSelection from "../../Components/PublishMediumSelection";
 
 export default function CreatePost() {
     const [isTagifyLoaded, setIsTagifyLoaded] = useState(false)
@@ -35,6 +36,7 @@ export default function CreatePost() {
         post_content: '',
         category_id: "2",
         is_public: true,
+        should_publish_medium: false,
         locale: "zh-TW",
         created_at: ""
     }
@@ -159,7 +161,10 @@ export default function CreatePost() {
                     className={"flex flex-col gap-5 rounded-xl shadow-xl w-full m-auto bg-gray-50 px-4 py-7"}>
                     <PostTitleInput form={form} setForm={setForm} isValid={postTitleValid}
                                     setIsValid={setPostTitleValid}/>
-                    <CategorySelection form={form} setForm={setForm} categories={categories}/>
+                    <div className={"flex gap-2"}>
+                        <CategorySelection form={form} setForm={setForm} categories={categories}/>
+                        <PublishMediumSelection form={form} setForm={setForm}/>
+                    </div>
                     <div>
                         <input
                             ref={tagInputRef}

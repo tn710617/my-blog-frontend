@@ -6,6 +6,8 @@
   "store_post.save_button": "Save",
   "store_post.is_public.option.public": "Public",
   "store_post.is_public.option.private": "Private",
+  "store_post.should_publish_medium.option.yes": "Also post on Medium",
+  "store_post.should_publish_medium.option.no": "Do not post on Medium",
   "store_post.post_title.placeholder": "Post Title",
   "store_post.post_tags.placeholder": "Tags (5 at the most)",
   "store_post.post_created_modal.title": "Successfully created an article",

@@ -6,6 +6,8 @@
   "store_post.save_button": "儲存",
   "store_post.is_public.option.public": "公開",
   "store_post.is_public.option.private": "私人",
+  "store_post.should_publish_medium.option.yes": "同時發佈到 Medium",
+  "store_post.should_publish_medium.option.no": "不發佈到 Medium",
   "store_post.post_title.placeholder": "文章標題",
   "store_post.post_tags.placeholder": "標籤 (最多 5 個)",
   "store_post.post_created_modal.title": "成功建立文章",
