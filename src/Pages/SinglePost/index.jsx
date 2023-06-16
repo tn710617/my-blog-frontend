@@ -35,7 +35,7 @@ export default function SinglePost() {
 
     return (
         isSuccess &&
-        <div className={"m-4 flex lg:space-x-5"}>
+        <div className={"m-4 flex justify-between"}>
             <div className={"lg:block hidden lg:1/12 xl:w-1/6"}/>
             <div className={"flex flex-col gap-4 rounded-xl w-full 2xl:w-7/12 shadow-xl bg-gray-50 px-4 py-7"}>
                 <div className={"font-semibold text-4xl"}>{data.post_title}</div>
@@ -51,8 +51,7 @@ export default function SinglePost() {
                 <PostTags tags={data.tags}/>
                 <PostBody content={data.post_content}/>
             </div>
-            <div className={"justify-center lg:1/12 xl:w-1/6 lg:block my-auto hidden relative"}>
-            </div>
+            <div className={"lg:block hidden lg:1/12 xl:w-1/6"}/>
         </div>
     )
 }
