@@ -49,7 +49,7 @@ export default function Posts() {
                     {
                         indexCategory.isSuccess &&
                         <div
-                            className={"flex flex-row gap-1 justify-end items-center border border-0 border-black border-b-2 pl-8 mb-1"}>
+                            className={"flex flex-row gap-1 justify-end items-center border-0 border-black border-b-2 pl-8 mb-1"}>
                             <div className={"font-bold capitalize"}>
                                 {currentCategory.category_name}:
                             </div>
@@ -79,8 +79,8 @@ export default function Posts() {
             <div className={"relative md:w-[700px]] lg:w-[300px]"}>
                 <div className={"lg:fixed lg:top-30"}>
                     <div
-                        className={"md:w-[700px] lg:w-[300px] border border-2 rounded-xl border-green-500 p-4 bg-white shadow-lg"}>
-                        <h1 className={"text-center font-semibold text-lg pb-2 border border-black border-0 border-b-2 capitalize"}>
+                        className={"md:w-[700px] lg:w-[300px] border-2 rounded-xl border-green-500 p-4 bg-white shadow-lg"}>
+                        <h1 className={"text-center font-semibold text-lg pb-2 border-black border-0 border-b-2 capitalize"}>
                             learan or die
                         </h1>
                         <p className={"mt-4"}>
@@ -96,9 +96,9 @@ export default function Posts() {
                             </button>
                         }
                     </div>
-                    <div className={"md:w-[700px] lg:w-[300px] rounded-xl p-4 bg-white mt-5 shadow-lg"}>
+                    <div className={"md:w-[700px] lg:w-[300px] rounded-xl p-4 bg-white mt-5 shadow-lg lg:max-h-[585px] lg:overflow-y-auto lg:no-scrollbar"}>
                         <div
-                            className={"flex justify-center border border-black border-0 border-b-2 pb-2 items-center gap-1"}>
+                            className={"flex justify-center border-black border-0 border-b-2 pb-2 items-center gap-1"}>
                             <AiFillTags className={"text-xl"}/>
                             <h1 className={"font-semibold text-lg capitalize"}>
                                 {intl.formatMessage({id: "index_posts.popular_tags"})}
