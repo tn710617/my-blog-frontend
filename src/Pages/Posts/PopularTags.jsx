@@ -3,7 +3,7 @@ import {useTags} from "../../APIs/tags";
 
 const DISPLAY_POPULAR_TAGS = 10
 
-export default function PopularTags({tags, setTags}) {
+export default function PopularTags({tags, setTags, setCurrentPage}) {
     const indexTags = useTags()
     const [showMoreTags, setShowMoreTags] = React.useState(false)
 
@@ -35,6 +35,7 @@ export default function PopularTags({tags, setTags}) {
 
     const handleTagClick = (e) => {
         const id = e.target.value
+        setCurrentPage(1)
         if (isSelectedTag(id)) {
             setTags((preTags) => {
                 return preTags.filter(tagId => tagId !== id)

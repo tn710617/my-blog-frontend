@@ -96,7 +96,8 @@ export default function Posts() {
                             </button>
                         }
                     </div>
-                    <div className={"md:w-[700px] lg:w-[300px] rounded-xl p-4 bg-white mt-5 shadow-lg lg:max-h-[585px] lg:overflow-y-auto lg:no-scrollbar"}>
+                    <div
+                        className={"md:w-[700px] lg:w-[300px] rounded-xl p-4 bg-white mt-5 shadow-lg lg:max-h-[585px] lg:overflow-y-auto lg:no-scrollbar"}>
                         <div
                             className={"flex justify-center border-black border-0 border-b-2 pb-2 items-center gap-1"}>
                             <AiFillTags className={"text-xl"}/>
@@ -105,7 +106,7 @@ export default function Posts() {
                             </h1>
                         </div>
                         <div className={"mt-4"}>
-                            <PopularTags tags={tags} setTags={setTags}/>
+                            <PopularTags tags={tags} setTags={setTags} setCurrentPage={setCurrentPage}/>
                         </div>
                     </div>
                 </div>
