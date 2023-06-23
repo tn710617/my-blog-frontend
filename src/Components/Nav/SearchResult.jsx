@@ -1,6 +1,7 @@
 import React from "react";
 import CategoryIcon from "../CategoryIcon";
 import {useNavigate} from "react-router-dom";
+import removeMd from "remove-markdown";
 
 export default function SearchResult({searchedPosts, setShowSearchBoxComponent}) {
     const navigate = useNavigate()
@@ -29,7 +30,7 @@ export default function SearchResult({searchedPosts, setShowSearchBoxComponent})
                                 </div>
                             </div>
                             <div className={"text-sm text-gray-400 truncate"}>
-                                {post_content}
+                                {removeMd(post_content)}
                             </div>
                             <div id={id} onClick={handleSearchedPostClick}
                                  className={"after:absolute after:inset-0"}></div>
