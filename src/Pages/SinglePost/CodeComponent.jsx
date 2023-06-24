@@ -7,7 +7,7 @@ import mermaid from "mermaid"
 export default function CodeComponent({
                                           node,
                                           inline,
-                                          className = "text-blue-600 rounded font-semibold bg-blue-100 p-1",
+                                          className = "text-blue-600 rounded font-semibold bg-blue-100 p-0.5",
                                           children,
                                           ...props
                                       }) {
