@@ -10,8 +10,8 @@ export default function Footer()
                     © Copyright 2016-{new Date().getFullYear()}. All Rights Reserved.
                 </div>
                 <div className={"flex gap-3 text-2xl text-gray-300"}>
-                    <BsLinkedin className={"cursor-pointer"}/>
-                    <BsGithub className={"cursor-pointer"}/>
+                    <a href={"https://www.linkedin.com/in/ray-lee-developer/"}><BsLinkedin className={"cursor-pointer"}/></a>
+                    <a href={"https://github.com/tn710617"}><BsGithub className={"cursor-pointer"}/></a>
                 </div>
             </div>
         </footer>

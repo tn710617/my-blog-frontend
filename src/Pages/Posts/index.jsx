@@ -7,12 +7,13 @@ import PopularTags from "./PopularTags";
 import PostsInfo from "./PostsInfo";
 
 import {useRecoilState} from "recoil";
-import {useMemo, useState} from "react";
+import {useEffect, useMemo, useState} from "react";
 import {Link} from "react-router-dom";
 import {useIntl} from "react-intl";
 
 import {useCategories} from "../../APIs/categories";
 import {useIndexPosts} from "../../APIs/posts";
+import {useQueryClient} from "@tanstack/react-query";
 
 import CategoryAtom from "../../States/Category";
 import loginAtom from "../../States/LoginAtom";
@@ -27,6 +28,7 @@ export default function Posts() {
     const [tags, setTags] = useState([])
     const indexCategory = useCategories()
     const indexPosts = useIndexPosts({}, currentPage, categoryId, tags, sort)
+    const queryClient = useQueryClient()
     const currentCategory = useMemo(() => {
         if (indexCategory.status === 'success') {
             return indexCategory.data.find(({id}) => parseInt(id) === parseInt(categoryId))
@@ -39,6 +41,9 @@ export default function Posts() {
         }
     }, [indexPosts.status, indexPosts.data])
 
+    useEffect(() => {
+        queryClient.invalidateQueries(indexPosts.queryKey)
+    }, [isLogIn])
 
     return (
         <div

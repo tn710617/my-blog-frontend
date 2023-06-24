@@ -13,7 +13,7 @@ export default function CodeComponent({
                                       }) {
     useEffect(() => {
         mermaid.contentLoaded()
-    }, [])
+    }, [children])
 
     if (inline) {
         return <code className={className} {...props}>
@@ -25,7 +25,7 @@ export default function CodeComponent({
     const language = match ? match[1] : null
 
     if (language === "mermaid") {
-        return <div className={"mermaid rounded"}>{children[0]}</div>
+        return <div className={"mermaid"}>{children[0]}</div>
     }
 
     return (
