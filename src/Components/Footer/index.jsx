@@ -1,5 +1,6 @@
 import GitHubLinkComponent from "./GitHubLinkComponent";
 import LinkedInLinkComponent from "./LinkedInLinkComponent";
+import MediumLinkComponent from "./MediumLinkComponent";
 
 export default function Footer() {
     return (
@@ -12,6 +13,7 @@ export default function Footer() {
                 <div className={"flex gap-3 text-2xl text-gray-300"}>
                     <GitHubLinkComponent/>
                     <LinkedInLinkComponent/>
+                    <MediumLinkComponent/>
                 </div>
             </div>
         </footer>
