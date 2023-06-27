@@ -14,7 +14,7 @@ import AComponent from "./AComponent";
 export default function PostBody({content}) {
     return (
         <ReactMarkdown
-            className='post-markdown markdown'
+            className='markdown'
             linkTarget='_blank'
             rehypePlugins={[rehypeRaw]}
             remarkPlugins={[remarkGfm]}

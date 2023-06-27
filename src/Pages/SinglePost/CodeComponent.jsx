@@ -1,7 +1,6 @@
-import React, {useEffect} from "react";
+import React from "react";
 import {a11yDark} from 'react-syntax-highlighter/dist/cjs/styles/prism'
 import {Prism as SyntaxHighlighter} from 'react-syntax-highlighter'
-import mermaid from "mermaid"
 
 
 export default function CodeComponent({
@@ -11,9 +10,6 @@ export default function CodeComponent({
                                           children,
                                           ...props
                                       }) {
-    useEffect(() => {
-        mermaid.contentLoaded()
-    }, [children])
 
     if (inline) {
         return <code className={className} {...props}>
@@ -23,10 +19,6 @@ export default function CodeComponent({
 
     const match = /language-(\w+)/.exec(className || '')
     const language = match ? match[1] : null
-
-    if (language === "mermaid") {
-        return <div className={"mermaid"}>{children[0]}</div>
-    }
 
     return (
         <SyntaxHighlighter
