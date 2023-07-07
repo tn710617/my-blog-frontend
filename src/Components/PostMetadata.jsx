@@ -7,6 +7,7 @@ import {useNavigate} from "react-router-dom";
 import {useRecoilState} from "recoil";
 import categoryAtom from "../States/Category";
 import postSortAtom from "../States/postSortAtom";
+import {RiGitRepositoryPrivateLine} from "react-icons/ri";
 
 export default function PostMetadata({postData}) {
     const navigate = useNavigate()
@@ -49,6 +50,14 @@ export default function PostMetadata({postData}) {
                 <GrUpdate/>
                 <FormattedDate value={postData.updated_at} year={"numeric"} month={"long"} day={"numeric"}/>
             </button>
+            {
+                !postData.is_public &&
+                <>
+                    <span>•</span>
+                    <RiGitRepositoryPrivateLine className={"text-xl"}/>
+                </>
+            }
+
         </div>
 
     )
