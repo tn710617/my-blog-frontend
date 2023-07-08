@@ -7,41 +7,65 @@ export function getMetamaskDAppDeepLink(currentLocation) {
 }
 
 export function isLoginInLocalStorage() {
-    return !!localStorage.getItem('is_logged_in_learn_or_die')
+    return !!localStorage.getItem('learn_or_die_is_logged_in')
 }
 
 export function loginInLocalStorage() {
-    localStorage.setItem('is_logged_in_learn_or_die', true)
+    localStorage.setItem('learn_or_die_is_logged_in', true)
 }
 
 export function logoutInLocalStorage() {
-    localStorage.removeItem('is_logged_in_learn_or_die')
+    localStorage.removeItem('learn_or_die_is_logged_in')
 }
 
 export function getLocaleFromLocalStorage() {
-    return localStorage.getItem('locale_learn_or_die')
+    return localStorage.getItem('learn_or_die_locale')
 }
 
 export function setLocaleInLocalStorage(locale) {
-    localStorage.setItem('locale_learn_or_die', locale)
+    localStorage.setItem('learn_or_die_locale', locale)
 }
 
 export function cacheStorePostForm(form) {
-    localStorage.setItem('cached_post_form_learn_or_die', JSON.stringify(form))
+    localStorage.setItem('learn_or_die_cached_post_form', JSON.stringify(form))
 }
 
-export function clearCachedStorePostForm() {
-    if (localStorage.getItem('cached_post_form_learn_or_die') === null) {
+export function cacheEditPostForm(form, postId) {
+    localStorage.setItem(`learn_or_die_cached_edit_form_${postId}`, JSON.stringify(form))
+}
+
+export function clearCachedEditPostForm(postId) {
+    const cachedKey = `learn_or_die_cached_edit_form_${postId}`
+
+    if (localStorage.getItem(cachedKey) === null) {
         return
     }
 
-    localStorage.removeItem('cached_post_form_learn_or_die')
+    localStorage.removeItem(cachedKey)
 }
 
-export function getCachedStorePostForm() {
-    if (localStorage.getItem('cached_post_form_learn_or_die') === null) {
+export function clearCachedStorePostForm() {
+    if (localStorage.getItem('learn_or_die_cached_post_form') === null) {
+        return
+    }
+
+    localStorage.removeItem('learn_or_die_cached_post_form')
+}
+
+export function getCachedEditPostForm(postId) {
+    const cachedKey = `learn_or_die_cached_edit_form_${postId}`
+
+    if (localStorage.getItem(cachedKey) === null) {
         return null
     }
 
-    return JSON.parse(localStorage.getItem('cached_post_form_learn_or_die'))
+    return JSON.parse(localStorage.getItem(cachedKey))
+}
+
+export function getCachedStorePostForm() {
+    if (localStorage.getItem('learn_or_die_cached_post_form') === null) {
+        return null
+    }
+
+    return JSON.parse(localStorage.getItem('learn_or_die_cached_post_form'))
 }

@@ -20,6 +20,7 @@ import LocaleSelect from "../../Components/LocaleSelect";
 import CategorySelection from "../../Components/CategorySelection";
 import {useSearchParams} from "react-router-dom";
 import dayjs from "dayjs";
+import {cacheEditPostForm, clearCachedEditPostForm, getCachedEditPostForm} from "../../helpers";
 
 export default function EditPost() {
     const [isTagifyLoaded, setIsTagifyLoaded] = useState(false)
@@ -31,10 +32,12 @@ export default function EditPost() {
     const showPost = useShowPost(postId, {
         enabled: !!postId,
     })
+    const cachedPost = getCachedEditPostForm(postId)
     const updatePost = useUpdatePost()
     const tagInputRef = useRef();
     const editorRef = useRef()
     const [markdownContentLen, setMarkdownContentLen] = useState(0)
+    const [isFormLoaded, setIsFormLoaded] = useState(false)
 
     const defaultForm = {
         tag_ids: [],
@@ -57,7 +60,9 @@ export default function EditPost() {
         event.preventDefault()
         setIsTagInputLoaded(false)
         setIsMarkdownLoaded(false)
+        setIsFormLoaded(false)
         setResetNumber(prev => prev + 1)
+        clearCachedEditPostForm(postId)
     }
 
     const handleUpdateButtonClick = async (event) => {
@@ -122,7 +127,20 @@ export default function EditPost() {
     }, [tags.status, tags.data]);
 
     useEffect(() => {
-        function loadTagInput() {
+        function loadTagInputFromCachedPost() {
+            const tagIdsArray = cachedPost.tag_ids
+            const tagNamesArray = tagIdsArray.map(tagId => {
+                const tagObjectsArray = tags.data
+                return tagObjectsArray.find(tagObject => tagObject.id === tagId).tag_name
+            })
+
+            const tagify = tagInputRef.current.__tagify
+            tagify.removeAllTags()
+            tagify.addTags(tagNamesArray)
+            setIsTagInputLoaded(true)
+        }
+
+        function loadTagInputFromShowPost() {
             const tagify = tagInputRef.current.__tagify
             tagify.removeAllTags()
             tagify.addTags(showPost.data.tags.map(tag => tag.tag_name))
@@ -130,28 +148,43 @@ export default function EditPost() {
         }
 
         if (tags.status === 'success' && showPost.status === 'success' && isTagifyLoaded) {
-            loadTagInput()
+            if (cachedPost) {
+                loadTagInputFromCachedPost()
+                return
+            }
+
+            loadTagInputFromShowPost()
         }
 
     }, [tags.status, tags.data, showPost.data, resetNumber, isTagifyLoaded, setIsTagInputLoaded, showPost.status])
 
     useEffect(() => {
-        function loadMarkdownInput() {
+        function loadTagInputFromCachedPost() {
+            editorRef.current.getInstance().setMarkdown(cachedPost.post_content)
+            setIsMarkdownLoaded(true)
+        }
+
+        function loadMarkdownInputFromShowPost() {
             editorRef.current.getInstance().setMarkdown(showPost.data.post_content)
             setIsMarkdownLoaded(true)
         }
 
         if (showPost.status === 'success' && isTagInputLoaded) {
-            loadMarkdownInput()
+            if (cachedPost !== null) {
+                loadTagInputFromCachedPost()
+                return
+            }
+
+            loadMarkdownInputFromShowPost()
         }
     }, [showPost.status, editorRef, resetNumber, isTagInputLoaded, setIsMarkdownLoaded, showPost.data])
 
     useEffect(() => {
-        if (showPost.status === 'success' && isMarkdownLoaded) {
+        function setFormFromShowPost() {
             setForm(prev => {
                 return {
                     ...prev,
-                    tag_ids: showPost.data.tag_ids,
+                    tag_ids: showPost.data.tags.map(tag => tag.id),
                     post_title: showPost.data.post_title,
                     post_content: showPost.data.post_content,
                     category_id: showPost.data.category_id,
@@ -162,8 +195,39 @@ export default function EditPost() {
             })
         }
 
+        function setFormFromCachedPost() {
+            setForm(prev => {
+                return {
+                    ...prev,
+                    tag_ids: cachedPost.tag_ids,
+                    post_title: cachedPost.post_title,
+                    post_content: cachedPost.post_content,
+                    category_id: cachedPost.category_id,
+                    is_public: cachedPost.is_public,
+                    locale: cachedPost.locale,
+                    created_at: cachedPost.created_at,
+                }
+            })
+        }
+
+        if (showPost.status === 'success' && isMarkdownLoaded) {
+            if (cachedPost !== null) {
+                setFormFromCachedPost()
+                setIsFormLoaded(true)
+                return
+            }
+
+            setFormFromShowPost()
+            setIsFormLoaded(true)
+        }
+
     }, [showPost.status, showPost.data, resetNumber, isMarkdownLoaded])
 
+    useEffect(() => {
+        if (isFormLoaded) {
+            cacheEditPostForm(form, postId)
+        }
+    }, [form, postId, isFormLoaded])
 
     return (
         <div className={"m-4 flex justify-center lg:space-x-5"}>
