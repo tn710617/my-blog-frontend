@@ -96,7 +96,7 @@ export default function EditPost() {
 
 
     useEffect(() => {
-        if (tags.status === 'success') {
+        function initTagify() {
             const whitelist = tags.data.map((tag) => tag.tag_name)
             const tagify = new Tagify(tagInputRef.current, {
                 whitelist: whitelist,
@@ -108,26 +108,41 @@ export default function EditPost() {
 
             setIsTagifyLoaded(true)
 
+            return tagify
+        }
+
+        if (tags.status === 'success') {
+            const tagify = initTagify()
+
             return () => {
                 tagify.destroy()
             }
         }
+
     }, [tags.status, tags.data]);
 
     useEffect(() => {
-        if (tags.status === 'success' && showPost.status === 'success' && isTagifyLoaded) {
+        function loadTagInput() {
             const tagify = tagInputRef.current.__tagify
             tagify.removeAllTags()
             tagify.addTags(showPost.data.tags.map(tag => tag.tag_name))
             setIsTagInputLoaded(true)
         }
 
+        if (tags.status === 'success' && showPost.status === 'success' && isTagifyLoaded) {
+            loadTagInput()
+        }
+
     }, [tags.status, tags.data, showPost.data, resetNumber, isTagifyLoaded, setIsTagInputLoaded, showPost.status])
 
     useEffect(() => {
-        if (showPost.status === 'success' && isTagInputLoaded) {
+        function loadMarkdownInput() {
             editorRef.current.getInstance().setMarkdown(showPost.data.post_content)
             setIsMarkdownLoaded(true)
+        }
+
+        if (showPost.status === 'success' && isTagInputLoaded) {
+            loadMarkdownInput()
         }
     }, [showPost.status, editorRef, resetNumber, isTagInputLoaded, setIsMarkdownLoaded, showPost.data])
 

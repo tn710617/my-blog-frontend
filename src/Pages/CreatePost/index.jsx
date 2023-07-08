@@ -19,7 +19,7 @@ import {useIntl} from "react-intl";
 import LocaleSelect from "../../Components/LocaleSelect";
 import CategorySelection from "../../Components/CategorySelection";
 import toast from "react-hot-toast";
-import {cachePostForm, clearCachedPostForm, getCachedPostForm} from "../../helpers";
+import {cacheStorePostForm, clearCachedStorePostForm, getCachedStorePostForm} from "../../helpers";
 import PublishMediumSelection from "../../Components/PublishMediumSelection";
 
 export default function CreatePost() {
@@ -41,7 +41,7 @@ export default function CreatePost() {
         created_at: ""
     }
 
-    const [form, setForm] = useState(getCachedPostForm() || defaultForm)
+    const [form, setForm] = useState(getCachedStorePostForm() || defaultForm)
     const tags = useTags()
     const categories = useCategories()
     const storePost = useStorePost()
@@ -60,7 +60,7 @@ export default function CreatePost() {
 
     const handleStoreButtonSuccess = () => {
         toast.success(intl.formatMessage({id: 'toast.store_post.post_created'}))
-        clearCachedPostForm()
+        clearCachedStorePostForm()
         navigate('/')
     }
 
@@ -100,12 +100,12 @@ export default function CreatePost() {
     }
 
     useEffect(() => {
-        cachePostForm(form)
+        cacheStorePostForm(form)
     }, [form])
 
 
     useEffect(() => {
-        if (tags.status === 'success') {
+        function initTagify() {
             const whitelist = tags.data.map((tag) => tag.tag_name)
             const tagify = new Tagify(tagInputRef.current, {
                 whitelist: whitelist,
@@ -117,6 +117,12 @@ export default function CreatePost() {
 
             setIsTagifyLoaded(true)
 
+            return tagify
+        }
+
+        if (tags.status === 'success') {
+            const tagify = initTagify()
+
             return () => {
                 tagify.destroy()
             }
@@ -124,7 +130,7 @@ export default function CreatePost() {
     }, [tags.status, tags.data]);
 
     useEffect(() => {
-        if (tags.status === 'success' && isTagifyLoaded) {
+        function loadTagInput() {
             const tagIdsArray = form.tag_ids
             const tagNamesArray = tagIdsArray.map(tagId => {
                 const tagObjectsArray = tags.data
@@ -137,12 +143,20 @@ export default function CreatePost() {
             setIsTagInputLoaded(true)
         }
 
+        if (tags.status === 'success' && isTagifyLoaded) {
+            loadTagInput()
+        }
+
     }, [tags.status, tags.data, isTagifyLoaded, setIsTagInputLoaded])
 
     useEffect(() => {
-        if (isTagInputLoaded) {
+        function loadMarkdownInput() {
             editorRef.current.getInstance().setMarkdown(form.post_content)
             setIsMarkdownLoaded(true)
+        }
+
+        if (isTagInputLoaded) {
+            loadMarkdownInput()
         }
     }, [editorRef, isTagInputLoaded, setIsMarkdownLoaded])
 
