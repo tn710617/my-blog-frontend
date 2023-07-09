@@ -7,7 +7,7 @@ import {useEffect, useState} from "react";
 import {BsFillSunFill} from "react-icons/bs";
 import {useRecoilState} from "recoil";
 import searchBox from "../../States/SearchBox";
-import {Link} from "react-router-dom";
+import {Link, useLocation, useNavigate} from "react-router-dom";
 import {useCategories} from "../../APIs/categories";
 import Categories from "./Categories";
 import SearchBoxComponent from "./SearchBoxComponent";
@@ -26,11 +26,17 @@ export default function Nav() {
     const [locale, setLocale] = useRecoilState(localeAtom)
 
     const indexCategories = useCategories()
+    const navigate = useNavigate()
+    const location = useLocation()
 
     const handleLocaleSelectionChanged = (e) => {
         const locale = e.target.value
         setLocale(locale)
         setLocaleInLocalStorage(locale)
+
+        if (location.pathname.startsWith("/single-post")) {
+            navigate("/")
+        }
     }
 
     const handleSearchBoxButtonClick = () => {

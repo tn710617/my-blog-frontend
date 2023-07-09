@@ -9,10 +9,11 @@ import localeAtom from "../../States/localeAtom";
 import EditButton from "./EditButton";
 import isLoggedInAtom from "../../States/LoginAtom";
 import DeleteButton from "./DeleteButton";
+import {setLocaleInLocalStorage} from "../../helpers";
 
 export default function SinglePost() {
     const [isLoggedIn] = useRecoilState(isLoggedInAtom)
-    const [locale] = useRecoilState(localeAtom)
+    const [locale, setLocale] = useRecoilState(localeAtom)
     const [searchParams] = useSearchParams()
     const postId = searchParams.get("post_id")
     const navigate = useNavigate()
@@ -29,9 +30,10 @@ export default function SinglePost() {
 
     useLayoutEffect(() => {
         if (isSuccess && locale !== data.locale) {
-            navigate("/")
+            setLocale(data.locale)
+            setLocaleInLocalStorage(data.locale)
         }
-    }, [data, locale, isSuccess, navigate])
+    }, [data, locale, isSuccess, navigate, setLocale])
 
     return (
         isSuccess &&
