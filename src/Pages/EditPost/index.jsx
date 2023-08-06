@@ -47,7 +47,8 @@ export default function EditPost() {
         category_id: "",
         is_public: true,
         locale: "zh-TW",
-        created_at: ""
+        created_at: "",
+        should_publish_medium: false,
     }
 
     const [form, setForm] = useState(defaultForm)
