@@ -21,6 +21,7 @@ import CategorySelection from "../../Components/CategorySelection";
 import {useSearchParams} from "react-router-dom";
 import dayjs from "dayjs";
 import {cacheEditPostForm, clearCachedEditPostForm, getCachedEditPostForm} from "../../helpers";
+import PublishMediumSelection from "../../Components/PublishMediumSelection";
 
 export default function EditPost() {
     const [isTagifyLoaded, setIsTagifyLoaded] = useState(false)
@@ -98,7 +99,6 @@ export default function EditPost() {
 
         setForm({...form, tag_ids: tagIdsArray})
     }
-
 
     useEffect(() => {
         function initTagify() {
@@ -241,7 +241,10 @@ export default function EditPost() {
                     className={"flex flex-col gap-5 rounded-xl shadow-xl w-full m-auto bg-gray-50 px-4 py-7"}>
                     <PostTitleInput form={form} setForm={setForm} isValid={postTitleValid}
                                     setIsValid={setPostTitleValid}/>
-                    <CategorySelection form={form} setForm={setForm} categories={categories}/>
+                    <div className={"flex gap-2"}>
+                        <CategorySelection form={form} setForm={setForm} categories={categories}/>
+                        <PublishMediumSelection form={form} setForm={setForm}/>
+                    </div>
                     <div>
                         <input
                             ref={tagInputRef}
