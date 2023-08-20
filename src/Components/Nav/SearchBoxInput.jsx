@@ -32,7 +32,7 @@ export default function SearchBoxInput({showSearchResultDropdown, setShowSearchR
 
     return (
         <div
-            className={"relative top-20 m-auto w-80 sm:w-7/12 lg:w-1/2 xl:w-1/3 bg-white gap-2 items-center border-4 rounded-xl px-4 py-2 text-xl text-gray-400 border focus-within:border-indigo-200"}
+            className={"relative top-20 m-auto w-80 sm:w-7/12 lg:w-1/2 xl:w-1/3 bg-white gap-2 items-center border-4 rounded-xl px-4 py-2 text-xl text-gray-400 focus-within:border-indigo-200"}
             onClick={handleSearchBoxComponentInternallyClicked}>
             <div className={"flex items-center justify-start gap-2"}>
                 <label htmlFor={`${searchBoxInputIdPrefix}-search-box`}>
