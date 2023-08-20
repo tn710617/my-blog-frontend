@@ -15,8 +15,8 @@ import {useCategories} from "../../APIs/categories";
 import {useIndexPosts} from "../../APIs/posts";
 import {useQueryClient} from "@tanstack/react-query";
 
-import CategoryAtom from "../../States/Category";
-import loginAtom from "../../States/LoginAtom";
+import CategoryAtom from "../../States/category";
+import loginAtom from "../../States/loginAtom";
 import postSortAtom from "../../States/postSortAtom";
 
 export default function Posts() {

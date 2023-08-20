@@ -6,7 +6,6 @@ import {BsFillMoonStarsFill} from "react-icons/bs";
 import {useEffect, useState} from "react";
 import {BsFillSunFill} from "react-icons/bs";
 import {useRecoilState} from "recoil";
-import searchBox from "../../States/SearchBox";
 import {Link, useLocation, useNavigate} from "react-router-dom";
 import {useCategories} from "../../APIs/categories";
 import Categories from "./Categories";

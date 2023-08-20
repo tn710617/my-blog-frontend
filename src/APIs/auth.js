@@ -7,7 +7,7 @@ import {useRecoilState} from "recoil";
 import getAxios from "./axios";
 import useAxios from "./useAxios";
 import {useIntl} from "react-intl";
-import LoginAtom from "../States/LoginAtom";
+import LoginAtom from "../States/loginAtom";
 import toast from "react-hot-toast";
 
 export function useIsLoggedIn(options = {}) {

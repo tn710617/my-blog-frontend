@@ -1,7 +1,7 @@
 import React from "react";
 import CategoryIcon from "../CategoryIcon";
 import {useRecoilState} from "recoil";
-import categoryAtom from "../../States/Category";
+import categoryAtom from "../../States/category";
 import {useNavigate} from "react-router-dom";
 
 export default function MobileCategories({categories}) {

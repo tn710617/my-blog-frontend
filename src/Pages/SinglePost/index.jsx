@@ -7,7 +7,7 @@ import PostTags from "../../Components/PostTags";
 import {useRecoilState} from "recoil";
 import localeAtom from "../../States/localeAtom";
 import EditButton from "./EditButton";
-import isLoggedInAtom from "../../States/LoginAtom";
+import isLoggedInAtom from "../../States/loginAtom";
 import DeleteButton from "./DeleteButton";
 import {setLocaleInLocalStorage} from "../../helpers";
 

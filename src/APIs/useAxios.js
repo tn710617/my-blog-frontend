@@ -3,7 +3,7 @@ import {useEffect} from "react";
 import {useRecoilState} from "recoil";
 import loginModalAtom from "../States/loginModalAtom";
 import {logoutInLocalStorage} from "../helpers";
-import loginAtom from "../States/LoginAtom";
+import loginAtom from "../States/loginAtom";
 import {useNavigate} from "react-router-dom";
 
 const version = process.env.REACT_APP_API_VERSION

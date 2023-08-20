@@ -5,7 +5,7 @@ import {GrUpdate} from "react-icons/gr";
 import {FormattedDate} from "react-intl";
 import {useNavigate} from "react-router-dom";
 import {useRecoilState} from "recoil";
-import categoryAtom from "../States/Category";
+import categoryAtom from "../States/category";
 import postSortAtom from "../States/postSortAtom";
 import {RiGitRepositoryPrivateLine} from "react-icons/ri";
 
