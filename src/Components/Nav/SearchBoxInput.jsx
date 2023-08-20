@@ -12,6 +12,7 @@ export default function SearchBoxInput({showSearchResultDropdown, setShowSearchR
     const indexPosts = useIndexPosts({enabled: searchTerm.length !== 0}, 1, null, [], null, searchTerm)
     const searchBoxInputRef = React.useRef()
 
+    // click event would bubble up to the parent element, so we need to stop it, otherwise the input would be closed immediately
     const handleSearchBoxComponentInternallyClicked = (event) => {
         event.stopPropagation()
     }
