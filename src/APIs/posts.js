@@ -1,4 +1,4 @@
-import {useMutation, useQuery} from "@tanstack/react-query";
+import {useInfiniteQuery, useMutation, useQuery} from "@tanstack/react-query";
 import queryString from "query-string";
 import {useIntl} from "react-intl";
 import useAxios from "./useAxios";
@@ -23,6 +23,32 @@ export function useUpdatePost() {
     })
 }
 
+export function useInfinitePosts(options = {}, categoryId = null, tagIds = [], sort = null, search = null) {
+    const intl = useIntl()
+    const axios = useAxios()
+    return useInfiniteQuery(['posts', 'category', categoryId, 'tags', tagIds, 'sort', sort, 'search', search, 'locale', intl.locale], async ({pageParam = 0}) => {
+        const queryObject = {
+            category_id: categoryId,
+            tag_ids: tagIds,
+            sort: sort,
+            page: pageParam,
+            search: search,
+            locale: intl.locale
+        }
+        const query = queryString.stringify(queryObject, {arrayFormat: 'bracket'})
+        const res = await axios.get(`posts?${query}`)
+        return res.data
+    }, {
+        ...options,
+        getNextPageParam: (lastPage) => {
+            const currentPage = lastPage.meta.current_page
+            const nextPage = currentPage + 1
+            const finalPage = lastPage.meta.last_page
+            return nextPage > finalPage ? null : nextPage
+        }
+    })
+}
+
 export function useIndexPosts(options = {}, page = 1, categoryId = null, tagIds = [], sort = null, search = null) {
     const intl = useIntl()
     const axios = useAxios()
@@ -41,7 +67,6 @@ export function useIndexPosts(options = {}, page = 1, categoryId = null, tagIds 
     }, {
         ...options
     })
-
 }
 
 export function useShowPost(id, options = {}) {

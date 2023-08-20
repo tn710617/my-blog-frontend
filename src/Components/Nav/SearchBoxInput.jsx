@@ -2,14 +2,18 @@ import React, {useEffect} from "react";
 import {BsSearch} from "react-icons/bs";
 import SearchResultDropdown from "./SearchResultDropdown";
 import {DebounceInput} from "react-debounce-input";
-import {useIndexPosts} from "../../APIs/posts";
+import {useInfinitePosts} from "../../APIs/posts";
 import {useIntl} from "react-intl";
 
-export default function SearchBoxInput({showSearchResultDropdown, setShowSearchResultDropdown, setShowSearchBoxComponent}) {
+export default function SearchBoxInput({
+                                           showSearchResultDropdown,
+                                           setShowSearchResultDropdown,
+                                           setShowSearchBoxComponent
+                                       }) {
     const searchBoxInputIdPrefix = React.useId()
     const intl = useIntl()
     const [searchTerm, setSearchTerm] = React.useState("")
-    const indexPosts = useIndexPosts({enabled: searchTerm.length !== 0}, 1, null, [], null, searchTerm)
+    const infinitePosts = useInfinitePosts({enabled: searchTerm.length !== 0}, null, [], null, searchTerm)
     const searchBoxInputRef = React.useRef()
 
     // click event would bubble up to the parent element, so we need to stop it, otherwise the input would be closed immediately
@@ -50,8 +54,9 @@ export default function SearchBoxInput({showSearchResultDropdown, setShowSearchR
                 />
             </div>
             {
-                showSearchResultDropdown && indexPosts.isSuccess && searchTerm !== '' &&
-                <SearchResultDropdown searchTerm={searchTerm} searchedPosts={indexPosts.data.data} setShowSearchBoxComponent={setShowSearchBoxComponent}/>
+                showSearchResultDropdown && infinitePosts.isSuccess && searchTerm !== '' &&
+                <SearchResultDropdown searchTerm={searchTerm} searchedPosts={infinitePosts}
+                                      setShowSearchBoxComponent={setShowSearchBoxComponent}/>
             }
         </div>
     )

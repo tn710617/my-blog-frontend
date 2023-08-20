@@ -38,5 +38,8 @@
   "toast.login.unauthenticated": "哎呀, 您詠唱的咒語不對哦",
   "toast.login.metaMaskNotInstalled": "這道門上刻著 MetaMask, 似乎在暗示著什麼...",
   "toast.store_post.post_created": "成功建立文章",
-  "toast.delete_post.post_deleted": "成功刪除文章"
+  "toast.delete_post.post_deleted": "成功刪除文章",
+  "load_more_page_component.load_more_button": "取得更多結果",
+  "load_more_page_component.is_loading": "讀取中...",
+  "load_more_page_component.is_last_page": "已是最後一頁"
 }
