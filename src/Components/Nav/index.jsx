@@ -20,7 +20,7 @@ import localeAtom from "../../States/localeAtom";
 export default function Nav() {
     const [showMobileNavBar, setShowMobileNavBar] = useState(false)
     const [darkMode, setDarkMode] = useState(false)
-    const [showSearchBoxComponent, setShowSearchBoxComponent] = useRecoilState(searchBox)
+    const [showSearchBoxComponent, setShowSearchBoxComponent] = useState(false)
     const [showSearchResultDropdown, setShowSearchResultDropdown] = useState(false)
     const [locale, setLocale] = useRecoilState(localeAtom)
 
