@@ -23,7 +23,7 @@ import postTagsAtom from "../../States/postTags";
 
 export default function Posts() {
     const intl = useIntl()
-    const [categoryId, setCategory] = useRecoilState(CategoryAtom)
+    const [categoryId] = useRecoilState(CategoryAtom)
     const [isLogIn] = useRecoilState(loginAtom)
     const [currentPage, setCurrentPage] = useRecoilState(currentPageAtom)
     const [sort, setSort] = useRecoilState(postSortAtom)

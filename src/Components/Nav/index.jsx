@@ -87,10 +87,10 @@ export default function Nav() {
                             <option value={'zh-TW'}>中文</option>
                             <option value={'en'}>English</option>
                         </select>
-                        <button className={"cursor-pointer"} onClick={() => setDarkMode(!darkMode)}>
-                            {darkMode ? <BsFillSunFill className={"text-xl hover:text-yellow-400"}/> :
-                                <BsFillMoonStarsFill className={"text-lg hover:text-purple-600"}/>}
-                        </button>
+                        {/*<button className={"cursor-pointer"} onClick={() => setDarkMode(!darkMode)}>*/}
+                        {/*    {darkMode ? <BsFillSunFill className={"text-xl hover:text-yellow-400"}/> :*/}
+                        {/*        <BsFillMoonStarsFill className={"text-lg hover:text-purple-600"}/>}*/}
+                        {/*</button>*/}
                         <button className={"cursor-pointer"}
                                 onClick={handleSearchBoxButtonClick}>
                             <FcSearch className={"text-4xl p-2 rounded hover:bg-gray-200"}/>
