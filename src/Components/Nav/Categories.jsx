@@ -34,14 +34,13 @@ export default function Categories({categories}) {
                 {
                     isCurrentCategory ?
                         <span
-                            className={"absolute w-full h-1 rounded-full transition-all bg-blue-400 duration-300 top-12 opacity-0 top-11 opacity-100"}></span>
+                            className={"absolute w-full h-1 rounded-full transition-all bg-blue-400 duration-300 top-11 opacity-100"}></span>
                         :
                         <span
                             className={"absolute w-full h-1 rounded-full transition-all bg-blue-400 duration-300 top-12 opacity-0 group-hover:top-11 group-hover:opacity-100"}></span>
 
                 }
             </div>
-
         )
 
     }

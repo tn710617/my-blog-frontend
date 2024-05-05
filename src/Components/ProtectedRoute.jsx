@@ -4,7 +4,7 @@ import {useRecoilState} from "recoil";
 import loginAtom from "../States/loginAtom";
 import loginModalAtom from "../States/loginModalAtom";
 import {useEffect} from "react";
-import {isLoginInLocalStorage, loginInLocalStorage, logoutInLocalStorage} from "../helpers";
+import {isLoggedInInLocalStorage, loginInLocalStorage, logoutInLocalStorage} from "../helpers";
 import {useIsLoggedIn} from "../APIs/auth";
 
 export default function ProtectedRoute({redirectPath = '/'}) {
@@ -22,7 +22,7 @@ export default function ProtectedRoute({redirectPath = '/'}) {
     useIsLoggedIn({onSuccess: handleCheckIsLoggedInSuccess})
 
     useEffect(() => {
-        if (!isLoginInLocalStorage()) {
+        if (!isLoggedInInLocalStorage()) {
             navigate(redirectPath, {state: {from: location}, replace: true});
             setShowLoginModal(true)
         }

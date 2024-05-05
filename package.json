@@ -29,7 +29,7 @@
     "react-icons": "^4.6.0",
     "react-intl": "^6.4.2",
     "react-markdown": "^8.0.7",
-    "react-router-dom": "^6.4.3",
+    "react-router-dom": "^6.23.0",
     "react-scripts": "5.0.1",
     "react-syntax-highlighter": "^15.5.0",
     "react-tag-input": "^6.8.1",

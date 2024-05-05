@@ -6,12 +6,14 @@ import SinglePost from "./Pages/SinglePost";
 import CreatePost from "./Pages/CreatePost";
 import ProtectedRoute from "./Components/ProtectedRoute";
 import EditPost from "./Pages/EditPost";
+import About from "./Pages/About";
 
 function App() {
     return (
         <Routes>
             <Route element={<Layout/>}>
                 <Route path={"/"} element={<Posts/>}/>
+                <Route path={"/about"} element={<About/>}/>
                 <Route element={<ProtectedRoute/>}>
                     <Route path={"/create-post"} element={<CreatePost/>}/>
                     <Route path={"/edit-post"} element={<EditPost/>}/>

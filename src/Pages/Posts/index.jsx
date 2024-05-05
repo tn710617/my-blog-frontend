@@ -7,7 +7,7 @@ import PopularTags from "./PopularTags";
 import PostsInfo from "./PostsInfo";
 
 import {useRecoilState} from "recoil";
-import {useEffect, useMemo, useState} from "react";
+import {useEffect, useMemo} from "react";
 import {Link} from "react-router-dom";
 import {useIntl} from "react-intl";
 
@@ -18,14 +18,16 @@ import {useQueryClient} from "@tanstack/react-query";
 import CategoryAtom from "../../States/category";
 import loginAtom from "../../States/loginAtom";
 import postSortAtom from "../../States/postSortAtom";
+import currentPageAtom from "../../States/currentPageAtom";
+import postTagsAtom from "../../States/postTags";
 
 export default function Posts() {
     const intl = useIntl()
-    const [categoryId] = useRecoilState(CategoryAtom)
+    const [categoryId, setCategory] = useRecoilState(CategoryAtom)
     const [isLogIn] = useRecoilState(loginAtom)
-    const [currentPage, setCurrentPage] = useState(1)
+    const [currentPage, setCurrentPage] = useRecoilState(currentPageAtom)
     const [sort, setSort] = useRecoilState(postSortAtom)
-    const [tags, setTags] = useState([])
+    const [tags, setTags] = useRecoilState(postTagsAtom)
     const indexCategory = useCategories()
     const indexPosts = useIndexPosts({}, currentPage, categoryId, tags, sort)
     const queryClient = useQueryClient()
@@ -52,7 +54,7 @@ export default function Posts() {
                 <div className={"flex flex-col-reverse gap-4 md:flex-row md:gap-0 justify-between"}>
                     <PostsInfo setSort={setSort} sort={sort}/>
                     {
-                        indexCategory.isSuccess &&
+                        indexCategory.isSuccess && categoryId !== null &&
                         <div
                             className={"flex flex-row gap-1 justify-end items-center border-0 border-black border-b-2 pl-8 mb-1"}>
                             <div className={"font-bold capitalize"}>

@@ -6,7 +6,7 @@ export function getMetamaskDAppDeepLink(currentLocation) {
     return `https://metamask.app.link/dapp/${getCurrentUri(currentLocation)}`
 }
 
-export function isLoginInLocalStorage() {
+export function isLoggedInInLocalStorage() {
     return !!localStorage.getItem('learn_or_die_is_logged_in')
 }
 

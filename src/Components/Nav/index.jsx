@@ -12,10 +12,11 @@ import Categories from "./Categories";
 import SearchBoxComponent from "./SearchBoxComponent";
 import MobileCategories from "./MobileCategories";
 import {useLoginWithMetaMask, useLogout} from "../../APIs/auth";
-import {isLoginInLocalStorage, setLocaleInLocalStorage} from "../../helpers";
+import {isLoggedInInLocalStorage, setLocaleInLocalStorage} from "../../helpers";
 import LogoutButton from "./LogoutButton";
 import LoginButton from "./LoginButton";
 import localeAtom from "../../States/localeAtom";
+import AboutButton from "./AboutButton";
 
 export default function Nav() {
     const [showMobileNavBar, setShowMobileNavBar] = useState(false)
@@ -75,7 +76,10 @@ export default function Nav() {
                         indexCategories.isSuccess &&
                         <Categories categories={indexCategories.data}/>
                     }
+
+
                     <div className={"flex gap-5 items-center"}>
+                        <AboutButton/>
                         <select
                             value={locale}
                             onChange={handleLocaleSelectionChanged}
@@ -92,7 +96,7 @@ export default function Nav() {
                             <FcSearch className={"text-4xl p-2 rounded hover:bg-gray-200"}/>
                         </button>
                         {
-                            isLoginInLocalStorage() ?
+                            isLoggedInInLocalStorage() ?
                                 <LogoutButton onClick={async () => await logout.mutateAsync()}
                                               isLoading={logout.isLoading}/>
                                 :

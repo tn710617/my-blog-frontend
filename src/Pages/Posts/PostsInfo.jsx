@@ -27,7 +27,7 @@ export default function PostsInfo({setSort, sort}) {
             </button>
             {/*<div*/}
             {/*    className={"flex items-center m-0 gap-1 py-2 px-4 rounded-xl cursor-pointer hover:bg-white"}>*/}
-            {/*    <TfiCommentsSmiley/>*/}
+            {/*    /!*<TfiCommentsSmiley/>*!/*/}
             {/*    最多留言*/}
             {/*</div>*/}
         </div>
