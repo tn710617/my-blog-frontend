@@ -1,10 +1,12 @@
 import {useTags} from "../../APIs/tags";
-import React, {useMemo} from "react";
+import React, {useEffect, useMemo} from "react";
 import {useRecoilState} from "recoil";
 import postTagsAtom from "../../States/postTags";
 import currentPageAtom from "../../States/currentPageAtom";
 import categoryAtom from "../../States/category";
 import {useNavigate} from "react-router-dom";
+import loginAtom from "../../States/loginAtom";
+import {useQueryClient} from "@tanstack/react-query";
 
 
 const DISPLAY_POPULAR_TAGS = 20
@@ -15,6 +17,8 @@ export default function Skills() {
     const [, setTags] = useRecoilState(postTagsAtom)
     const [, setCurrentPage] = useRecoilState(currentPageAtom)
     const [, setCategory] = useRecoilState(categoryAtom)
+    const [isLoggedIn] = useRecoilState(loginAtom)
+    const queryClient = useQueryClient()
 
     const navigate = useNavigate()
 
@@ -32,6 +36,9 @@ export default function Skills() {
         }
     }, [showMoreTags, indexTags.status, indexTags.data, popularTags])
 
+    useEffect(() => {
+        queryClient.invalidateQueries(indexTags.queryKey)
+    }, [isLoggedIn]);
 
     const handleTagClick = (e) => {
         const id = e.target.value

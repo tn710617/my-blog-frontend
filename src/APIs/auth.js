@@ -12,6 +12,7 @@ import toast from "react-hot-toast";
 
 export function useIsLoggedIn(options = {}) {
     const axios = useAxios()
+
     return useQuery(['is-logged-in'], async () => {
         await axios.get('is-logged-in')
         return 'success'

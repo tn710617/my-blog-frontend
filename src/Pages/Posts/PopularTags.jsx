@@ -1,11 +1,16 @@
-import React, {useMemo} from "react";
+import React, {useEffect, useMemo} from "react";
 import {useTags} from "../../APIs/tags";
+import loginAtom from "../../States/loginAtom";
+import {useRecoilState} from "recoil";
+import {useQueryClient} from "@tanstack/react-query";
 
 const DISPLAY_POPULAR_TAGS = 10
 
 export default function PopularTags({tags, setTags, setCurrentPage}) {
     const indexTags = useTags()
     const [showMoreTags, setShowMoreTags] = React.useState(false)
+    const [isLoggedIn] = useRecoilState(loginAtom)
+    const queryClient = useQueryClient()
 
     const popularTags = useMemo(() => {
         if (indexTags.status === 'success')
@@ -46,6 +51,10 @@ export default function PopularTags({tags, setTags, setCurrentPage}) {
             })
         }
     }
+
+    useEffect(() => {
+        queryClient.invalidateQueries(indexTags.queryKey)
+    }, [indexTags.queryKey, isLoggedIn, queryClient]);
 
     return (
         <div className={"flex flex-wrap gap-2"}>
