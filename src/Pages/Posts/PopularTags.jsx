@@ -12,23 +12,42 @@ export default function PopularTags({tags, setTags, setCurrentPage}) {
     const [isLoggedIn] = useRecoilState(loginAtom)
     const queryClient = useQueryClient()
 
+    const isSelectedTag = (id) => {
+        return tags.includes(id.toString())
+    }
+    const moveItemsToFirst = (array, condition) => {
+        const matchedItems = [];
+        const remainingItems = [];
+
+        // Separate items matching the condition from the rest
+        array.forEach(item => {
+            if (condition(item.id)) {
+                matchedItems.push(item);
+            } else {
+                remainingItems.push(item);
+            }
+        });
+
+        // Concatenate matched items with remaining items
+        return matchedItems.concat(remainingItems);
+    }
+
     const popularTags = useMemo(() => {
-        if (indexTags.status === 'success')
-            return indexTags.data.slice(0, DISPLAY_POPULAR_TAGS)
-    }, [indexTags.status, indexTags.data])
+        if (indexTags.status === 'success') {
+            const popularTags = indexTags.data.slice(0, DISPLAY_POPULAR_TAGS)
+            return moveItemsToFirst(popularTags, isSelectedTag)
+        }
+    }, [indexTags.status, indexTags.data, tags])
 
     const displayedTags = useMemo(() => {
         if (indexTags.status === 'success') {
             if (showMoreTags)
-                return indexTags.data
+                return moveItemsToFirst(indexTags.data, isSelectedTag)
             else
                 return popularTags
         }
     }, [showMoreTags, indexTags.status, indexTags.data, popularTags])
 
-    const isSelectedTag = (id) => {
-        return tags.includes(id.toString())
-    }
 
     const getTagClass = (id) => {
         const defaultClass = "py-1 px-3 border border-2 border-blue-400 rounded-2xl text-xs font-semibold bg-slate-200 transition-colors duration-300 cursor-pointer"
