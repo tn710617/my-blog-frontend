@@ -1,5 +1,5 @@
 import {useIntl} from "react-intl";
-import avatar from "./avatar.png"
+import avatar from "./avatar-compressed.png"
 
 export default function Title() {
     const intl = useIntl()
