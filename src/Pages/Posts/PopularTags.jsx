@@ -46,7 +46,7 @@ export default function PopularTags({tags, setTags, setCurrentPage}) {
             else
                 return popularTags
         }
-    }, [showMoreTags, indexTags.status, indexTags.data, popularTags])
+    }, [showMoreTags, indexTags.status, indexTags.data, popularTags, tags])
 
 
     const getTagClass = (id) => {
