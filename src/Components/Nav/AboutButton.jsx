@@ -20,7 +20,7 @@ export default function AboutButton({onClick, isLoading}) {
     }
     return (
         <button onClick={handleOnClick}>
-            <span className={"text-lg"}>{intl.formatMessage({id: "nav.about_me_button"})}</span>
+            <span className={"text-sm sm:text-xl"}>{intl.formatMessage({id: "nav.about_me_button"})}</span>
         </button>
     )
 }

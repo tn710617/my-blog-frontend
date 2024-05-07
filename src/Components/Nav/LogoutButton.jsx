@@ -13,7 +13,7 @@ export default function LogoutButton({onClick, isLoading}) {
                     ? <BiLogOut className={"text-xl animate-spin"}/>
                     : <BiLogOut className={"text-xl"}/>
             }
-            <span className={"text-lg"}>{intl.formatMessage({id: "nav.logout_button"})}</span>
+            <span className={"text-sm sm:text-xl"}>{intl.formatMessage({id: "nav.logout_button"})}</span>
 
         </button>
 

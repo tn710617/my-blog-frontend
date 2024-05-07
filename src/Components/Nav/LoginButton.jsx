@@ -14,7 +14,7 @@ export default function LoginButton({onClick, isLoading}) {
                     : <BiLogInCircle className={"text-xl"}/>
 
             }
-            <span className={"text-lg"}>{intl.formatMessage({id: "nav.login_button"})}</span>
+            <span className={"text-sm sm:text-lg"}>{intl.formatMessage({id: "nav.login_button"})}</span>
         </button>
     )
 }

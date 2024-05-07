@@ -83,7 +83,7 @@ export default function Nav() {
                         <select
                             value={locale}
                             onChange={handleLocaleSelectionChanged}
-                            className={"bg-gray-100 outline-0 appearance-none"}>
+                            className={"bg-gray-100 outline-0 appearance-none text-sm sm:text-xl"}>
                             <option value={'zh-TW'}>中文</option>
                             <option value={'en'}>English</option>
                         </select>
