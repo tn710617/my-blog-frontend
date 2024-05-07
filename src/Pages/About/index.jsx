@@ -16,7 +16,7 @@ export default function About() {
         <div className={"m-4 flex justify-between"}>
             <div className={"lg:block hidden lg:w-1/12 xl:w-1/6"}/>
             <div
-                className={"flex flex-col gap-8 rounded-xl px-12 lg:w-10/12 shadow-xl bg-gray-50 py-7"}>
+                className={"flex flex-col w-full gap-8 rounded-xl px-12 lg:w-10/12 shadow-xl bg-gray-50 py-7"}>
                 <div>
                     <Title/>
                 </div>

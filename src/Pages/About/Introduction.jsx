@@ -3,7 +3,7 @@ import {useState} from "react";
 
 export default function Introduction() {
     const intl = useIntl()
-    const [showAboutIntro, setShowAboutIntro] = useState(false)
+    const [showAboutIntro, setShowAboutIntro] = useState(true)
     return (
         <>
             <div className={"w-full justify-start flex items-center gap-2"}>
