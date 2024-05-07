@@ -5,7 +5,6 @@ import DisplayOrHideButton from "../../Components/DisplayOrHideButton";
 import {v4 as uuidv4} from "uuid";
 
 export default function MonthlyPostHistory({monthNumeric, monthObj}) {
-    console.log(monthObj)
     const [showSection, setShowSection] = useState(false)
     const intl = useIntl()
     return (

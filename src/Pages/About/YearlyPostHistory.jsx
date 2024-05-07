@@ -7,7 +7,6 @@ import {v4 as uuidv4} from "uuid";
 export default function YearlyPostHistory({year, yearObj}) {
     const [showSection, setShowSection] = useState(false)
     const intl = useIntl()
-    console.log(yearObj)
 
     return (
         <>
