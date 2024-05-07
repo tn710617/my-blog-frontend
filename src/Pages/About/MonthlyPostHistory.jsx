@@ -13,10 +13,10 @@ export default function MonthlyPostHistory({monthNumeric, monthObj}) {
                 <div className={"text-xl font-bold"}>{intl.formatMessage({id: monthObj.month_name})} (<span className={"text-base text-gray-500"}>{intl.formatMessage({id: "article_count"}, {value: monthObj.article_count})}</span>)</div>
                 <DisplayOrHideButton showSection={showSection} setShowSection={setShowSection}/>
             </div>
-            <div className={"mt-3"}>
+            <div className={"mt-5"}>
                 {
                     showSection &&
-                    <div className={"flex gap-x-8 flex-wrap justify-evenly"}>
+                    <div className={"flex gap-x-8 flex-wrap justify-start"}>
                         {
                             Object.entries(monthObj.posts).map(([key, post]) => (
                                 <SinglePostTimeline key={uuidv4()} post={post}/>
