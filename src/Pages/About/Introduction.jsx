@@ -11,8 +11,14 @@ export default function Introduction() {
                     {intl.formatMessage({id: "about.intro_title"})}
                 </div>
                 <div className={"text-sm text-gray-400 cursor-pointer"}
-                     onClick={() => setShowAboutIntro((preState) => !preState)}>({intl.formatMessage({id: "about.display_or_hide_button"})})
-                </div>
+                     onClick={() => setShowAboutIntro((preState) => !preState)}>(
+                    {
+                        showAboutIntro && intl.formatMessage({id: "about.hide_section_button"})
+                    }
+                    {
+                        !showAboutIntro && intl.formatMessage({id: "about.display_section_button"})
+                    }
+                )</div>
             </div>
             {
                 showAboutIntro &&

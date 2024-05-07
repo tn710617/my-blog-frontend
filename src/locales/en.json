@@ -45,6 +45,8 @@
   "load_more_page_component.is_last_page": "No more articles",
   "about.name": "Ray Lee",
   "about.display_or_hide_button": "Display/Hide",
+  "about.display_section_button": "Display",
+  "about.hide_section_button": "Hide",
   "about.job_title": "Senior Full Stack Developer",
   "about.intro_title": "About Me",
   "about.intro_1_title": "I am a senior full stack developer, with a wide range of backend skills, and can be effective in any position",

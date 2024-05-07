@@ -13,8 +13,14 @@ export default function SkillSection() {
                     {intl.formatMessage({id: "about.skill"})}
                 </div>
                 <div className={"text-sm text-gray-400 cursor-pointer"}
-                     onClick={() => setShowSkillSection((preState) => !preState)}>({intl.formatMessage({id: "about.display_or_hide_button"})})
-                </div>
+                     onClick={() => setShowSkillSection((preState) => !preState)}>(
+                    {
+                        showSkillSection && intl.formatMessage({id: "about.hide_section_button"})
+                    }
+                    {
+                        !showSkillSection && intl.formatMessage({id: "about.display_section_button"})
+                    }
+                )</div>
 
             </div>
             {

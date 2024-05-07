@@ -25,8 +25,14 @@ export default function WorkExperienceSection() {
                     {intl.formatMessage({id: "about.work_experience_title"})}
                 </div>
                 <div className={"text-sm text-gray-400 cursor-pointer"}
-                     onClick={() => setShowWorkExperiencesSection((preState) => !preState)}>({intl.formatMessage({id: "about.display_or_hide_button"})})
-                </div>
+                     onClick={() => setShowWorkExperiencesSection((preState) => !preState)}>(
+                    {
+                        showWorkExperiencesSection && intl.formatMessage({id: "about.hide_section_button"})
+                    }
+                    {
+                        !showWorkExperiencesSection && intl.formatMessage({id: "about.display_section_button"})
+                    }
+                )</div>
             </div>
             {
                 showWorkExperiencesSection &&
