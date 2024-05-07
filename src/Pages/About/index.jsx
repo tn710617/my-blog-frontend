@@ -2,7 +2,7 @@ import Title from "./Title";
 import Introduction from "./Introduction";
 import SkillSection from "./SkillSection";
 import WorkExperienceSection from "./WorkExperienceSection";
-import {useEffect} from "react";
+import {useEffect, useState} from "react";
 import categoryAtom from "../../States/category";
 import {useRecoilState} from "recoil";
 

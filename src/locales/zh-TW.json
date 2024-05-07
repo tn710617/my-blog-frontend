@@ -46,6 +46,7 @@
   "about.name": "李宗叡",
   "about.job_title": "資深全端工程師",
   "about.intro_title": "關於我",
+  "about.display_or_hide_button": "顯示/隱藏",
   "about.intro_1_title": "我是守備範圍極廣的後端工程師，在任何位置都能有即戰力",
   "about.intro_1_description": "包含但不限於 機器建置，環境部署，開發，資料庫架設，CI/CD 管道建立，資料庫維護，雲端服務，都有豐富實戰經驗。",
   "about.intro_2_title": "專注於後端，但不侷限於後端",

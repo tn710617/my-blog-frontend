@@ -50,7 +50,7 @@ export default function Skills() {
 
     return (
         indexTags.isSuccess &&
-        <div className={"rounded-xl border p-4 bg-white mt-5 shadow-lg"}>
+        <div className={"rounded-xl border p-4 bg-white shadow-lg"}>
             <div className={"flex flex-wrap gap-2"}>
                 {
                     indexTags.isSuccess &&

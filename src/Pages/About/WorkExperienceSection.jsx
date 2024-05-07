@@ -7,6 +7,7 @@ import {useEffect, useState} from "react";
 export default function WorkExperienceSection() {
     const intl = useIntl()
     const [workExperiences, setWorkExperiences] = useState(() => getWorkExperiencesZhTw());
+    const [showWorkExperiencesSection, setShowWorkExperiencesSection] = useState(false)
 
     useEffect(() => {
         if (intl.locale === "en") {
@@ -19,22 +20,30 @@ export default function WorkExperienceSection() {
 
     return (
         <div className={"flex flex-col"}>
-            {/* work experience title */}
-            <div className={"font-bold text-3xl"}>
-                {intl.formatMessage({id: "about.work_experience_title"})}
+            <div className={"flex items-center gap-2"}>
+                <div className={"font-bold text-3xl"}>
+                    {intl.formatMessage({id: "about.work_experience_title"})}
+                </div>
+                <div className={"text-sm text-gray-400 cursor-pointer"}
+                     onClick={() => setShowWorkExperiencesSection((preState) => !preState)}>({intl.formatMessage({id: "about.display_or_hide_button"})})
+                </div>
             </div>
-            <div className={"flex flex-col gap-4"}>
-                {
-                    workExperiences.map((workExperience, index) => (
-                        <SingleWorkExperience key={index}
-                                              jobTitle={workExperience.work_experience_title}
-                                              companyName={workExperience.work_company_name}
-                                              workExperienceDescription={workExperience.work_experience_description}
-                                              companyLogo={workExperience.work_company_logo}
-                        />
-                    ))
-                }
-            </div>
+            {
+                showWorkExperiencesSection &&
+                <div className={"flex flex-col gap-4"}>
+                    {
+                        workExperiences.map((workExperience, index) => (
+                            <SingleWorkExperience key={index}
+                                                  jobTitle={workExperience.work_experience_title}
+                                                  companyName={workExperience.work_company_name}
+                                                  workExperienceDescription={workExperience.work_experience_description}
+                                                  companyLogo={workExperience.work_company_logo}
+                            />
+                        ))
+                    }
+                </div>
+
+            }
 
         </div>
     )
