@@ -2,9 +2,10 @@ import Title from "./Title";
 import Introduction from "./Introduction";
 import SkillSection from "./SkillSection";
 import WorkExperienceSection from "./WorkExperienceSection";
-import {useEffect, useState} from "react";
+import {useEffect} from "react";
 import categoryAtom from "../../States/category";
 import {useRecoilState} from "recoil";
+import PostsTimeline from "./PostsTimeline";
 
 export default function About() {
     const [, setCategory] = useRecoilState(categoryAtom)
@@ -28,6 +29,9 @@ export default function About() {
                 </div>
                 <div>
                     <WorkExperienceSection/>
+                </div>
+                <div>
+                    <PostsTimeline/>
                 </div>
 
             </div>

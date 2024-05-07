@@ -67,5 +67,19 @@
   "about.intro_8_description": "share knowledge to make it more solid. I run my own Blog to share technical articles and also share technical articles on Medium.",
   "about.skill": "Skills",
   "about.skill_description": "The skill description is a bit abstract. You can understand my skills better through the articles I have written.",
-  "about.work_experience_title": "Work Experience"
+  "about.work_experience_title": "Work Experience",
+  "about.posts_history": "Article History",
+  "article_count": "Total {value} articles",
+  "January": "January",
+  "February": "February",
+  "March": "March",
+  "April": "April",
+  "May": "May",
+  "June": "June",
+  "July": "July",
+  "August": "August",
+  "September": "September",
+  "October": "October",
+  "November": "November",
+  "December": "December"
 }

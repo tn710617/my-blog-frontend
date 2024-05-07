@@ -3,6 +3,21 @@ import queryString from "query-string";
 import {useIntl} from "react-intl";
 import useAxios from "./useAxios";
 
+export function useIndexGroupsPosts(options = {}) {
+    const intl = useIntl()
+    const axios = useAxios()
+    return useQuery(['grouped-posts', 'locale', intl.locale], async () => {
+        const queryObject = {
+            locale: intl.locale
+        }
+        const query = queryString.stringify(queryObject, {arrayFormat: 'bracket'})
+        const res = await axios.get(`grouped-posts?${query}`)
+        return res.data.data
+    }, {
+        ...options
+    })
+}
+
 export function useDeletePost() {
     const axios = useAxios()
     return useMutation({

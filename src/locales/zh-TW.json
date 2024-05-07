@@ -67,5 +67,19 @@
   "about.intro_8_description": "分享除了回饋，也讓習得的知識更加扎實。我經營自己的 Blog，分享技術文章，也會在 Medium 上分享技術文章。",
   "about.skill": "技能",
   "about.skill_description": "技能用說的有點抽象，透過寫過的文章，可以更了解我的技能。",
-  "about.work_experience_title": "工作經驗"
+  "about.work_experience_title": "工作經驗",
+  "about.posts_history": "文章歷史",
+  "article_count": "共 {value} 篇文章",
+  "January": "一月",
+  "February": "二月",
+  "March": "三月",
+  "April": "四月",
+  "May": "五月",
+  "June": "六月",
+  "July": "七月",
+  "August": "八月",
+  "September": "九月",
+  "October": "十月",
+  "November": "十一月",
+  "December": "十二月"
 }

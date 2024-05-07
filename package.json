@@ -37,6 +37,7 @@
     "rehype-raw": "^6.1.1",
     "remark-gfm": "^3.0.1",
     "remove-markdown": "^0.5.0",
+    "uuid": "^9.0.1",
     "web-vitals": "^2.1.4"
   },
   "scripts": {
