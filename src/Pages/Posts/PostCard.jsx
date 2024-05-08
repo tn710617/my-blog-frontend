@@ -17,7 +17,7 @@ export default function PostCard({post}) {
         <div className={"mt-6 p-6 flex flex-col gap-2 rounded-xl bg-white shadow-xl relative"}>
             <div className={"cursor-pointer group"}>
                 <div
-                    className={"font-bold text-xl mb-2 border border-0 border-b-2 border-b-transparent group-hover:border-blue-400"}>{post_title}
+                    className={"font-bold text-xl mb-2 border-0 border-b-2 border-b-transparent group-hover:border-blue-400"}>{post_title}
                 </div>
                 <p className={"text-gray-400 group-hover:text-gray-500"}>{lodash.truncate(removeMd(post_content), {
                     length: 200,
