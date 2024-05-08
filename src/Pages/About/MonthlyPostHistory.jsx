@@ -16,7 +16,7 @@ export default function MonthlyPostHistory({monthNumeric, monthObj}) {
             <div className={"mt-5"}>
                 {
                     showSection &&
-                    <div className={"flex gap-x-8 flex-wrap justify-start"}>
+                    <div className={"flex flex-wrap gap-x-8 justify-start"}>
                         {
                             Object.entries(monthObj.posts).map(([key, post]) => (
                                 <SinglePostTimeline key={uuidv4()} post={post}/>
