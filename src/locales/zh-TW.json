@@ -69,7 +69,7 @@
   "about.skill_description": "技能用說的有點抽象，透過寫過的文章，可以更了解我的技能。",
   "about.work_experience_title": "工作經驗",
   "about.posts_history": "文章歷史",
-  "article_count": "共 {value} 篇文章",
+  "article_count": "{value} 篇文章",
   "January": "一月",
   "February": "二月",
   "March": "三月",

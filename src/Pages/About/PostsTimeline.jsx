@@ -10,7 +10,6 @@ export default function PostsTimeline() {
     const [showSection, setShowSection] = useState(false)
     const intl = useIntl()
     const indexGroupedPosts = useIndexGroupsPosts({})
-    console.log(indexGroupedPosts.data)
 
     return (
         <>
@@ -23,7 +22,7 @@ export default function PostsTimeline() {
                 <div className={"mt-3 ml-4"}>
                     {
                         indexGroupedPosts.isSuccess &&
-                        Object.entries(indexGroupedPosts.data).map(([year, yearObj]) => (
+                        Object.entries(indexGroupedPosts.data).sort(([keyA], [keyB]) => keyB.localeCompare(keyA)).map(([year, yearObj]) => (
                             <YearlyPostHistory key={uuidv4()} year={year} yearObj={yearObj}/>
                         ))
                     }

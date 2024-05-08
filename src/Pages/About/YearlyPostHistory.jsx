@@ -19,7 +19,7 @@ export default function YearlyPostHistory({year, yearObj}) {
                 showSection &&
                 <div className={"mt-3"}>
                     {
-                        Object.entries(yearObj.months).map(([monthNumeric, monthObj]) => (
+                        Object.entries(yearObj.months).sort(([keyA], [keyB]) => keyB.localeCompare(keyA)).map(([monthNumeric, monthObj]) => (
                             <MonthlyPostHistory monthNumeric={monthNumeric} monthObj={monthObj} key={uuidv4()}/>
                         ))
                     }
