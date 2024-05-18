@@ -1,4 +1,4 @@
-import logo from "../../Images/favicon-compressed.png"
+import logo from "../../Images/favicon-2.png"
 import {FcSearch} from "react-icons/fc";
 import {AiOutlineMenu} from "react-icons/ai";
 import {AiOutlineClose} from "react-icons/ai";
@@ -68,7 +68,7 @@ export default function Nav() {
                         {showMobileNavBar ? <AiOutlineClose/> : <AiOutlineMenu/>}
                     </button>
                     <div className={"hidden md:flex gap-2 items-center cursor-pointer group relative"}>
-                        <img alt={'icon'} src={logo} className={"w-10"}/>
+                        <img alt={'icon'} src={logo} className={"w-10 rounded"}/>
                         <div className={"text-2xl font-black"}>Learn or Die</div>
                         <Link to={"/"} className={"after:absolute after:inset-0"}/>
                     </div>
