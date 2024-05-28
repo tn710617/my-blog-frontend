@@ -10,7 +10,7 @@ export default function CodeCopyBtn({children}) {
     useEffect(() => {
         if (copyOk === false) return
 
-        navigator.clipboard.writeText(children[0].props.children[0]);
+        navigator.clipboard.writeText(children[0].props.children[0].trim());
 
         const timeoutId = setTimeout(() => {
             setCopyOk(false);
