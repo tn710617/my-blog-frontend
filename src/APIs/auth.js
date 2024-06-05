@@ -66,7 +66,7 @@ export function useLoginWithMetaMask() {
 
             const address = await signer.getAddress()
 
-            const message = await loginMessage.mutateAsync(intl.locale)
+            const message = await loginMessage.mutateAsync({locale: intl.locale, provider: provider})
 
             const signature = await signer.signMessage(message)
 
@@ -98,10 +98,15 @@ export function useLoginWithMetaMask() {
 export function useLoginMessage() {
     const axios = useAxios()
     return useMutation({
-        mutationFn: async (locale) => {
+        mutationFn: async (data) => {
+            const signer = await data.provider.getSigner()
+
+            const address = await signer.getAddress()
+
             const res = await axios.get('to-be-signed-message', {
                 params: {
-                    locale: locale
+                    'wallet_address': address,
+                    locale: data.locale
                 }
             })
             return res.data.data.to_be_signed_message
