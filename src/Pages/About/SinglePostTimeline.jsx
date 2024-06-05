@@ -21,7 +21,7 @@ export default function SinglePostTimeline({post}) {
                     {post.post_title}
                 </div>
                 <div className={"text-sm text-gray-400"}>
-                    {post.category_name}
+                    {post.locale}
                 </div>
             </div>
         </div>
