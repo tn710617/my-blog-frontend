@@ -50,7 +50,7 @@ export default function Skills() {
             });
 
             const queryString = params.toString();
-            return `/?${queryString}`;
+            return `?${queryString}`;
         }
 
         const id = e.target.value
