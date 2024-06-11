@@ -8,7 +8,7 @@ import PostsInfo from "./PostsInfo";
 
 import {useRecoilState} from "recoil";
 import {useEffect, useMemo} from "react";
-import {Link} from "react-router-dom";
+import {Link, useLocation} from "react-router-dom";
 import {useIntl} from "react-intl";
 
 import {useCategories} from "../../APIs/categories";
@@ -42,10 +42,22 @@ export default function Posts() {
             return indexPosts.data.meta
         }
     }, [indexPosts.status, indexPosts.data])
+    const queryParams = new URLSearchParams(useLocation().search)
 
     useEffect(() => {
         queryClient.invalidateQueries(indexPosts.queryKey)
-    }, [isLogIn])
+    }, [indexPosts.queryKey, isLogIn, queryClient])
+
+    useEffect(() => {
+        const setTagsFromQueryParams = () => {
+            const tagsFromQuery = queryParams.getAll('tags')
+            if (tagsFromQuery) {
+                setTags(tagsFromQuery)
+            }
+        }
+
+        setTagsFromQueryParams()
+    }, [queryParams.toString()])
 
     return (
         <div

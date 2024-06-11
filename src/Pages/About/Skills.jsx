@@ -8,7 +8,6 @@ import {useNavigate} from "react-router-dom";
 import loginAtom from "../../States/loginAtom";
 import {useQueryClient} from "@tanstack/react-query";
 
-
 const DISPLAY_POPULAR_TAGS = 20
 
 export default function Skills() {
@@ -41,11 +40,26 @@ export default function Skills() {
     }, [isLoggedIn]);
 
     const handleTagClick = (e) => {
+        function getQueryParamsWithTag(id) {
+            const tags = [id];
+
+            const params = new URLSearchParams();
+
+            tags.forEach(tag => {
+                params.append('tags', tag);
+            });
+
+            const queryString = params.toString();
+            return `/?${queryString}`;
+        }
+
         const id = e.target.value
         setCurrentPage(1)
         setCategory(2)
         setTags(() => [id])
-        navigate(`/`)
+        const url = getQueryParamsWithTag(id)
+
+        window.open(url, '_blank')
     }
 
     return (

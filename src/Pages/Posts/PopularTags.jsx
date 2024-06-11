@@ -3,6 +3,7 @@ import {useTags} from "../../APIs/tags";
 import loginAtom from "../../States/loginAtom";
 import {useRecoilState} from "recoil";
 import {useQueryClient} from "@tanstack/react-query";
+import {useLocation, useNavigate} from "react-router-dom";
 
 const DISPLAY_POPULAR_TAGS = 10
 
@@ -11,6 +12,9 @@ export default function PopularTags({tags, setTags, setCurrentPage}) {
     const [showMoreTags, setShowMoreTags] = React.useState(false)
     const [isLoggedIn] = useRecoilState(loginAtom)
     const queryClient = useQueryClient()
+    const navigate = useNavigate()
+    const queryParams = new URLSearchParams(useLocation().search)
+    const location = useLocation()
 
     const isSelectedTag = (id) => {
         return tags.includes(id.toString())
@@ -53,17 +57,28 @@ export default function PopularTags({tags, setTags, setCurrentPage}) {
     }
 
     const handleTagClick = (e) => {
+
+        function getQueryParamsWithTag(toBeSetTags) {
+            const params = new URLSearchParams();
+
+            toBeSetTags.forEach(tag => {
+                params.append('tags', tag);
+            });
+
+            return params.toString();
+        }
+
         const id = e.target.value
         setCurrentPage(1)
-        if (isSelectedTag(id)) {
-            setTags((preTags) => {
-                return preTags.filter(tagId => tagId !== id)
-            })
-        } else {
-            setTags(preTags => {
-                return [...preTags, id]
-            })
-        }
+
+        const toBeSetTags = isSelectedTag(id) ? tags.filter(tagId => tagId !== id) : [...tags, id]
+        // setTags(toBeSetTags)
+        const queryString = getQueryParamsWithTag(toBeSetTags)
+
+        navigate({
+            pathname: location.pathname,
+            search: queryString,
+        });
     }
 
     useEffect(() => {
