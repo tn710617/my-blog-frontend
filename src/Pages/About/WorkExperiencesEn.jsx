@@ -21,9 +21,16 @@ export function getWorkExperiencesEn() {
                     </li>
                     <li>Plan and implement HA architecture on products</li>
                     <li>Complete the self-built blockchain node</li>
-                    <li>Solve the problem of product response time being too long</li>
-                    <li>Solve the communication issue among multiple nodes in Docker Swarm architecture</li>
-                    <li>Detect and solve the response body too long issue</li>
+                    <li>Implement VPN Server, hang VPN before ssh connection to enhance the company's project security
+                    </li>
+                    <li>Product passed VAPT detection without any Medium or above threats</li>
+                    <li>Solve issue: The product uses CloudFlare SSL, causing the Response Time to be too long</li>
+                    <li>Solve issue: The product cannot run multiple nodes due to different MTUs in the Docker Swarm
+                        architecture
+                    </li>
+                    <li>Solve issue: The response will be truncated when the response body exceeds the buffer length due
+                        to incorrect Nginx Buffer permission settings
+                    </li>
                 </ul>
             )
         },

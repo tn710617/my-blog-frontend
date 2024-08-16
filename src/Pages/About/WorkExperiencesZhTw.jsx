@@ -15,10 +15,12 @@ export function getWorkExperiencesZhTw() {
                     <li>虛擬貨幣發卡服務：後端開發</li>
                     <li>規劃並實作多版本共存 API 架構：當 Mobile APP 在更新版本時，提供至少兩個版本的 API 支援</li>
                     <li>規劃並且實作產品 HA 架構</li>
-                    <li>完成區塊鏈自建節點</li>
-                    <li>解決產品 response time 過長的問題</li>
-                    <li>解決產品在 Docker Swarm 的架構下，無法運行 multiple node issue</li>
-                    <li>解決產品在 response body 過長情況下 tricky issue</li>
+                    <li>區塊鏈自建節點</li>
+                    <li>實作 VPN Server，在 ssh connection 之前掛上 VPN，強化公司專案資安等級</li>
+                    <li>產品通過 VAPT 檢測，無任何 Medium 以上威脅</li>
+                    <li>解決 issue：產品因使用 CloudFlare SSL，造成 Response Time 過長</li>
+                    <li>解決 issue：產品在 Docker Swarm 的架構下，因 MTU 不同，導致無法運行 multiple node</li>
+                    <li>解決 issue：產品因 Nginx Buffer 權限設定不正確，當 Response Body 超出 Buffer 長度時，會被截斷</li>
                 </ul>
             )
         },
