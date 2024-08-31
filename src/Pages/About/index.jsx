@@ -6,6 +6,7 @@ import {useEffect} from "react";
 import categoryAtom from "../../States/category";
 import {useRecoilState} from "recoil";
 import PostsTimeline from "./PostsTimeline";
+import Portfolio from "./Portfolio";
 
 export default function About() {
     const [, setCategory] = useRecoilState(categoryAtom)
@@ -33,6 +34,9 @@ export default function About() {
                     </div>
                     <div>
                         <PostsTimeline/>
+                    </div>
+                    <div>
+                        <Portfolio/>
                     </div>
 
                 </div>

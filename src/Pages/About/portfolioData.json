@@ -1,0 +1,54 @@
+{
+  "zh_TW": [
+    {
+      "title": "EchossVIP",
+      "description": "這是一款結合實體店家電子印章與 LINE 延伸應用的服務，讓使用者透過 LINE 登入後，集點消費並管理會員資格與禮券，實現數位化的品牌互動與推廣。服務由 Laravel 開發，支援大量優惠券發放、會員卡管理、異步匯出等功能，並採用 AWS 服務進行高效部署與持續交付，適合各品牌提升顧客忠誠度與行銷效果。",
+      "imageUrl": "https://lh3.googleusercontent.com/pw/AP1GczM2A_mK6kZmA9TBt2ES2T9b9P6Yk3oKF3dCYrtQSWteNMkQQdnsUSgLqTJWoeE04FLG-U9COBg5q2jWf-YIXZKwkf-bniLfeBC4iRDcn9eHeD9LNo4yYgM_GOi979bSI-eLwF2SDZgjdthKXRERMvTRFQ=w1792-h1024-s-no-gm?authuser=0",
+      "post_id": 423
+    },
+    {
+      "title": "Choose",
+      "description": "這個服務允許企業或個人購買互動活動，員工可透過 APP 參加各類遊戲如抽獎、搶紅包、大樂透等，並與主持人實時互動。透過這些雙向溝通的活動，能有效提升活動氛圍與員工參與感，適合用於尾牙等公司大型活動。",
+      "imageUrl": "https://lh3.googleusercontent.com/pw/AP1GczMFzy4zXovUzqDnwE3Y1m-O3HhMh-8_iJHDVK1fztG-i3-Db83ukNL_w0kFzlxStxsdoAYdFh_e1RvBKHM26GCPe1z-f1D3Q1ojsV7grcdXvlxbtMyo_Qnh99Rcpaf3IzMKDX6u-HFhri-ZInl4WweZWg=w1792-h1024-s-no-gm?authuser=0",
+      "post_id": 421
+    },
+    {
+      "title": "日日考核",
+      "description": "這款服務幫助企業根據員工的學歷、年資及主管評分進行全面評估，有效支持企業內部績效管理與人力資源優化。通過這種系統化的評估，企業能更精準地發掘員工潛力，提升員工發展，從而增強公司整體競爭力。",
+      "imageUrl": "https://lh3.googleusercontent.com/pw/AP1GczOcty6WzAYYs0-iuRHHlF-aKxhaShyDuQ1n1wi1s1l3i83UF55Q8sfjGmdE8sIB_-tA00V3SkdOwx8MfVZntpSFWTGVUQB9rJAgVPIIqFicAt5VLsyftZaLS_iRppGYzAqNv8HC6L2MtfHJapqdX87Jng=w1792-h1024-s-no-gm?authuser=0",
+      "post_id": 425
+    },
+    {
+      "title": "PGCS",
+      "description": "PGCS（Pokemon Go Coordinates Sharing）是一款專為擁有多台飛人裝置的玩家設計的座標分享工具。透過PGCS，玩家可以在不同裝置間輕鬆共享與管理座標，避免頻繁切換視窗、重複操作或遺漏座標，大大提升遊戲的便利性和效率，是專業玩家的理想選擇。",
+      "imageUrl": "https://lh3.googleusercontent.com/pw/AP1GczOVupfMiB03RHiPeZJ3pLt7AmEt9BrNIAdbKZI-SNzr3gDq2nCADIhSmXml8PQBUL7x-Lr1QkV51xaUoyGlSxFd0BjeKDhfuQWyvooFhWpiieNHUa1pfdpdIJ9BUvZbFfazIkCsbXcJFp4MwaA3ZBEL3Q=w1792-h1024-s-no-gm?authuser=0",
+      "post_id": 418
+    }
+  ],
+  "en": [
+    {
+      "title": "EchossVIP",
+      "description": "EchossVIP integrates electronic stamps with LINE apps, allowing users to log in via LINE, collect points, manage memberships, and receive vouchers. Developed with Laravel and deployed on AWS, it supports large-scale coupon issuance and membership management, enhancing brand loyalty and marketing effectiveness.",
+      "imageUrl": "https://lh3.googleusercontent.com/pw/AP1GczM2A_mK6kZmA9TBt2ES2T9b9P6Yk3oKF3dCYrtQSWteNMkQQdnsUSgLqTJWoeE04FLG-U9COBg5q2jWf-YIXZKwkf-bniLfeBC4iRDcn9eHeD9LNo4yYgM_GOi979bSI-eLwF2SDZgjdthKXRERMvTRFQ=w1792-h1024-s-no-gm?authuser=0",
+      "post_id": 424
+    },
+    {
+      "title": "Choose",
+      "description": "This service lets companies buy interactive activities where employees play games like lotteries and grab red envelopes via an app. Real-time interaction with the host boosts event atmosphere and participation, perfect for large company events like year-end parties.",
+      "imageUrl": "https://lh3.googleusercontent.com/pw/AP1GczMFzy4zXovUzqDnwE3Y1m-O3HhMh-8_iJHDVK1fztG-i3-Db83ukNL_w0kFzlxStxsdoAYdFh_e1RvBKHM26GCPe1z-f1D3Q1ojsV7grcdXvlxbtMyo_Qnh99Rcpaf3IzMKDX6u-HFhri-ZInl4WweZWg=w1792-h1024-s-no-gm?authuser=0",
+      "post_id": 422
+    },
+    {
+      "title": "Daily Assessment",
+      "description": "This service enables companies to evaluate employees based on education, seniority, and ratings, supporting performance management and HR optimization. It helps unlock employee potential and improve company competitiveness.",
+      "imageUrl": "https://lh3.googleusercontent.com/pw/AP1GczOcty6WzAYYs0-iuRHHlF-aKxhaShyDuQ1n1wi1s1l3i83UF55Q8sfjGmdE8sIB_-tA00V3SkdOwx8MfVZntpSFWTGVUQB9rJAgVPIIqFicAt5VLsyftZaLS_iRppGYzAqNv8HC6L2MtfHJapqdX87Jng=w1792-h1024-s-no-gm?authuser=0",
+      "post_id": 477
+    },
+    {
+      "title": "PGCS",
+      "description": "PGCS (Pokemon Go Coordinates Sharing) is a coordinate sharing tool designed for players with multiple spoofing devices. Through PGCS, players can easily share and manage coordinates between different devices, avoiding frequent window switching, repetitive operations, or missing coordinates, greatly improving the convenience and efficiency of the game, and is the ideal choice for professional players.",
+      "imageUrl": "https://lh3.googleusercontent.com/pw/AP1GczOVupfMiB03RHiPeZJ3pLt7AmEt9BrNIAdbKZI-SNzr3gDq2nCADIhSmXml8PQBUL7x-Lr1QkV51xaUoyGlSxFd0BjeKDhfuQWyvooFhWpiieNHUa1pfdpdIJ9BUvZbFfazIkCsbXcJFp4MwaA3ZBEL3Q=w1792-h1024-s-no-gm?authuser=0",
+      "post_id": 476
+    }
+  ]
+}

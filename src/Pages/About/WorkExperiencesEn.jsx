@@ -1,4 +1,3 @@
-import qinfra from "./qinfra.png";
 import SURASIALogo from "./Surasia.png"
 import GoodIdeasStudioLogo from "./GoodIdeaStudio.png";
 import QINFRALogo from "./qinfra.png";
