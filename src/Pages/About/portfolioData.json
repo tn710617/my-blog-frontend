@@ -1,6 +1,18 @@
 {
   "zh_TW": [
     {
+      "title": "LearnOrDie Blog",
+      "description": "經過多年在軟體開發領域的磨練，我終於完成了這個自己一手打造的 SPA Blog，這不僅是技術實力的展現，更是我對未來持續學習的承諾。透過這個平台，我將分享所學，並持續優化，以提供更完善的使用體驗。無論是多語系支援、Metamask 登入，還是私密與公開文章的管理，這一切都是為了讓這個 Blog 更加符合我的需求和想像。",
+      "imageUrl": "https://lh3.googleusercontent.com/pw/AP1GczPVVs7cE-tuIvPzMJyvkhM7cq_hNZuHOZJDzQMuOQzzbHYkIz_UD8USp-lNdlBYsUEM_dbMWNRcHJx2Ppbx4vgKCagwTs3787atm00MUSir2NpwAnla7XvAgNiuGbOaI0cQkortRwA-8euRtZFfbJwEgw=w1024-h576-s-no-gm?authuser=0",
+      "post_id": 116
+    },
+    {
+      "title": "PGCS",
+      "description": "PGCS（Pokemon Go Coordinates Sharing）是一款專為擁有多台飛人裝置的玩家設計的座標分享工具。透過PGCS，玩家可以在不同裝置間輕鬆共享與管理座標，避免頻繁切換視窗、重複操作或遺漏座標，大大提升遊戲的便利性和效率，是專業玩家的理想選擇。",
+      "imageUrl": "https://lh3.googleusercontent.com/pw/AP1GczOVupfMiB03RHiPeZJ3pLt7AmEt9BrNIAdbKZI-SNzr3gDq2nCADIhSmXml8PQBUL7x-Lr1QkV51xaUoyGlSxFd0BjeKDhfuQWyvooFhWpiieNHUa1pfdpdIJ9BUvZbFfazIkCsbXcJFp4MwaA3ZBEL3Q=w1792-h1024-s-no-gm?authuser=0",
+      "post_id": 418
+    },
+    {
       "title": "EchossVIP",
       "description": "這是一款結合實體店家電子印章與 LINE 延伸應用的服務，讓使用者透過 LINE 登入後，集點消費並管理會員資格與禮券，實現數位化的品牌互動與推廣。服務由 Laravel 開發，支援大量優惠券發放、會員卡管理、異步匯出等功能，並採用 AWS 服務進行高效部署與持續交付，適合各品牌提升顧客忠誠度與行銷效果。",
       "imageUrl": "https://lh3.googleusercontent.com/pw/AP1GczM2A_mK6kZmA9TBt2ES2T9b9P6Yk3oKF3dCYrtQSWteNMkQQdnsUSgLqTJWoeE04FLG-U9COBg5q2jWf-YIXZKwkf-bniLfeBC4iRDcn9eHeD9LNo4yYgM_GOi979bSI-eLwF2SDZgjdthKXRERMvTRFQ=w1792-h1024-s-no-gm?authuser=0",
@@ -17,15 +29,21 @@
       "description": "這款服務幫助企業根據員工的學歷、年資及主管評分進行全面評估，有效支持企業內部績效管理與人力資源優化。通過這種系統化的評估，企業能更精準地發掘員工潛力，提升員工發展，從而增強公司整體競爭力。",
       "imageUrl": "https://lh3.googleusercontent.com/pw/AP1GczOcty6WzAYYs0-iuRHHlF-aKxhaShyDuQ1n1wi1s1l3i83UF55Q8sfjGmdE8sIB_-tA00V3SkdOwx8MfVZntpSFWTGVUQB9rJAgVPIIqFicAt5VLsyftZaLS_iRppGYzAqNv8HC6L2MtfHJapqdX87Jng=w1792-h1024-s-no-gm?authuser=0",
       "post_id": 425
-    },
-    {
-      "title": "PGCS",
-      "description": "PGCS（Pokemon Go Coordinates Sharing）是一款專為擁有多台飛人裝置的玩家設計的座標分享工具。透過PGCS，玩家可以在不同裝置間輕鬆共享與管理座標，避免頻繁切換視窗、重複操作或遺漏座標，大大提升遊戲的便利性和效率，是專業玩家的理想選擇。",
-      "imageUrl": "https://lh3.googleusercontent.com/pw/AP1GczOVupfMiB03RHiPeZJ3pLt7AmEt9BrNIAdbKZI-SNzr3gDq2nCADIhSmXml8PQBUL7x-Lr1QkV51xaUoyGlSxFd0BjeKDhfuQWyvooFhWpiieNHUa1pfdpdIJ9BUvZbFfazIkCsbXcJFp4MwaA3ZBEL3Q=w1792-h1024-s-no-gm?authuser=0",
-      "post_id": 418
     }
   ],
   "en": [
+    {
+      "title": "LearnOrDie Blog",
+      "description": "After years of refining my software development skills, I’ve completed this SPA Blog from scratch. It showcases my technical expertise and dedication to continuous learning. Through this platform, I'll share my knowledge and optimize the experience. Features like multi-language support, Metamask login, and article management align with my vision for a personalized Blog.",
+      "imageUrl": "https://lh3.googleusercontent.com/pw/AP1GczPVVs7cE-tuIvPzMJyvkhM7cq_hNZuHOZJDzQMuOQzzbHYkIz_UD8USp-lNdlBYsUEM_dbMWNRcHJx2Ppbx4vgKCagwTs3787atm00MUSir2NpwAnla7XvAgNiuGbOaI0cQkortRwA-8euRtZFfbJwEgw=w1024-h576-s-no-gm?authuser=0",
+      "post_id": 120
+    },
+    {
+      "title": "PGCS",
+      "description": "PGCS (Pokemon Go Coordinates Sharing) is a coordinate sharing tool designed for players with multiple spoofing devices. Through PGCS, players can easily share and manage coordinates between different devices, avoiding frequent window switching, repetitive operations, or missing coordinates, greatly improving the convenience and efficiency of the game, and is the ideal choice for professional players.",
+      "imageUrl": "https://lh3.googleusercontent.com/pw/AP1GczOVupfMiB03RHiPeZJ3pLt7AmEt9BrNIAdbKZI-SNzr3gDq2nCADIhSmXml8PQBUL7x-Lr1QkV51xaUoyGlSxFd0BjeKDhfuQWyvooFhWpiieNHUa1pfdpdIJ9BUvZbFfazIkCsbXcJFp4MwaA3ZBEL3Q=w1792-h1024-s-no-gm?authuser=0",
+      "post_id": 476
+    },
     {
       "title": "EchossVIP",
       "description": "EchossVIP integrates electronic stamps with LINE apps, allowing users to log in via LINE, collect points, manage memberships, and receive vouchers. Developed with Laravel and deployed on AWS, it supports large-scale coupon issuance and membership management, enhancing brand loyalty and marketing effectiveness.",
@@ -43,12 +61,6 @@
       "description": "This service enables companies to evaluate employees based on education, seniority, and ratings, supporting performance management and HR optimization. It helps unlock employee potential and improve company competitiveness.",
       "imageUrl": "https://lh3.googleusercontent.com/pw/AP1GczOcty6WzAYYs0-iuRHHlF-aKxhaShyDuQ1n1wi1s1l3i83UF55Q8sfjGmdE8sIB_-tA00V3SkdOwx8MfVZntpSFWTGVUQB9rJAgVPIIqFicAt5VLsyftZaLS_iRppGYzAqNv8HC6L2MtfHJapqdX87Jng=w1792-h1024-s-no-gm?authuser=0",
       "post_id": 477
-    },
-    {
-      "title": "PGCS",
-      "description": "PGCS (Pokemon Go Coordinates Sharing) is a coordinate sharing tool designed for players with multiple spoofing devices. Through PGCS, players can easily share and manage coordinates between different devices, avoiding frequent window switching, repetitive operations, or missing coordinates, greatly improving the convenience and efficiency of the game, and is the ideal choice for professional players.",
-      "imageUrl": "https://lh3.googleusercontent.com/pw/AP1GczOVupfMiB03RHiPeZJ3pLt7AmEt9BrNIAdbKZI-SNzr3gDq2nCADIhSmXml8PQBUL7x-Lr1QkV51xaUoyGlSxFd0BjeKDhfuQWyvooFhWpiieNHUa1pfdpdIJ9BUvZbFfazIkCsbXcJFp4MwaA3ZBEL3Q=w1792-h1024-s-no-gm?authuser=0",
-      "post_id": 476
     }
   ]
 }
