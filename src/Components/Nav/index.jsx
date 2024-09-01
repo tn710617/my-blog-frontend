@@ -5,39 +5,25 @@ import {AiOutlineClose} from "react-icons/ai";
 import {BsFillMoonStarsFill} from "react-icons/bs";
 import {useEffect, useState} from "react";
 import {BsFillSunFill} from "react-icons/bs";
-import {useRecoilState} from "recoil";
-import {Link, useLocation, useNavigate} from "react-router-dom";
+import {Link} from "react-router-dom";
 import {useCategories} from "../../APIs/categories";
 import Categories from "./Categories";
 import SearchBoxComponent from "./SearchBoxComponent";
 import MobileCategories from "./MobileCategories";
 import {useLoginWithMetaMask, useLogout} from "../../APIs/auth";
-import {isLoggedInInLocalStorage, setLocaleInLocalStorage} from "../../helpers";
+import {isLoggedInInLocalStorage} from "../../helpers";
 import LogoutButton from "./LogoutButton";
 import LoginButton from "./LoginButton";
-import localeAtom from "../../States/localeAtom";
 import AboutButton from "./AboutButton";
+import LocaleDropdown from "./LocaleDropdown";
 
 export default function Nav() {
     const [showMobileNavBar, setShowMobileNavBar] = useState(false)
     const [darkMode, setDarkMode] = useState(false)
     const [showSearchBoxComponent, setShowSearchBoxComponent] = useState(false)
     const [showSearchResultDropdown, setShowSearchResultDropdown] = useState(false)
-    const [locale, setLocale] = useRecoilState(localeAtom)
 
     const indexCategories = useCategories()
-    const navigate = useNavigate()
-    const location = useLocation()
-
-    const handleLocaleSelectionChanged = (e) => {
-        const locale = e.target.value
-        setLocale(locale)
-        setLocaleInLocalStorage(locale)
-
-        if (location.pathname.startsWith("/single-post")) {
-            navigate("/")
-        }
-    }
 
     const handleSearchBoxButtonClick = () => {
         setShowSearchBoxComponent(!showSearchBoxComponent)
@@ -80,13 +66,7 @@ export default function Nav() {
 
                     <div className={"flex gap-5 items-center"}>
                         <AboutButton/>
-                        <select
-                            value={locale}
-                            onChange={handleLocaleSelectionChanged}
-                            className={"bg-gray-100 outline-0 appearance-none text-sm sm:text-xl"}>
-                            <option value={'zh-TW'}>中文</option>
-                            <option value={'en'}>English</option>
-                        </select>
+                        <LocaleDropdown/>
                         <button className={"cursor-pointer hidden"} onClick={() => setDarkMode(!darkMode)}>
                             {darkMode ? <BsFillSunFill className={"text-xl hover:text-yellow-400"}/> :
                                 <BsFillMoonStarsFill className={"text-lg hover:text-purple-600"}/>}

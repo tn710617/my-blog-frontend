@@ -17,7 +17,7 @@ export default function SingleWorkExperience({jobTitle, companyName, workExperie
                 </div>
             </div>
             <div className={"hidden md:flex items-start w-2/5"}>
-                <img className={"w-full h-auto"} src={companyLogo} alt={"companyLogo"}/>
+                <img className={"w-full h-auto rounded-xl"} src={companyLogo} alt={"companyLogo"}/>
             </div>
         </div>
     )
