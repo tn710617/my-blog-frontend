@@ -29,6 +29,12 @@
       "description": "這款服務幫助企業根據員工的學歷、年資及主管評分進行全面評估，有效支持企業內部績效管理與人力資源優化。通過這種系統化的評估，企業能更精準地發掘員工潛力，提升員工發展，從而增強公司整體競爭力。",
       "imageUrl": "https://lh3.googleusercontent.com/pw/AP1GczOcty6WzAYYs0-iuRHHlF-aKxhaShyDuQ1n1wi1s1l3i83UF55Q8sfjGmdE8sIB_-tA00V3SkdOwx8MfVZntpSFWTGVUQB9rJAgVPIIqFicAt5VLsyftZaLS_iRppGYzAqNv8HC6L2MtfHJapqdX87Jng=w1792-h1024-s-no-gm?authuser=0",
       "post_id": 425
+    },
+    {
+      "title": "OneDream",
+      "description": "OneDream 是一個專注於 NFT 交易的市場平台，提供合作廠商根據需求鑄造 NFT。用戶可以透過 MetaMask 錢包登入，平台強化了資安，避免 access token 泄漏風險。每個 NFT 提供多個版本，並支持演員或戲劇發行 NFT。此外，平台採用 Upgradable Contract 和 Lazy Mint 技術，提供靈活性並控制鑄造費用，讓買賣過程更高效。",
+      "imageUrl": "https://lh3.googleusercontent.com/pw/AP1GczPfJIpVjdqUR3Nc7rAtQT4RBqsGKai9gG-Lf-MaKXLC1FAMt9cP3ahxXmgf8SLGBun7fG8GiHKzWHCdoCbbSnDwmvFEDvVO_yPzHnRSGonQPa15iNQGvvouNp_dNWSTyk3sbkNmgaPNwpgxhWqvm_L3jA=w1792-h1024-s-no-gm?authuser=0",
+      "post_id": 484
     }
   ],
   "en": [
@@ -61,6 +67,12 @@
       "description": "This service enables companies to evaluate employees based on education, seniority, and ratings, supporting performance management and HR optimization. It helps unlock employee potential and improve company competitiveness.",
       "imageUrl": "https://lh3.googleusercontent.com/pw/AP1GczOcty6WzAYYs0-iuRHHlF-aKxhaShyDuQ1n1wi1s1l3i83UF55Q8sfjGmdE8sIB_-tA00V3SkdOwx8MfVZntpSFWTGVUQB9rJAgVPIIqFicAt5VLsyftZaLS_iRppGYzAqNv8HC6L2MtfHJapqdX87Jng=w1792-h1024-s-no-gm?authuser=0",
       "post_id": 477
+    },
+    {
+      "title": "OneDream",
+      "description": "OneDream is a specialized NFT marketplace that allows partners to mint NFTs according to their needs. Users can log in through the MetaMask wallet, with enhanced security measures to prevent access token leakage. Each NFT offers multiple versions, and the platform supports NFT releases for actors or dramas. Additionally, OneDream implements Upgradable Contract and Lazy Mint technology, providing flexibility and controlling minting costs, making the buying and selling process more efficient.",
+      "imageUrl": "https://lh3.googleusercontent.com/pw/AP1GczPfJIpVjdqUR3Nc7rAtQT4RBqsGKai9gG-Lf-MaKXLC1FAMt9cP3ahxXmgf8SLGBun7fG8GiHKzWHCdoCbbSnDwmvFEDvVO_yPzHnRSGonQPa15iNQGvvouNp_dNWSTyk3sbkNmgaPNwpgxhWqvm_L3jA=w1792-h1024-s-no-gm?authuser=0",
+      "post_id": 485
     }
   ]
 }
