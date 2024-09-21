@@ -35,6 +35,12 @@
       "description": "OneDream 是一個專注於 NFT 交易的市場平台，提供合作廠商根據需求鑄造 NFT。用戶可以透過 MetaMask 錢包登入，平台強化了資安，避免 access token 泄漏風險。每個 NFT 提供多個版本，並支持演員或戲劇發行 NFT。此外，平台採用 Upgradable Contract 和 Lazy Mint 技術，提供靈活性並控制鑄造費用，讓買賣過程更高效。",
       "imageUrl": "https://lh3.googleusercontent.com/pw/AP1GczPfJIpVjdqUR3Nc7rAtQT4RBqsGKai9gG-Lf-MaKXLC1FAMt9cP3ahxXmgf8SLGBun7fG8GiHKzWHCdoCbbSnDwmvFEDvVO_yPzHnRSGonQPa15iNQGvvouNp_dNWSTyk3sbkNmgaPNwpgxhWqvm_L3jA=w1792-h1024-s-no-gm?authuser=0",
       "post_id": 484
+    },
+    {
+      "title": "FortVax",
+      "description": "**FortVax** 是一款區塊鏈冷錢包應用，實體形態為信用卡大小的卡片。用戶只需靠近手機，即可自動感應連接。支援存取交易紀錄與 NFT，並可安全發起轉帳。提供便捷且安全的資產管理方式，適合區塊鏈愛好者使用。",
+      "imageUrl": "https://lh3.googleusercontent.com/pw/AP1GczMIx_y6WjBZTfqF0JcUtO0JdCLYUe5bXch1Nm4vKGKaoOoUpMmVQWtIbNHrcpr2uw7SuVFchMWJ4HMeg-cWBLW8OmynnzO3zeEDjPnbHFXjDgjGff4XfUK3tzrysXK1BC0CGE-sfHbM5-wKel5-FhcheA=w1792-h1024-s-no-gm?authuser=0",
+      "post_id": 487
     }
   ],
   "en": [
@@ -73,6 +79,12 @@
       "description": "OneDream is a specialized NFT marketplace that allows partners to mint NFTs according to their needs. Users can log in through the MetaMask wallet, with enhanced security measures to prevent access token leakage. Each NFT offers multiple versions, and the platform supports NFT releases for actors or dramas. Additionally, OneDream implements Upgradable Contract and Lazy Mint technology, providing flexibility and controlling minting costs, making the buying and selling process more efficient.",
       "imageUrl": "https://lh3.googleusercontent.com/pw/AP1GczPfJIpVjdqUR3Nc7rAtQT4RBqsGKai9gG-Lf-MaKXLC1FAMt9cP3ahxXmgf8SLGBun7fG8GiHKzWHCdoCbbSnDwmvFEDvVO_yPzHnRSGonQPa15iNQGvvouNp_dNWSTyk3sbkNmgaPNwpgxhWqvm_L3jA=w1792-h1024-s-no-gm?authuser=0",
       "post_id": 485
+    },
+    {
+      "title": "FortVax",
+      "description": "**FortVax** is a blockchain cold wallet application, designed as a card the size of a standard credit card. Users can pair it with their phone by simply bringing the card close. It supports accessing transaction records, managing NFTs, and securely initiating transfers. FortVax offers a convenient and secure way to manage digital assets, ideal for blockchain enthusiasts.",
+      "imageUrl": "https://lh3.googleusercontent.com/pw/AP1GczMIx_y6WjBZTfqF0JcUtO0JdCLYUe5bXch1Nm4vKGKaoOoUpMmVQWtIbNHrcpr2uw7SuVFchMWJ4HMeg-cWBLW8OmynnzO3zeEDjPnbHFXjDgjGff4XfUK3tzrysXK1BC0CGE-sfHbM5-wKel5-FhcheA=w1792-h1024-s-no-gm?authuser=0",
+      "post_id": 488
     }
   ]
 }
