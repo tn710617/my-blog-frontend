@@ -3,18 +3,36 @@ import {useRef, useEffect} from "react";
 
 export default function HeaderComponent(props) {
     const {tagName} = props.node;
-    const ref = useRef();
+    const ref = useRef(null);
 
     const handleHeaderClicked = (e) => {
-        window.location.hash = `#${e.target.id}`
+        window.location.hash = `${e.target.id}`
     };
 
     useEffect(() => {
-        const {hash} = window.location;
-        if (hash === encodeURI(`#${props.children}`)) {
-            ref.current.scrollIntoView({block: "center"});
-        }
-    }, [props.children]);
+        const handleScroll = () => {
+            const {hash} = window.location;
+            const encodedId = encodeURIComponent(props.id);
+
+            if (ref.current && hash === `#${encodedId}`) {
+                ref.current.scrollIntoView({block: "start"});
+
+                const offset = 60; // 你可以根據 nav bar 的高度調整這個值
+                const elementPosition = window.scrollY - offset;
+                window.scrollTo({
+                    top: elementPosition,
+                    behavior: "smooth"
+                });
+            }
+        };
+
+        // 使用 setTimeout 延遲滾動操作，確保圖片加載完成
+        const timeoutId = setTimeout(handleScroll, 500);
+
+        // 清理 timeout
+        return () => clearTimeout(timeoutId);
+    }, [props.id, window.location.hash]);
+
 
     let HeaderTag = "h4"; // Default to h4
 
@@ -43,7 +61,7 @@ export default function HeaderComponent(props) {
 
     return (
         <HeaderTag
-            id={props.children}
+            id={props.id}
             ref={ref}
             onClick={handleHeaderClicked}
             className="font-bold cursor-pointer"

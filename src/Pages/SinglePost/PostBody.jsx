@@ -1,6 +1,8 @@
 import ReactMarkdown from 'react-markdown';
 import rehypeRaw from 'rehype-raw';
 import remarkGfm from 'remark-gfm';
+import rehypeSlug from "rehype-slug";
+import rehypeAutolinkHeadings from "rehype-autolink-headings";
 import HeaderComponent from "./HeaderComponent";
 import TableComponent from "./TableComponent";
 import ThComponent from "./ThComponent";
@@ -16,7 +18,7 @@ export default function PostBody({content}) {
         <ReactMarkdown
             className='markdown'
             linkTarget='_blank'
-            rehypePlugins={[rehypeRaw]}
+            rehypePlugins={[rehypeRaw, rehypeSlug, rehypeAutolinkHeadings]}
             remarkPlugins={[remarkGfm]}
             components={{
                 a: AComponent,
