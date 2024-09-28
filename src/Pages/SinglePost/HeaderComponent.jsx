@@ -11,25 +11,29 @@ export default function HeaderComponent(props) {
 
     useEffect(() => {
         const handleScroll = () => {
-            const {hash} = window.location;
+            const { hash } = window.location;
             const encodedId = encodeURIComponent(props.id);
 
             if (ref.current && hash === `#${encodedId}`) {
-                ref.current.scrollIntoView({block: "start"});
+                // Calculate the element's position without scrolling
+                const elementPosition = ref.current.getBoundingClientRect().top + window.pageYOffset;
 
-                const offset = 60; // 你可以根據 nav bar 的高度調整這個值
-                const elementPosition = window.scrollY - offset;
+                // Apply an offset (e.g., for a fixed navbar)
+                const offset = 60; // Adjust this value based on your navbar's height
+                const offsetPosition = elementPosition - offset;
+
+                // Now scroll to the calculated position with offset
                 window.scrollTo({
-                    top: elementPosition,
+                    top: offsetPosition,
                     behavior: "smooth"
                 });
             }
         };
 
-        // 使用 setTimeout 延遲滾動操作，確保圖片加載完成
+        // Delay the scroll operation to ensure the page and images are fully loaded
         const timeoutId = setTimeout(handleScroll, 500);
 
-        // 清理 timeout
+        // Clean up the timeout
         return () => clearTimeout(timeoutId);
     }, [props.id, window.location.hash]);
 
