@@ -1,13 +1,13 @@
-import SURASIALogo from "./Surasia.png"
 import GoodIdeasStudioLogo from "./GoodIdeaStudio.png"
 import QINFRALogo from "./qinfra.png"
+import TnpLogo from "./TnpLogo.png"
 
 export function getWorkExperiencesZhTw() {
     return [
         {
             "work_experience_title": "資深網頁工程師 | 2022 年 8 月 ~ 至今",
-            "work_company_name": "書亞集成股份有限公司",
-            "work_company_logo": SURASIALogo,
+            "work_company_name": "台灣銘板股份有限公司",
+            "work_company_logo": TnpLogo,
             "work_experience_description": (
                 <ul className={"list-disc list-outside ml-4"}>
                     <li>NFT 交易市場應用全端開發：前端，後端，智能合約</li>

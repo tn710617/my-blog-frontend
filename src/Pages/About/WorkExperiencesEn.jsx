@@ -1,13 +1,13 @@
-import SURASIALogo from "./Surasia.png"
 import GoodIdeasStudioLogo from "./GoodIdeaStudio.png";
 import QINFRALogo from "./qinfra.png";
+import TnpLogo from "./TnpLogo.png"
 
 export function getWorkExperiencesEn() {
     return [
         {
             "work_experience_title": "Senior Web Engineer | August 2022 ~ Present",
-            "work_company_name": "Surasia Integration Co., Ltd.",
-            "work_company_logo": SURASIALogo,
+            "work_company_name": "Taiwan Numerical Powers Co., Ltd.",
+            "work_company_logo": TnpLogo,
             "work_experience_description": (
                 <ul className={"list-disc list-outside ml-4"}>
                     <li>Full-stack development of NFT marketplace application: Frontend, backend, and smart contracts
