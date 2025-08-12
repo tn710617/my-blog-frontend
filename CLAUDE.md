@@ -4,12 +4,21 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Development Commands
 
+### Local Development
 - **Start development server**: `yarn start` (uses .env.local with sourcemaps disabled)
 - **Build for production**: `yarn run build-production` (uses .env.production)
 - **Build for development**: `yarn run build`
 - **Run tests**: `yarn test`
 - **Lint code**: `yarn run lint`
 - **Deploy**: `yarn run deploy` (runs custom deployment script)
+
+### Docker Development
+- **Setup Docker environment**: `./docker/setup.sh` (creates .env.local with Docker-compatible settings)
+- **Start Docker development**: `docker-compose up` (builds and starts container on port 3000)
+- **Stop Docker containers**: `docker-compose down`
+- **Rebuild Docker containers**: `docker-compose build`
+- **Add packages in Docker**: `docker-compose exec app yarn add <package-name>`
+- **Run commands in container**: `docker-compose exec app <command>`
 
 ## Architecture Overview
 
@@ -58,4 +67,15 @@ Custom deployment script (`scripts/deploy.sh`) that:
 3. Deploys to remote server via SCP/SSH
 4. Extracts and replaces live version
 
-Environment files (.env.local, .env.production) are not tracked in git - ensure these exist for proper builds.
+### Docker Development Environment
+
+The project includes Docker support for consistent development environments:
+
+- **Dockerfile**: Multi-stage build with development and production targets
+- **docker-compose.yml**: Development setup with hot reloading and volume mounting
+- **Network Configuration**: Uses `host.docker.internal` to access backend API from container
+- **Environment Setup**: `.env.docker.template` provides Docker-compatible environment variables
+
+**Important**: For Docker development, the API URL must use `host.docker.internal` instead of `localhost` to access the backend server running on the host machine.
+
+Environment files (.env.local, .env.production) are not tracked in git - ensure these exist for proper builds. Use `./docker/setup.sh` to create Docker-compatible environment files.

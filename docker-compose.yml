@@ -1,0 +1,39 @@
+version: '3.8'
+
+services:
+  app:
+    build:
+      context: .
+      target: development
+    ports:
+      - "3000:3000"
+    volumes:
+      # Mount source code for hot reloading
+      - .:/app
+      # Use anonymous volume for node_modules (performance optimization)
+      - /app/node_modules
+    environment:
+      # Pass through environment variables from .env.local
+      - REACT_APP_API_URL
+      - REACT_APP_ENV
+      - REACT_APP_DOMAIN
+      - REACT_APP_API_VERSION
+      - REACT_APP_GITHUB_URL
+      - REACT_APP_MEDIUM_URL
+      - REACT_APP_LINKEDIN_URL
+      # Enable hot reloading
+      - CHOKIDAR_USEPOLLING=true
+      - WATCHPACK_POLLING=true
+    env_file:
+      - .env.local
+    # Enable host networking for API access
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    stdin_open: true
+    tty: true
+    networks:
+      - blog-network
+
+networks:
+  blog-network:
+    driver: bridge
