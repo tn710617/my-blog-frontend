@@ -3,11 +3,10 @@ import {ethers} from "ethers";
 import {useLocation} from "react-router-dom";
 import {isBrowser, isMobile} from "react-device-detect";
 import {getMetamaskDAppDeepLink, loginInLocalStorage, logoutInLocalStorage} from "../helpers";
-import {useRecoilState} from "recoil";
+import {useAuthStore} from "../stores";
 import getAxios from "./axios";
 import useAxios from "./useAxios";
 import {useIntl} from "react-intl";
-import LoginAtom from "../States/loginAtom";
 import toast from "react-hot-toast";
 
 export function useIsLoggedIn(options = {}) {
@@ -28,7 +27,7 @@ export function useCsrfToken() {
 }
 
 export function useLogout() {
-    const [, setIsLoggedIn] = useRecoilState(LoginAtom)
+    const setIsLoggedIn = useAuthStore((state) => state.setIsLoggedIn)
     const axios = useAxios()
     return useMutation(async () => {
         const res = await axios.post('logout')
@@ -44,7 +43,7 @@ export function useLogout() {
 export function useLoginWithMetaMask() {
     const location = useLocation()
     const intl = useIntl()
-    const [, setIsLoggedIn] = useRecoilState(LoginAtom)
+    const setIsLoggedIn = useAuthStore((state) => state.setIsLoggedIn)
     const getCsrfToken = useCsrfToken()
     const loginMessage = useLoginMessage()
     const axios = useAxios()

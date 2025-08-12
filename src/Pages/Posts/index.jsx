@@ -6,7 +6,6 @@ import PostCard from "./PostCard";
 import PopularTags from "./PopularTags";
 import PostsInfo from "./PostsInfo";
 
-import {useRecoilState} from "recoil";
 import {useEffect, useMemo} from "react";
 import {Link, useLocation} from "react-router-dom";
 import {useIntl} from "react-intl";
@@ -15,19 +14,18 @@ import {useCategories} from "../../APIs/categories";
 import {useIndexPosts} from "../../APIs/posts";
 import {useQueryClient} from "@tanstack/react-query";
 
-import CategoryAtom from "../../States/category";
-import loginAtom from "../../States/loginAtom";
-import postSortAtom from "../../States/postSortAtom";
-import currentPageAtom from "../../States/currentPageAtom";
-import postTagsAtom from "../../States/postTags";
+import {useCategoryStore, useAuthStore, usePostSortStore, usePaginationStore, usePostTagsStore} from "../../stores";
 
 export default function Posts() {
     const intl = useIntl()
-    const [categoryId] = useRecoilState(CategoryAtom)
-    const [isLogIn] = useRecoilState(loginAtom)
-    const [currentPage, setCurrentPage] = useRecoilState(currentPageAtom)
-    const [sort, setSort] = useRecoilState(postSortAtom)
-    const [tags, setTags] = useRecoilState(postTagsAtom)
+    const categoryId = useCategoryStore((state) => state.categoryId)
+    const isLogIn = useAuthStore((state) => state.isLoggedIn)
+    const currentPage = usePaginationStore((state) => state.currentPage)
+    const setCurrentPage = usePaginationStore((state) => state.setCurrentPage)
+    const sort = usePostSortStore((state) => state.sort)
+    const setSort = usePostSortStore((state) => state.setSort)
+    const tags = usePostTagsStore((state) => state.tags)
+    const setTags = usePostTagsStore((state) => state.setTags)
     const indexCategory = useCategories()
     const indexPosts = useIndexPosts({}, currentPage, categoryId, tags, sort)
     const queryClient = useQueryClient()

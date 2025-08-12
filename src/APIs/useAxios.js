@@ -1,9 +1,7 @@
 import getAxios from "./axios";
 import {useEffect} from "react";
-import {useRecoilState} from "recoil";
-import loginModalAtom from "../States/loginModalAtom";
+import {useLoginModalStore, useAuthStore} from "../stores";
 import {logoutInLocalStorage} from "../helpers";
-import loginAtom from "../States/loginAtom";
 import {useNavigate} from "react-router-dom";
 
 const version = process.env.REACT_APP_API_VERSION
@@ -16,8 +14,8 @@ const useAxios = (isPrecognitive = false) => {
 
     const axios = isPrecognitive ? axiosPrecognitive : normalAxios;
     const navigate = useNavigate()
-    const [, setShowLoginModal] = useRecoilState(loginModalAtom)
-    const [, setIsLoggedIn] = useRecoilState(loginAtom)
+    const setShowLoginModal = useLoginModalStore((state) => state.setShowLoginModal)
+    const setIsLoggedIn = useAuthStore((state) => state.setIsLoggedIn)
 
     useEffect(() => {
         const responseIntercept = axios.interceptors.response.use(response => response,

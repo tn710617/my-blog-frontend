@@ -4,16 +4,14 @@ import {useNavigate, useSearchParams} from "react-router-dom";
 import {useShowPost} from "../../APIs/posts";
 import PostMetadata from "../../Components/PostMetadata";
 import PostTags from "../../Components/PostTags";
-import {useRecoilState} from "recoil";
-import localeAtom from "../../States/localeAtom";
+import {useLocaleStore, useAuthStore} from "../../stores";
 import EditButton from "./EditButton";
-import isLoggedInAtom from "../../States/loginAtom";
 import DeleteButton from "./DeleteButton";
-import {setLocaleInLocalStorage} from "../../helpers";
 
 export default function SinglePost() {
-    const [isLoggedIn] = useRecoilState(isLoggedInAtom)
-    const [locale, setLocale] = useRecoilState(localeAtom)
+    const isLoggedIn = useAuthStore((state) => state.isLoggedIn)
+    const locale = useLocaleStore((state) => state.locale)
+    const setLocale = useLocaleStore((state) => state.setLocale)
     const [searchParams] = useSearchParams()
     const postId = searchParams.get("post_id")
     const navigate = useNavigate()
@@ -31,7 +29,6 @@ export default function SinglePost() {
     useLayoutEffect(() => {
         if (isSuccess && locale !== data.locale) {
             setLocale(data.locale)
-            setLocaleInLocalStorage(data.locale)
         }
     }, [data, locale, isSuccess, navigate, setLocale])
 

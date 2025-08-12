@@ -1,16 +1,15 @@
 import React, {useEffect, useMemo, useState} from 'react';
 import taiwanFlag from './taiwan.png';
 import enFlag from './en.png';
-import {useRecoilState} from "recoil";
-import localeAtom from "../../States/localeAtom";
-import {setLocaleInLocalStorage} from "../../helpers";
+import {useLocaleStore} from "../../stores";
 import {useLocation, useNavigate} from "react-router-dom";
 import {useRef} from "react";
 
 const LocaleDropdown = (factory, deps) => {
     const location = useLocation()
     const navigate = useNavigate()
-    const [locale, setLocale] = useRecoilState(localeAtom)
+    const locale = useLocaleStore((state) => state.locale)
+    const setLocale = useLocaleStore((state) => state.setLocale)
     const [isOpen, setIsOpen] = useState(false);
     const dropdownRef = useRef(null);
 
@@ -35,7 +34,6 @@ const LocaleDropdown = (factory, deps) => {
 
     const handleLocaleChange = (displayLocale) => {
         setLocale(displayLocale.value)
-        setLocaleInLocalStorage(displayLocale.value)
         setIsOpen(false);
 
         if (location.pathname.startsWith("/single-post")) {

@@ -1,14 +1,14 @@
 import React from "react";
 import Modal from "./Modal";
-import {useRecoilState} from "recoil";
+import {useLoginModalStore} from "../stores";
 import {useLoginWithMetaMask} from "../APIs/auth";
 import {useIntl} from "react-intl";
-import loginModalAtom from "../States/loginModalAtom";
 
 export default function LoginModal() {
     const loginWithMetaMask = useLoginWithMetaMask()
     const intl = useIntl()
-    const [showLoginModal, setShowLoginModal] = useRecoilState(loginModalAtom)
+    const showLoginModal = useLoginModalStore((state) => state.showLoginModal)
+    const setShowLoginModal = useLoginModalStore((state) => state.setShowLoginModal)
     const handleGoBackButtonClick = async () => {
         await loginWithMetaMask.mutateAsync()
         setShowLoginModal(false)

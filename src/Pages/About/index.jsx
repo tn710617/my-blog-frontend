@@ -3,16 +3,15 @@ import Introduction from "./Introduction";
 import SkillSection from "./SkillSection";
 import WorkExperienceSection from "./WorkExperienceSection";
 import {useEffect} from "react";
-import categoryAtom from "../../States/category";
-import {useRecoilState} from "recoil";
+import {useCategoryStore} from "../../stores";
 import PostsTimeline from "./PostsTimeline";
 import Portfolio from "./Portfolio";
 
 export default function About() {
-    const [, setCategory] = useRecoilState(categoryAtom)
+    const setCategoryId = useCategoryStore((state) => state.setCategoryId)
     useEffect(() => {
-        setCategory(null)
-    }, []);
+        setCategoryId(null)
+    }, [setCategoryId]);
 
     return (
         <>

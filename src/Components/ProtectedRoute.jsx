@@ -1,8 +1,6 @@
 import React, {useState} from "react";
 import {Outlet, useLocation, useNavigate} from "react-router-dom";
-import {useRecoilState} from "recoil";
-import loginAtom from "../States/loginAtom";
-import loginModalAtom from "../States/loginModalAtom";
+import {useAuthStore, useLoginModalStore} from "../stores";
 import {useEffect} from "react";
 import {isLoggedInInLocalStorage, loginInLocalStorage, logoutInLocalStorage} from "../helpers";
 import {useIsLoggedIn} from "../APIs/auth";
@@ -10,8 +8,9 @@ import {useIsLoggedIn} from "../APIs/auth";
 export default function ProtectedRoute({redirectPath = '/'}) {
     const location = useLocation()
     const navigate = useNavigate()
-    const [, setShowLoginModal] = useRecoilState(loginModalAtom)
-    const [isLoggedInGlobally, setIsLoggedInGlobally] = useRecoilState(loginAtom)
+    const setShowLoginModal = useLoginModalStore((state) => state.setShowLoginModal)
+    const isLoggedInGlobally = useAuthStore((state) => state.isLoggedIn)
+    const setIsLoggedInGlobally = useAuthStore((state) => state.setIsLoggedIn)
     const [isLoading, setIsLoading] = useState(true)
 
     const handleCheckIsLoggedInSuccess = () => {

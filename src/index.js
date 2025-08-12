@@ -5,7 +5,6 @@ import App from './App';
 import "@yaireo/tagify/dist/tagify.css";
 import reportWebVitals from './reportWebVitals';
 import {BrowserRouter} from "react-router-dom";
-import {RecoilRoot} from "recoil";
 import {QueryClient, QueryClientProvider} from "@tanstack/react-query";
 import {ReactQueryDevtools} from "@tanstack/react-query-devtools";
 import SetLocale from "./Components/SetLocale";
@@ -21,16 +20,14 @@ const queryClient = new QueryClient({
 const root = ReactDOM.createRoot(document.getElementById('root'));
 root.render(
     <React.StrictMode>
-        <RecoilRoot>
-            <QueryClientProvider client={queryClient}>
-                <BrowserRouter basename={process.env.PUBLIC_URL}>
-                    <SetLocale>
-                        <App/>
-                    </SetLocale>
-                    <ReactQueryDevtools initialIsOpen={false}/>
-                </BrowserRouter>
-            </QueryClientProvider>
-        </RecoilRoot>
+        <QueryClientProvider client={queryClient}>
+            <BrowserRouter basename={process.env.PUBLIC_URL}>
+                <SetLocale>
+                    <App/>
+                </SetLocale>
+                <ReactQueryDevtools initialIsOpen={false}/>
+            </BrowserRouter>
+        </QueryClientProvider>
     </React.StrictMode>
 );
 

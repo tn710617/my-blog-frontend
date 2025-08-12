@@ -1,20 +1,17 @@
 import React from "react";
 import {useIntl} from "react-intl";
-import currentPageAtom from "../../States/currentPageAtom";
-import categoryAtom from "../../States/category";
-import postTagsAtom from "../../States/postTags";
-import {useRecoilState} from "recoil";
+import {usePaginationStore, useCategoryStore, usePostTagsStore} from "../../stores";
 import {useNavigate} from "react-router-dom";
 
 export default function AboutButton({onClick, isLoading}) {
     const intl = useIntl()
-    const [, setCurrentPage] = useRecoilState(currentPageAtom)
-    const [, setCategory] = useRecoilState(categoryAtom)
-    const [, setPostTags] = useRecoilState(postTagsAtom)
+    const setCurrentPage = usePaginationStore((state) => state.setCurrentPage)
+    const setCategoryId = useCategoryStore((state) => state.setCategoryId)
+    const setTags = usePostTagsStore((state) => state.setTags)
     const navigate = useNavigate()
     const handleOnClick = () => {
-        setCategory(null)
-        setPostTags([])
+        setCategoryId(null)
+        setTags([])
         setCurrentPage(null)
         navigate("/about")
     }

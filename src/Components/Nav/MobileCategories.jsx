@@ -1,19 +1,19 @@
 import React from "react";
 import CategoryIcon from "../CategoryIcon";
-import {useRecoilState} from "recoil";
-import categoryAtom from "../../States/category";
+import {useCategoryStore} from "../../stores";
 import {useNavigate} from "react-router-dom";
 
 export default function MobileCategories({categories}) {
     const navigate = useNavigate()
-    const [category, setCategory] = useRecoilState(categoryAtom)
+    const categoryId = useCategoryStore((state) => state.categoryId)
+    const setCategoryId = useCategoryStore((state) => state.setCategoryId)
     const handleCategoryOnClick = (e) => {
         navigate('/')
-        setCategory(e.target.value)
+        setCategoryId(e.target.value)
     }
 
     const getIsCurrentCategory = (id) => {
-        return parseInt(category) === parseInt(id)
+        return parseInt(categoryId) === parseInt(id)
     }
 
     const getFinalClass = (id) => {

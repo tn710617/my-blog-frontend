@@ -4,27 +4,25 @@ import {MdFiberNew} from "react-icons/md";
 import {GrUpdate} from "react-icons/gr";
 import {FormattedDate} from "react-intl";
 import {useNavigate} from "react-router-dom";
-import {useRecoilState} from "recoil";
-import categoryAtom from "../States/category";
-import postSortAtom from "../States/postSortAtom";
+import {useCategoryStore, usePostSortStore} from "../stores";
 import {RiGitRepositoryPrivateLine} from "react-icons/ri";
 
 export default function PostMetadata({postData}) {
     const navigate = useNavigate()
-    const [, setCurrentCategory] = useRecoilState(categoryAtom)
-    const [, setPostSort] = useRecoilState(postSortAtom)
+    const setCategoryId = useCategoryStore((state) => state.setCategoryId)
+    const setSort = usePostSortStore((state) => state.setSort)
     const handleCategoryClick = () => {
-        setCurrentCategory(postData.category_id)
+        setCategoryId(postData.category_id)
         navigate('/')
     }
 
     const handleCreatedAtOnClick = () => {
-        setPostSort("created_at")
+        setSort("created_at")
         navigate('/')
     }
 
     const handleUpdatedAtOnClick = () => {
-        setPostSort("updated_at")
+        setSort("updated_at")
         navigate('/')
     }
 

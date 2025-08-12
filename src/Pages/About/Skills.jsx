@@ -1,11 +1,7 @@
 import {useTags} from "../../APIs/tags";
 import React, {useEffect, useMemo} from "react";
-import {useRecoilState} from "recoil";
-import postTagsAtom from "../../States/postTags";
-import currentPageAtom from "../../States/currentPageAtom";
-import categoryAtom from "../../States/category";
+import {usePostTagsStore, usePaginationStore, useCategoryStore, useAuthStore} from "../../stores";
 import {useNavigate} from "react-router-dom";
-import loginAtom from "../../States/loginAtom";
 import {useQueryClient} from "@tanstack/react-query";
 
 const DISPLAY_POPULAR_TAGS = 20
@@ -13,10 +9,10 @@ const DISPLAY_POPULAR_TAGS = 20
 export default function Skills() {
     const indexTags = useTags()
     const [showMoreTags, setShowMoreTags] = React.useState(false)
-    const [, setTags] = useRecoilState(postTagsAtom)
-    const [, setCurrentPage] = useRecoilState(currentPageAtom)
-    const [, setCategory] = useRecoilState(categoryAtom)
-    const [isLoggedIn] = useRecoilState(loginAtom)
+    const setTags = usePostTagsStore((state) => state.setTags)
+    const setCurrentPage = usePaginationStore((state) => state.setCurrentPage)
+    const setCategoryId = useCategoryStore((state) => state.setCategoryId)
+    const isLoggedIn = useAuthStore((state) => state.isLoggedIn)
     const queryClient = useQueryClient()
 
     const navigate = useNavigate()
@@ -55,8 +51,8 @@ export default function Skills() {
 
         const id = e.target.value
         setCurrentPage(1)
-        setCategory(2)
-        setTags(() => [id])
+        setCategoryId(2)
+        setTags([id])
         const url = getQueryParamsWithTag(id)
 
         window.open(url, '_blank')

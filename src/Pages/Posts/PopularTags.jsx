@@ -1,7 +1,6 @@
 import React, {useEffect, useMemo} from "react";
 import {useTags} from "../../APIs/tags";
-import loginAtom from "../../States/loginAtom";
-import {useRecoilState} from "recoil";
+import {useAuthStore} from "../../stores";
 import {useQueryClient} from "@tanstack/react-query";
 import {useLocation, useNavigate} from "react-router-dom";
 
@@ -10,7 +9,7 @@ const DISPLAY_POPULAR_TAGS = 10
 export default function PopularTags({tags, setTags, setCurrentPage}) {
     const indexTags = useTags()
     const [showMoreTags, setShowMoreTags] = React.useState(false)
-    const [isLoggedIn] = useRecoilState(loginAtom)
+    const isLoggedIn = useAuthStore((state) => state.isLoggedIn)
     const queryClient = useQueryClient()
     const navigate = useNavigate()
     const queryParams = new URLSearchParams(useLocation().search)
