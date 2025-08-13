@@ -4,7 +4,24 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Development Commands
 
-### Local Development
+**Important**: This project uses Docker for development. All commands should be run through Docker containers.
+
+### Docker Development (Primary)
+- **Setup Docker environment**: `./docker/setup.sh` (creates .env.local with Docker-compatible settings)
+- **Start Docker development**: `docker-compose up` (builds and starts container on port 3000)
+- **Stop Docker containers**: `docker-compose down`
+- **Rebuild Docker containers**: `docker-compose build`
+- **Add packages**: `docker-compose exec app yarn add <package-name>`
+- **Add dev packages**: `docker-compose exec app yarn add -D <package-name>`
+- **Run tests**: `docker-compose exec app yarn test`
+- **Run tests (watch mode)**: `docker-compose exec app yarn test --watchAll`
+- **Run tests (coverage)**: `docker-compose exec app yarn test --coverage --watchAll=false`
+- **Build for production**: `docker-compose exec app yarn run build-production`
+- **Build for development**: `docker-compose exec app yarn run build`
+- **Lint code**: `docker-compose exec app yarn run lint`
+- **Run any command**: `docker-compose exec app <command>`
+
+### Local Development (Alternative)
 - **Start development server**: `yarn start` (uses .env.local with sourcemaps disabled)
 - **Build for production**: `yarn run build-production` (uses .env.production)
 - **Build for development**: `yarn run build`
@@ -12,23 +29,15 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 - **Lint code**: `yarn run lint`
 - **Deploy**: `yarn run deploy` (runs custom deployment script)
 
-### Docker Development
-- **Setup Docker environment**: `./docker/setup.sh` (creates .env.local with Docker-compatible settings)
-- **Start Docker development**: `docker-compose up` (builds and starts container on port 3000)
-- **Stop Docker containers**: `docker-compose down`
-- **Rebuild Docker containers**: `docker-compose build`
-- **Add packages in Docker**: `docker-compose exec app yarn add <package-name>`
-- **Run commands in container**: `docker-compose exec app <command>`
-
 ## Architecture Overview
 
 This is a React blog frontend built with Create React App. The application uses a modern React stack with:
 
-- **State Management**: Recoil for global state management
+- **State Management**: Zustand for global state management
 - **Data Fetching**: TanStack React Query (v4) with Axios for API calls
 - **Routing**: React Router DOM v6
 - **Styling**: Tailwind CSS with custom scrollbar utilities
-- **Internationalization**: React Intl with locale atoms
+- **Internationalization**: React Intl with locale stores
 - **Rich Text**: Toast UI React Editor with markdown support
 
 ### Key Directory Structure
@@ -36,17 +45,20 @@ This is a React blog frontend built with Create React App. The application uses 
 - `src/APIs/` - API client functions organized by domain (auth, posts, categories, tags)
 - `src/Components/` - Reusable UI components (Nav, Footer, Modal, Layout, etc.)
 - `src/Pages/` - Route-level page components (Posts, About, CreatePost, EditPost, SinglePost)
-- `src/States/` - Recoil atoms for global state (locale, login, categories, pagination)
+- `src/stores/` - Zustand stores for global state (locale, auth, categories, pagination)
 - `src/locales/` - i18n translation files (en.json, zh-TW.json)
 
 ### State Management Pattern
 
-Uses Recoil atoms for:
-- `localeAtom` - Current language/locale with localStorage persistence
-- `loginAtom` - Authentication state
-- `categoryAtom` - Selected category filtering
-- `currentPageAtom` - Pagination state
-- `postSortAtom` - Post sorting preferences
+Uses Zustand stores for:
+- `useLocaleStore` - Current language/locale with localStorage persistence
+- `useAuthStore` - Authentication state
+- `useCategoryStore` - Selected category filtering
+- `usePaginationStore` - Pagination state
+- `usePostSortStore` - Post sorting preferences
+- `usePostTagsStore` - Tag filtering
+- `useLoginModalStore` - Login modal visibility
+- `useMetaMaskModalStore` - MetaMask installation modal
 
 ### API Integration
 
@@ -57,7 +69,7 @@ Uses Recoil atoms for:
 
 ### Authentication Flow
 
-Protected routes use `ProtectedRoute` component wrapper. Authentication modal managed via `loginModalAtom` and rendered in the main `Layout` component.
+Protected routes use `ProtectedRoute` component wrapper. Authentication modal managed via `useLoginModalStore` and rendered in the main `Layout` component.
 
 ### Deployment
 
