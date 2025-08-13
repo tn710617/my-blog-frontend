@@ -19,7 +19,7 @@ import {useIntl} from "react-intl";
 import LocaleSelect from "../../Components/LocaleSelect";
 import CategorySelection from "../../Components/CategorySelection";
 import toast from "react-hot-toast";
-import {cacheStorePostForm, clearCachedStorePostForm, getCachedStorePostForm} from "../../helpers";
+import {usePostFormStore} from "../../stores";
 import PublishMediumSelection from "../../Components/PublishMediumSelection";
 
 export default function CreatePost() {
@@ -30,18 +30,14 @@ export default function CreatePost() {
     const tagInputRef = useRef();
     const editorRef = useRef()
     const [markdownContentLen, setMarkdownContentLen] = useState(0)
-    const defaultForm = {
-        tag_ids: [],
-        post_title: '',
-        post_content: '',
-        category_id: "2",
-        is_public: true,
-        should_publish_medium: false,
-        locale: "zh-TW",
-        created_at: ""
-    }
-
-    const [form, setForm] = useState(getCachedStorePostForm() || defaultForm)
+    
+    const form = usePostFormStore((state) => state.form)
+    const setFormInternal = usePostFormStore((state) => state.setForm)
+    const updateForm = usePostFormStore((state) => state.updateForm)
+    const clearForm = usePostFormStore((state) => state.clearForm)
+    
+    // Compatibility wrapper for components that expect setForm(newFormObject)
+    const setForm = (newForm) => setFormInternal(newForm)
     const tags = useTags()
     const categories = useCategories()
     const storePost = useStorePost()
@@ -55,12 +51,12 @@ export default function CreatePost() {
         const tagify = tagInputRef.current.__tagify
         editorInstance.setMarkdown("")
         tagify.removeAllTags()
-        setForm(defaultForm)
+        clearForm()
     }
 
     const handleStoreButtonSuccess = () => {
         toast.success(intl.formatMessage({id: 'toast.store_post.post_created'}))
-        clearCachedStorePostForm()
+        clearForm()
         navigate('/')
     }
 
@@ -99,9 +95,6 @@ export default function CreatePost() {
         navigate("/single-post?post_id=" + storePost.data.id)
     }
 
-    useEffect(() => {
-        cacheStorePostForm(form)
-    }, [form])
 
 
     useEffect(() => {

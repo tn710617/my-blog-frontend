@@ -82,6 +82,44 @@ export const useMetaMaskModalStore = create((set) => ({
   setShowMetaMaskModal: (show) => set({ showMetaMaskModal: show }),
 }))
 
+// 📝 Post Form Store - SSR Safe with Zustand persistence for CreatePost
+export const usePostFormStore = create(
+  persist(
+    (set, get) => ({
+      form: {
+        tag_ids: [],
+        post_title: '',
+        post_content: '',
+        category_id: "2",
+        is_public: true,
+        should_publish_medium: false,
+        locale: "zh-TW",
+        created_at: ""
+      },
+      setForm: (form) => set({ form }),
+      updateForm: (updates) => set((state) => ({ 
+        form: { ...state.form, ...updates } 
+      })),
+      clearForm: () => set({
+        form: {
+          tag_ids: [],
+          post_title: '',
+          post_content: '',
+          category_id: "2",
+          is_public: true,
+          should_publish_medium: false,
+          locale: "zh-TW",
+          created_at: ""
+        }
+      }),
+    }),
+    {
+      name: 'learn_or_die_post_form_storage',
+      partialize: (state) => ({ form: state.form }),
+    }
+  )
+)
+
 // 🚀 SSR-Safe Initialization Hook
 // Call this in your main App component after mounting to properly initialize stores
 export const useInitializeStores = () => {
