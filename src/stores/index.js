@@ -123,12 +123,11 @@ export const usePostFormStore = create(
 // 🚀 SSR-Safe Initialization Hook
 // Call this in your main App component after mounting to properly initialize stores
 export const useInitializeStores = () => {
-  const initializeFromNavigator = useLocaleStore((state) => state.initializeFromNavigator)
-  
   return () => {
     if (isClient) {
       // Initialize locale from navigator.language if no stored value exists
-      initializeFromNavigator()
+      // Use getState() to avoid subscribing to store changes
+      useLocaleStore.getState().initializeFromNavigator()
     }
   }
 }

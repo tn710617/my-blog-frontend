@@ -5,7 +5,7 @@ import {useLocaleStore} from "../../stores";
 import {useLocation, useNavigate} from "react-router-dom";
 import {useRef} from "react";
 
-const LocaleDropdown = (factory, deps) => {
+const LocaleDropdown = () => {
     const location = useLocation()
     const navigate = useNavigate()
     const locale = useLocaleStore((state) => state.locale)

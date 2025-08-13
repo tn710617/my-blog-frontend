@@ -1,17 +1,15 @@
-import React, {useEffect, useLayoutEffect} from "react";
+import React, {useEffect} from "react";
 import PostBody from "./PostBody";
 import {useNavigate, useSearchParams} from "react-router-dom";
 import {useShowPost} from "../../APIs/posts";
 import PostMetadata from "../../Components/PostMetadata";
 import PostTags from "../../Components/PostTags";
-import {useLocaleStore, useAuthStore} from "../../stores";
+import {useAuthStore} from "../../stores";
 import EditButton from "./EditButton";
 import DeleteButton from "./DeleteButton";
 
 export default function SinglePost() {
     const isLoggedIn = useAuthStore((state) => state.isLoggedIn)
-    const locale = useLocaleStore((state) => state.locale)
-    const setLocale = useLocaleStore((state) => state.setLocale)
     const [searchParams] = useSearchParams()
     const postId = searchParams.get("post_id")
     const navigate = useNavigate()
@@ -26,11 +24,6 @@ export default function SinglePost() {
         }
     }, [postId, navigate])
 
-    useLayoutEffect(() => {
-        if (isSuccess && locale !== data.locale) {
-            setLocale(data.locale)
-        }
-    }, [data, locale, isSuccess, navigate, setLocale])
 
     return (
         isSuccess &&
