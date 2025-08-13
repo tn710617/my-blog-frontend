@@ -1,6 +1,5 @@
 import { create } from 'zustand'
 import { persist } from 'zustand/middleware'
-import { getLocaleFromLocalStorage, setLocaleInLocalStorage } from '../helpers'
 
 // 🛡️ SSR-Safe Helpers
 const isClient = typeof window !== 'undefined'
@@ -19,29 +18,34 @@ export const useAuthStore = create(
       setIsLoggedIn: (value) => set({ isLoggedIn: value }),
     }),
     {
-      name: 'auth-storage',
+      name: 'learn_or_die_auth_storage',
       partialize: (state) => ({ isLoggedIn: state.isLoggedIn }),
     }
   )
 )
 
-// 🌍 Locale Store - SSR Safe with lazy navigator.language
-export const useLocaleStore = create((set) => ({
-  locale: getLocaleFromLocalStorage() || 'en', // Safe default - navigator.language will be set after hydration
-  setLocale: (locale) => {
-    setLocaleInLocalStorage(locale)
-    set({ locale })
-  },
-  // Initialize with navigator.language after component mounts (client-side only)
-  initializeFromNavigator: () => {
-    const stored = getLocaleFromLocalStorage()
-    if (!stored && isClient) {
-      const navLang = safeGetNavigatorLanguage()
-      setLocaleInLocalStorage(navLang)
-      set({ locale: navLang })
+// 🌍 Locale Store - SSR Safe with Zustand persistence
+export const useLocaleStore = create(
+  persist(
+    (set, get) => ({
+      locale: 'en', // Safe default - will be rehydrated from localStorage
+      setLocale: (locale) => set({ locale }),
+      // Initialize with navigator.language after component mounts (client-side only)
+      initializeFromNavigator: () => {
+        const currentLocale = get().locale
+        // Only set navigator language if no locale is stored (first visit)
+        if (currentLocale === 'en' && isClient) {
+          const navLang = safeGetNavigatorLanguage()
+          set({ locale: navLang })
+        }
+      },
+    }),
+    {
+      name: 'learn_or_die_locale_storage',
+      partialize: (state) => ({ locale: state.locale }),
     }
-  },
-}))
+  )
+)
 
 // Category Store
 export const useCategoryStore = create((set) => ({

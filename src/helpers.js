@@ -36,23 +36,6 @@ export function logoutInLocalStorage() {
     }
 }
 
-export function getLocaleFromLocalStorage() {
-    if (!isClient) return null
-    try {
-        return localStorage.getItem('learn_or_die_locale')
-    } catch {
-        return null
-    }
-}
-
-export function setLocaleInLocalStorage(locale) {
-    if (!isClient) return
-    try {
-        localStorage.setItem('learn_or_die_locale', locale)
-    } catch {
-        // Silently fail
-    }
-}
 
 export function cacheStorePostForm(form) {
     if (!isClient) return

@@ -55,11 +55,9 @@ describe('🛡️ SSR Safety', () => {
     
     // Should not crash and return safe defaults
     expect(helpers.isLoggedInInLocalStorage()).toBe(false)
-    expect(helpers.getLocaleFromLocalStorage()).toBe(null)
     
     // Should not crash when called
     expect(() => helpers.loginInLocalStorage()).not.toThrow()
-    expect(() => helpers.setLocaleInLocalStorage('zh-TW')).not.toThrow()
     expect(() => helpers.logoutInLocalStorage()).not.toThrow()
   })
 })
