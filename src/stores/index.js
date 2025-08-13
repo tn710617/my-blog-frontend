@@ -1,12 +1,21 @@
 import { create } from 'zustand'
 import { persist } from 'zustand/middleware'
-import { getLocaleFromLocalStorage, setLocaleInLocalStorage, isLoggedInInLocalStorage } from '../helpers'
+import { getLocaleFromLocalStorage, setLocaleInLocalStorage } from '../helpers'
 
-// Auth Store
+// 🛡️ SSR-Safe Helpers
+const isClient = typeof window !== 'undefined'
+const safeGetNavigatorLanguage = () => {
+  if (!isClient || !navigator?.language) {
+    return 'en' // Safe default for SSR
+  }
+  return navigator.language
+}
+
+// 🔐 Auth Store - SSR Safe
 export const useAuthStore = create(
   persist(
     (set) => ({
-      isLoggedIn: isLoggedInInLocalStorage(),
+      isLoggedIn: false, // Safe default - will be rehydrated from localStorage
       setIsLoggedIn: (value) => set({ isLoggedIn: value }),
     }),
     {
@@ -16,12 +25,21 @@ export const useAuthStore = create(
   )
 )
 
-// Locale Store 
+// 🌍 Locale Store - SSR Safe with lazy navigator.language
 export const useLocaleStore = create((set) => ({
-  locale: getLocaleFromLocalStorage() || navigator.language,
+  locale: getLocaleFromLocalStorage() || 'en', // Safe default - navigator.language will be set after hydration
   setLocale: (locale) => {
     setLocaleInLocalStorage(locale)
     set({ locale })
+  },
+  // Initialize with navigator.language after component mounts (client-side only)
+  initializeFromNavigator: () => {
+    const stored = getLocaleFromLocalStorage()
+    if (!stored && isClient) {
+      const navLang = safeGetNavigatorLanguage()
+      setLocaleInLocalStorage(navLang)
+      set({ locale: navLang })
+    }
   },
 }))
 
@@ -59,3 +77,16 @@ export const useMetaMaskModalStore = create((set) => ({
   showMetaMaskModal: true,
   setShowMetaMaskModal: (show) => set({ showMetaMaskModal: show }),
 }))
+
+// 🚀 SSR-Safe Initialization Hook
+// Call this in your main App component after mounting to properly initialize stores
+export const useInitializeStores = () => {
+  const initializeFromNavigator = useLocaleStore((state) => state.initializeFromNavigator)
+  
+  return () => {
+    if (isClient) {
+      // Initialize locale from navigator.language if no stored value exists
+      initializeFromNavigator()
+    }
+  }
+}

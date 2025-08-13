@@ -6,66 +6,118 @@ export function getMetamaskDAppDeepLink(currentLocation) {
     return `https://metamask.app.link/dapp/${getCurrentUri(currentLocation)}`
 }
 
+// SSR-Safe localStorage helpers
+const isClient = typeof window !== 'undefined'
+
 export function isLoggedInInLocalStorage() {
-    return !!localStorage.getItem('learn_or_die_is_logged_in')
+    if (!isClient) return false
+    try {
+        return !!localStorage.getItem('learn_or_die_is_logged_in')
+    } catch {
+        return false
+    }
 }
 
 export function loginInLocalStorage() {
-    localStorage.setItem('learn_or_die_is_logged_in', true)
+    if (!isClient) return
+    try {
+        localStorage.setItem('learn_or_die_is_logged_in', true)
+    } catch {
+        // Silently fail
+    }
 }
 
 export function logoutInLocalStorage() {
-    localStorage.removeItem('learn_or_die_is_logged_in')
+    if (!isClient) return
+    try {
+        localStorage.removeItem('learn_or_die_is_logged_in')
+    } catch {
+        // Silently fail
+    }
 }
 
 export function getLocaleFromLocalStorage() {
-    return localStorage.getItem('learn_or_die_locale')
+    if (!isClient) return null
+    try {
+        return localStorage.getItem('learn_or_die_locale')
+    } catch {
+        return null
+    }
 }
 
 export function setLocaleInLocalStorage(locale) {
-    localStorage.setItem('learn_or_die_locale', locale)
+    if (!isClient) return
+    try {
+        localStorage.setItem('learn_or_die_locale', locale)
+    } catch {
+        // Silently fail
+    }
 }
 
 export function cacheStorePostForm(form) {
-    localStorage.setItem('learn_or_die_cached_post_form', JSON.stringify(form))
+    if (!isClient) return
+    try {
+        localStorage.setItem('learn_or_die_cached_post_form', JSON.stringify(form))
+    } catch {
+        // Silently fail
+    }
 }
 
 export function cacheEditPostForm(form, postId) {
-    localStorage.setItem(`learn_or_die_cached_edit_form_${postId}`, JSON.stringify(form))
+    if (!isClient) return
+    try {
+        localStorage.setItem(`learn_or_die_cached_edit_form_${postId}`, JSON.stringify(form))
+    } catch {
+        // Silently fail
+    }
 }
 
 export function clearCachedEditPostForm(postId) {
-    const cachedKey = `learn_or_die_cached_edit_form_${postId}`
-
-    if (localStorage.getItem(cachedKey) === null) {
-        return
+    if (!isClient) return
+    try {
+        const cachedKey = `learn_or_die_cached_edit_form_${postId}`
+        if (localStorage.getItem(cachedKey) === null) {
+            return
+        }
+        localStorage.removeItem(cachedKey)
+    } catch {
+        // Silently fail
     }
-
-    localStorage.removeItem(cachedKey)
 }
 
 export function clearCachedStorePostForm() {
-    if (localStorage.getItem('learn_or_die_cached_post_form') === null) {
-        return
+    if (!isClient) return
+    try {
+        if (localStorage.getItem('learn_or_die_cached_post_form') === null) {
+            return
+        }
+        localStorage.removeItem('learn_or_die_cached_post_form')
+    } catch {
+        // Silently fail
     }
-
-    localStorage.removeItem('learn_or_die_cached_post_form')
 }
 
 export function getCachedEditPostForm(postId) {
-    const cachedKey = `learn_or_die_cached_edit_form_${postId}`
-
-    if (localStorage.getItem(cachedKey) === null) {
+    if (!isClient) return null
+    try {
+        const cachedKey = `learn_or_die_cached_edit_form_${postId}`
+        if (localStorage.getItem(cachedKey) === null) {
+            return null
+        }
+        return JSON.parse(localStorage.getItem(cachedKey))
+    } catch {
         return null
     }
-
-    return JSON.parse(localStorage.getItem(cachedKey))
 }
 
 export function getCachedStorePostForm() {
-    if (localStorage.getItem('learn_or_die_cached_post_form') === null) {
+    if (!isClient) return null
+    try {
+        if (localStorage.getItem('learn_or_die_cached_post_form') === null) {
+            return null
+        }
+        return JSON.parse(localStorage.getItem('learn_or_die_cached_post_form'))
+    } catch {
         return null
     }
-
-    return JSON.parse(localStorage.getItem('learn_or_die_cached_post_form'))
 }
