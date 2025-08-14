@@ -91,22 +91,26 @@ export function useIndexPosts(options = {}, page = 1, categoryId = null, tagIds 
 export function useShowPost(id, options = {}) {
     const intl = useIntl()
     const axios = useAxios()
-    return useQuery(['posts', id, 'locale', intl.locale], async () => {
-        const queryObject = {
-            locale: intl.locale
-        }
-        const query = queryString.stringify(queryObject, {arrayFormat: 'bracket'})
-        const res = await axios.get(`posts/${id}?${query}`)
-        return res.data.data
-    }, {
+    return useQuery({
+        queryKey: ['posts', id, 'locale', intl.locale],
+        queryFn: async () => {
+            const queryObject = {
+                locale: intl.locale
+            }
+            const query = queryString.stringify(queryObject, {arrayFormat: 'bracket'})
+            const res = await axios.get(`posts/${id}?${query}`)
+            return res.data.data
+        },
         ...options
     })
 }
 
 export function useStorePost() {
     const axios = useAxios()
-    return useMutation(async (data) => {
-        const res = await axios.post('posts', data)
-        return res.data.data
+    return useMutation({
+        mutationFn: async (data) => {
+            const res = await axios.post('posts', data)
+            return res.data.data
+        }
     })
 }
