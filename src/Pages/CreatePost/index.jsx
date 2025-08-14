@@ -33,7 +33,6 @@ export default function CreatePost() {
     
     const form = usePostFormStore((state) => state.form)
     const setFormInternal = usePostFormStore((state) => state.setForm)
-    const updateForm = usePostFormStore((state) => state.updateForm)
     const clearForm = usePostFormStore((state) => state.clearForm)
     
     // Compatibility wrapper for components that expect setForm(newFormObject)

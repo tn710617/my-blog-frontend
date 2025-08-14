@@ -1,5 +1,4 @@
 import toast from "react-hot-toast";
-import {clearCachedEditPostForm} from "../../helpers";
 
 export function handleUpdatePostError(error, setPostTitleValid) {
     const errorData = error.response.data
@@ -14,8 +13,12 @@ export function handleUpdatePostError(error, setPostTitleValid) {
     }
 }
 
-export function handleUpdatePostSuccess(postId, intl, navigate) {
+export function handleUpdatePostSuccess(postId, intl, navigate, clearFormFn) {
     toast.success(intl.formatMessage({id: 'edit_post.toast_edit_successfully'}))
-    clearCachedEditPostForm(postId)
+    
+    // Clear form first to reset cache state
+    clearFormFn(postId)
+
+    // Navigate to single post to show the updated post
     navigate(`/single-post?post_id=${postId}`)
 }

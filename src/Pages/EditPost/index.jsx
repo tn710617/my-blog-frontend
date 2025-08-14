@@ -1,7 +1,7 @@
 import React from "react";
 import {BsFillPenFill} from "react-icons/bs";
 import Tagify from "@yaireo/tagify"
-import {useRef, useState, useEffect} from "react";
+import {useRef, useState, useEffect, useMemo} from "react";
 import {BsSave2Fill} from "react-icons/bs";
 import {BiReset} from "react-icons/bi";
 import {Editor} from '@toast-ui/react-editor';
@@ -10,6 +10,7 @@ import '@toast-ui/editor/dist/toastui-editor.css';
 import {useTags} from "../../APIs/tags";
 import {useCategories} from "../../APIs/categories";
 import {useUpdatePost, useShowPost} from "../../APIs/posts";
+import {useQueryClient} from "@tanstack/react-query";
 import PostTitleInput from "../../Components/PostTitleInput";
 import {useNavigate} from "react-router-dom";
 import {handleUpdatePostError, handleUpdatePostSuccess} from "./handlers";
@@ -20,7 +21,7 @@ import LocaleSelect from "../../Components/LocaleSelect";
 import CategorySelection from "../../Components/CategorySelection";
 import {useSearchParams} from "react-router-dom";
 import dayjs from "dayjs";
-import {cacheEditPostForm, clearCachedEditPostForm, getCachedEditPostForm} from "../../helpers";
+import {useEditPostFormStore} from "../../stores";
 import PublishMediumSelection from "../../Components/PublishMediumSelection";
 
 export default function EditPost() {
@@ -33,48 +34,153 @@ export default function EditPost() {
     const showPost = useShowPost(postId, {
         enabled: !!postId,
     })
-    const cachedPost = getCachedEditPostForm(postId)
     const updatePost = useUpdatePost()
     const tagInputRef = useRef();
     const editorRef = useRef()
     const [markdownContentLen, setMarkdownContentLen] = useState(0)
-    const [isFormLoaded, setIsFormLoaded] = useState(false)
 
-    const defaultForm = {
-        tag_ids: [],
-        post_title: '',
-        post_content: '',
-        category_id: "",
-        is_public: true,
-        locale: "zh-TW",
-        created_at: "",
-        should_publish_medium: false,
+    // Use Zustand store for user edits only
+    const forms = useEditPostFormStore((state) => state.forms)
+    const setFormInternal = useEditPostFormStore((state) => state.setForm)
+    const clearForm = useEditPostFormStore((state) => state.clearForm)
+
+    // Get cached form (user edits only)
+    const cachedForm = useMemo(() => {
+        return forms[postId] || null
+    }, [forms, postId])
+
+    // Check if user has made any edits (cached form exists)
+    const hasUnsavedChanges = cachedForm !== null
+
+    // Display form: cached data (if user edited) OR server data (for display only)
+    const displayForm = useMemo(() => {
+        // Use cached form if user has edited
+        if (cachedForm) {
+            return cachedForm
+        }
+
+        // Derive from server data for display (NOT stored in Zustand)
+        if (showPost.data) {
+            return {
+                tag_ids: showPost.data.tags.map(tag => tag.id),
+                post_title: showPost.data.post_title,
+                post_content: showPost.data.post_content,
+                category_id: showPost.data.category_id,
+                is_public: showPost.data.is_public,
+                locale: showPost.data.locale,
+                created_at: dayjs(showPost.data.created_at).toISOString().slice(0, -1),
+                should_publish_medium: showPost.data.should_publish_medium || false,
+            }
+        }
+
+        // Fallback for initial render before data loads
+        return {
+            tag_ids: [],
+            post_title: '',
+            post_content: '',
+            category_id: "",
+            is_public: true,
+            locale: "zh-TW",
+            created_at: "",
+            should_publish_medium: false,
+        }
+    }, [cachedForm, showPost.data])
+
+    // Helper function to create hash from form data
+    // Normalizes both server data and display form to same structure before hashing
+    const createFormHash = (data, isServerData = false) => {
+        const normalizedData = {
+            tag_ids: isServerData ?
+                [...data.tags.map(tag => tag.id)].sort() : // Server: extract IDs from tag objects
+                [...data.tag_ids].sort(), // Display form: use tag_ids directly
+            post_title: data.post_title,
+            post_content: data.post_content,
+            category_id: data.category_id,
+            is_public: data.is_public,
+            locale: data.locale,
+            created_at: isServerData ?
+                dayjs(data.created_at).toISOString().slice(0, -1) : // Server: normalize date format
+                data.created_at, // Display form: already normalized
+            should_publish_medium: data.should_publish_medium || false
+        }
+        return JSON.stringify(normalizedData)
     }
 
-    const [form, setForm] = useState(defaultForm)
+    // Function to check if display form is identical to server data
+    const isDisplayFormIdenticalToServerData = useMemo(() => {
+        if (!showPost.data) return false
+
+        const serverHash = createFormHash(showPost.data, true) // true = isServerData
+        const displayHash = createFormHash(displayForm, false) // false = isDisplayForm
+
+        return serverHash === displayHash
+    }, [displayForm, showPost.data])
+
+    // Check if form data differs from server data
+    const shouldPersistForm = (formData) => {
+        if (!showPost.data) return false// No server data to compare, persist anyway
+
+        const serverHash = createFormHash(showPost.data, true)
+        const formHash = createFormHash(formData, false)
+
+        return serverHash !== formHash // Persist when different from server
+    }
+
+    // Wrapper for components that expect setForm(newFormObject)
+    // Always updates local state, conditionally persists based on shouldPersistForm
+    const setForm = (newForm, shouldPersist = null) => {
+        // If shouldPersist is explicitly provided, use it; otherwise check against server data
+        const persist = shouldPersist !== null ? shouldPersist : shouldPersistForm(newForm)
+
+        if (!persist) {
+            clearForm(postId)
+        }
+
+        if (persist) {
+            setFormInternal(postId, newForm)
+        } else {
+            // Don't persist, but the displayForm will still update via useMemo
+        }
+    }
+
     const tags = useTags()
     const categories = useCategories()
     const [postTitleValid, setPostTitleValid] = useState(true)
     const navigate = useNavigate()
     const intl = useIntl()
 
+
     const handleResetButtonClick = (event) => {
         event.preventDefault()
+
+        // Only allow reset if there are unsaved changes
+        if (!hasUnsavedChanges) {
+            return
+        }
+
+        // Reset UI state and clear cached form
+        // This will cause useEffect to repopulate from existing showPost.data
         setIsTagInputLoaded(false)
         setIsMarkdownLoaded(false)
-        setIsFormLoaded(false)
         setResetNumber(prev => prev + 1)
-        clearCachedEditPostForm(postId)
+        clearForm(postId)
+        // Note: No server reload needed - uses existing showPost.data
     }
 
     const handleUpdateButtonClick = async (event) => {
         event.preventDefault()
+
+        // Only allow update if there are unsaved changes
+        if (!hasUnsavedChanges) {
+            return
+        }
+
         const data = {
-            ...form,
+            ...displayForm,
             postId
         }
         await updatePost.mutateAsync(data, {
-            onSuccess: () => handleUpdatePostSuccess(postId, intl, navigate),
+            onSuccess: () => handleUpdatePostSuccess(postId, intl, navigate, clearForm),
             onError: (error) => handleUpdatePostError(error, setPostTitleValid),
         })
     }
@@ -82,13 +188,13 @@ export default function EditPost() {
     const handleChange = () => {
         const editorInstance = editorRef.current.getInstance();
         const value = editorInstance.getMarkdown()
-        setForm({...form, post_content: value})
+        setForm({...displayForm, post_content: value})
         setMarkdownContentLen(value.length)
     };
 
     const handleTagChange = (event) => {
         if (event.target.value === '') {
-            setForm({...form, tag_ids: []})
+            setForm({...displayForm, tag_ids: []})
             return
         }
 
@@ -98,7 +204,7 @@ export default function EditPost() {
             return tagObjectsArray.find(tagObject => tagObject.tag_name === tag).id
         })
 
-        setForm({...form, tag_ids: tagIdsArray})
+        setForm({...displayForm, tag_ids: tagIdsArray})
     }
 
     useEffect(() => {
@@ -127,9 +233,16 @@ export default function EditPost() {
 
     }, [tags.status, tags.data]);
 
+    // Clear cached form when display form becomes identical to server data
+    useEffect(() => {
+        if (isDisplayFormIdenticalToServerData && cachedForm) {
+            clearForm(postId)
+        }
+    }, [isDisplayFormIdenticalToServerData, cachedForm, postId, clearForm, showPost])
+
     useEffect(() => {
         function loadTagInputFromCachedPost() {
-            const tagIdsArray = cachedPost.tag_ids
+            const tagIdsArray = displayForm.tag_ids
             const tagNamesArray = tagIdsArray.map(tagId => {
                 const tagObjectsArray = tags.data
                 return tagObjectsArray.find(tagObject => tagObject.id === tagId).tag_name
@@ -149,7 +262,7 @@ export default function EditPost() {
         }
 
         if (tags.status === 'success' && showPost.status === 'success' && isTagifyLoaded) {
-            if (cachedPost) {
+            if (hasUnsavedChanges) {
                 loadTagInputFromCachedPost()
                 return
             }
@@ -157,78 +270,40 @@ export default function EditPost() {
             loadTagInputFromShowPost()
         }
 
-    }, [tags.status, tags.data, showPost.data, resetNumber, isTagifyLoaded, setIsTagInputLoaded, showPost.status])
+    }, [tags.status, tags.data, showPost.data?.tags, isTagifyLoaded, showPost.status, hasUnsavedChanges, displayForm.tag_ids])
 
     useEffect(() => {
-        function loadTagInputFromCachedPost() {
-            editorRef.current.getInstance().setMarkdown(cachedPost.post_content)
+        function loadMarkdownInputFromCachedPost() {
+            const editorInstance = editorRef.current.getInstance()
+            const currentContent = editorInstance.getMarkdown()
+
+            // Only update if content actually changed
+            if (currentContent !== displayForm.post_content) {
+                editorInstance.setMarkdown(displayForm.post_content)
+            }
             setIsMarkdownLoaded(true)
         }
 
         function loadMarkdownInputFromShowPost() {
-            editorRef.current.getInstance().setMarkdown(showPost.data.post_content)
+            const editorInstance = editorRef.current.getInstance()
+            const currentContent = editorInstance.getMarkdown()
+
+            // Only update if content actually changed
+            if (currentContent !== showPost.data.post_content) {
+                editorInstance.setMarkdown(showPost.data.post_content)
+            }
             setIsMarkdownLoaded(true)
         }
 
         if (showPost.status === 'success' && isTagInputLoaded) {
-            if (cachedPost !== null) {
-                loadTagInputFromCachedPost()
+            if (hasUnsavedChanges) {
+                loadMarkdownInputFromCachedPost()
                 return
             }
 
             loadMarkdownInputFromShowPost()
         }
-    }, [showPost.status, editorRef, resetNumber, isTagInputLoaded, setIsMarkdownLoaded, showPost.data])
-
-    useEffect(() => {
-        function setFormFromShowPost() {
-            setForm(prev => {
-                return {
-                    ...prev,
-                    tag_ids: showPost.data.tags.map(tag => tag.id),
-                    post_title: showPost.data.post_title,
-                    post_content: showPost.data.post_content,
-                    category_id: showPost.data.category_id,
-                    is_public: showPost.data.is_public,
-                    locale: showPost.data.locale,
-                    created_at: dayjs(showPost.data.created_at).toISOString().slice(0, -1),
-                }
-            })
-        }
-
-        function setFormFromCachedPost() {
-            setForm(prev => {
-                return {
-                    ...prev,
-                    tag_ids: cachedPost.tag_ids,
-                    post_title: cachedPost.post_title,
-                    post_content: cachedPost.post_content,
-                    category_id: cachedPost.category_id,
-                    is_public: cachedPost.is_public,
-                    locale: cachedPost.locale,
-                    created_at: cachedPost.created_at,
-                }
-            })
-        }
-
-        if (showPost.status === 'success' && isMarkdownLoaded) {
-            if (cachedPost !== null) {
-                setFormFromCachedPost()
-                setIsFormLoaded(true)
-                return
-            }
-
-            setFormFromShowPost()
-            setIsFormLoaded(true)
-        }
-
-    }, [showPost.status, showPost.data, resetNumber, isMarkdownLoaded])
-
-    useEffect(() => {
-        if (isFormLoaded) {
-            cacheEditPostForm(form, postId)
-        }
-    }, [form, postId, isFormLoaded])
+    }, [showPost.status, editorRef, resetNumber, isTagInputLoaded, showPost.data, hasUnsavedChanges, displayForm.post_content])
 
     return (
         <div className={"m-4 flex justify-center lg:space-x-5"}>
@@ -240,11 +315,11 @@ export default function EditPost() {
                 </div>
                 <form
                     className={"flex flex-col gap-5 rounded-xl shadow-xl w-full m-auto bg-gray-50 px-4 py-7"}>
-                    <PostTitleInput form={form} setForm={setForm} isValid={postTitleValid}
+                    <PostTitleInput form={displayForm} setForm={setForm} isValid={postTitleValid}
                                     setIsValid={setPostTitleValid}/>
                     <div className={"flex gap-2"}>
-                        <CategorySelection form={form} setForm={setForm} categories={categories}/>
-                        <PublishMediumSelection form={form} setForm={setForm}/>
+                        <CategorySelection form={displayForm} setForm={setForm} categories={categories}/>
+                        <PublishMediumSelection form={displayForm} setForm={setForm}/>
                     </div>
                     <div>
                         <input
@@ -257,9 +332,9 @@ export default function EditPost() {
                         </input>
                     </div>
                     <div className={"flex gap-2 justify-between"}>
-                        <IsPublicSelect form={form} setForm={setForm}/>
-                        <LocaleSelect form={form} setForm={setForm}/>
-                        <DateInput form={form} setForm={setForm}/>
+                        <IsPublicSelect form={displayForm} setForm={setForm}/>
+                        <LocaleSelect form={displayForm} setForm={setForm}/>
+                        <DateInput form={displayForm} setForm={setForm}/>
                     </div>
                     <div>
                         <Editor
@@ -275,19 +350,24 @@ export default function EditPost() {
                     <div className={"flex justify-between items-center lg:hidden"}>
                         <div>{markdownContentLen} / 30000</div>
                         <div className={"flex gap-2"}>
-                            <div className={"py-2 px-4 bg-red-500 w-[113px] text-center rounded-lg"} role={"button"}
-                                 onClick={handleResetButtonClick}
+                            <div
+                                className={`py-2 px-4 w-[113px] text-center rounded-lg ${hasUnsavedChanges ? 'bg-red-500 cursor-pointer' : 'bg-gray-400 cursor-not-allowed'}`}
+                                role={"button"}
+                                onClick={handleResetButtonClick}
                             >
-                                <button className={"text-2xl text-white flex justify-center items-center gap-2"}>
+                                <button className={"text-2xl text-white flex justify-center items-center gap-2"}
+                                        disabled={!hasUnsavedChanges}>
                                     <BiReset
                                         className={"text-2xl text-white"}/>{intl.formatMessage({id: "store_post.reset_button"})}
                                 </button>
                             </div>
-                            <div className={"py-2 px-4 bg-blue-500 w-[113px] text-center rounded-lg"}
-                                 role={"button"}
-                                 onClick={handleUpdateButtonClick}
+                            <div
+                                className={`py-2 px-4 w-[113px] text-center rounded-lg ${hasUnsavedChanges && !updatePost.isLoading ? 'bg-blue-500 cursor-pointer' : 'bg-gray-400 cursor-not-allowed'}`}
+                                role={"button"}
+                                onClick={handleUpdateButtonClick}
                             >
-                                <button className={"text-2xl text-white flex justify-center items-center gap-2"}>
+                                <button className={"text-2xl text-white flex justify-center items-center gap-2"}
+                                        disabled={!hasUnsavedChanges || updatePost.isLoading}>
                                     <BsSave2Fill/>{intl.formatMessage({id: "store_post.save_button"})}
                                 </button>
                             </div>
@@ -301,17 +381,20 @@ export default function EditPost() {
             <div className={"lg:w-1/6 xl:w-2/6 justify-center lg:block my-auto hidden relative"}>
                 <div className={"fixed flex flex-col gap-3"}>
                     <div>{markdownContentLen} / 30000</div>
-                    <div className={"p-4 bg-blue-500 inline-block w-[60px] text-center rounded-xl"}
-                         role={"button"}
-                         onClick={handleUpdateButtonClick}
+                    <div
+                        className={`p-4 inline-block w-[60px] text-center rounded-xl ${hasUnsavedChanges && !updatePost.isLoading ? 'bg-blue-500 cursor-pointer' : 'bg-gray-400 cursor-not-allowed'}`}
+                        role={"button"}
+                        onClick={handleUpdateButtonClick}
                     >
-                        <button className={"text-2xl text-white"}
+                        <button className={"text-2xl text-white"} disabled={!hasUnsavedChanges || updatePost.isLoading}
                         ><BsSave2Fill className={updatePost.isLoading ? "animate-spin" : ''}/></button>
                     </div>
-                    <div className={"p-3 bg-red-500 inline-block w-[60px] text-center rounded-xl"} role={"button"}
-                         onClick={handleResetButtonClick}
+                    <div
+                        className={`p-3 inline-block w-[60px] text-center rounded-xl ${hasUnsavedChanges ? 'bg-red-500 cursor-pointer' : 'bg-gray-400 cursor-not-allowed'}`}
+                        role={"button"}
+                        onClick={handleResetButtonClick}
                     >
-                        <button
+                        <button disabled={!hasUnsavedChanges}
                         ><BiReset className={"text-3xl text-white"}/></button>
                     </div>
                 </div>

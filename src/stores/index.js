@@ -120,6 +120,44 @@ export const usePostFormStore = create(
   )
 )
 
+// ✏️ Edit Post Form Store - Only for user edits (conditional persistence)
+export const useEditPostFormStore = create(
+  persist(
+    (set, get) => ({
+      forms: {}, // Store multiple forms keyed by postId
+      getForm: (postId) => {
+        const forms = get().forms
+        return forms[postId] || null // No default form - only return cached forms
+      },
+      setForm: (postId, form) => set((state) => ({
+        forms: { ...state.forms, [postId]: form }
+      })),
+      updateForm: (postId, updates) => set((state) => {
+        const existingForm = state.forms[postId]
+        if (!existingForm) {
+          console.warn(`Attempted to update non-existent form for postId: ${postId}`)
+          return state
+        }
+        return {
+          forms: { 
+            ...state.forms, 
+            [postId]: { ...existingForm, ...updates }
+          }
+        }
+      }),
+      clearForm: (postId) => set((state) => {
+        const newForms = { ...state.forms }
+        delete newForms[postId]
+        return { forms: newForms }
+      }),
+    }),
+    {
+      name: 'learn_or_die_edit_form_storage',
+      partialize: (state) => ({ forms: state.forms }),
+    }
+  )
+)
+
 // 🚀 SSR-Safe Initialization Hook
 // Call this in your main App component after mounting to properly initialize stores
 export const useInitializeStores = () => {
