@@ -12,27 +12,34 @@ import toast from "react-hot-toast";
 export function useIsLoggedIn(options = {}) {
     const axios = useAxios()
 
-    return useQuery(['is-logged-in'], async () => {
-        await axios.get('is-logged-in')
-        return 'success'
-    }, {...options})
+    return useQuery({
+        queryKey: ['is-logged-in'],
+        queryFn: async () => {
+            await axios.get('is-logged-in')
+            return 'success'
+        },
+        ...options
+    })
 }
 
 export function useCsrfToken() {
     const axios = getAxios()
-    return useMutation(async () => {
-        const res = await axios.get('csrf-cookie')
-        return res.data.data
+    return useMutation({
+        mutationFn: async () => {
+            const res = await axios.get('csrf-cookie')
+            return res.data.data
+        }
     })
 }
 
 export function useLogout() {
     const setIsLoggedIn = useAuthStore((state) => state.setIsLoggedIn)
     const axios = useAxios()
-    return useMutation(async () => {
-        const res = await axios.post('logout')
-        return res.data.data
-    }, {
+    return useMutation({
+        mutationFn: async () => {
+            const res = await axios.post('logout')
+            return res.data.data
+        },
         onSuccess: (data, variables, context) => {
             setIsLoggedIn(false)
             logoutInLocalStorage()

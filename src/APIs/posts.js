@@ -43,26 +43,29 @@ export function useUpdatePost() {
 export function useInfinitePosts(options = {}, categoryId = null, tagIds = [], sort = null, search = null) {
     const intl = useIntl()
     const axios = useAxios()
-    return useInfiniteQuery(['posts', 'category', categoryId, 'tags', tagIds, 'sort', sort, 'search', search, 'locale', intl.locale], async ({pageParam = 0}) => {
-        const queryObject = {
-            category_id: categoryId,
-            tag_ids: tagIds,
-            sort: sort,
-            page: pageParam,
-            search: search,
-            locale: intl.locale
-        }
-        const query = queryString.stringify(queryObject, {arrayFormat: 'bracket'})
-        const res = await axios.get(`posts?${query}`)
-        return res.data
-    }, {
-        ...options,
+    return useInfiniteQuery({
+        queryKey: ['posts', 'category', categoryId, 'tags', tagIds, 'sort', sort, 'search', search, 'locale', intl.locale],
+        queryFn: async ({pageParam}) => {
+            const queryObject = {
+                category_id: categoryId,
+                tag_ids: tagIds,
+                sort: sort,
+                page: pageParam,
+                search: search,
+                locale: intl.locale
+            }
+            const query = queryString.stringify(queryObject, {arrayFormat: 'bracket'})
+            const res = await axios.get(`posts?${query}`)
+            return res.data
+        },
+        initialPageParam: 0,
         getNextPageParam: (lastPage) => {
             const currentPage = lastPage.meta.current_page
             const nextPage = currentPage + 1
             const finalPage = lastPage.meta.last_page
             return nextPage > finalPage ? null : nextPage
-        }
+        },
+        ...options
     })
 }
 
