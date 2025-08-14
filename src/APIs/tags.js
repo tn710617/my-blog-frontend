@@ -21,14 +21,16 @@ export function useIndexPopularTags(options = {}) {
 export function useTags(options = {}) {
     const intl = useIntl()
     const axios = useAxios()
-    return useQuery(['tags', 'locale', intl.locale], async () => {
-        const queryObject = {
-            locale: intl.locale
-        }
-        const query = queryString.stringify(queryObject, {arrayFormat: 'bracket'})
-        const res = await axios.get(`tags?${query}`)
-        return res.data.data
-    }, {
+    return useQuery({
+        queryKey: ['tags', 'locale', intl.locale],
+        queryFn: async () => {
+            const queryObject = {
+                locale: intl.locale
+            }
+            const query = queryString.stringify(queryObject, {arrayFormat: 'bracket'})
+            const res = await axios.get(`tags?${query}`)
+            return res.data.data
+        },
         ...options
     })
 }

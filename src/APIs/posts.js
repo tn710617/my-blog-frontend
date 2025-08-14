@@ -6,14 +6,16 @@ import useAxios from "./useAxios";
 export function useIndexGroupsPosts(options = {}) {
     const intl = useIntl()
     const axios = useAxios()
-    return useQuery(['grouped-posts', 'locale', intl.locale], async () => {
-        const queryObject = {
-            locale: intl.locale
-        }
-        const query = queryString.stringify(queryObject, {arrayFormat: 'bracket'})
-        const res = await axios.get(`grouped-posts?${query}`)
-        return res.data.data
-    }, {
+    return useQuery({
+        queryKey: ['grouped-posts', 'locale', intl.locale],
+        queryFn: async () => {
+            const queryObject = {
+                locale: intl.locale
+            }
+            const query = queryString.stringify(queryObject, {arrayFormat: 'bracket'})
+            const res = await axios.get(`grouped-posts?${query}`)
+            return res.data.data
+        },
         ...options
     })
 }
@@ -67,19 +69,21 @@ export function useInfinitePosts(options = {}, categoryId = null, tagIds = [], s
 export function useIndexPosts(options = {}, page = 1, categoryId = null, tagIds = [], sort = null, search = null) {
     const intl = useIntl()
     const axios = useAxios()
-    return useQuery(['posts', 'category', categoryId, 'tags', tagIds, 'sort', sort, 'page', page, 'search', search, 'locale', intl.locale], async () => {
-        const queryObject = {
-            category_id: categoryId,
-            tag_ids: tagIds,
-            sort: sort,
-            page: page,
-            search: search,
-            locale: intl.locale
-        }
-        const query = queryString.stringify(queryObject, {arrayFormat: 'bracket'})
-        const res = await axios.get(`posts?${query}`)
-        return res.data
-    }, {
+    return useQuery({
+        queryKey: ['posts', 'category', categoryId, 'tags', tagIds, 'sort', sort, 'page', page, 'search', search, 'locale', intl.locale],
+        queryFn: async () => {
+            const queryObject = {
+                category_id: categoryId,
+                tag_ids: tagIds,
+                sort: sort,
+                page: page,
+                search: search,
+                locale: intl.locale
+            }
+            const query = queryString.stringify(queryObject, {arrayFormat: 'bracket'})
+            const res = await axios.get(`posts?${query}`)
+            return res.data
+        },
         ...options
     })
 }

@@ -6,15 +6,17 @@ import useAxios from "./useAxios";
 export function useCategories(options = {}) {
     const intl = useIntl()
     const axios = useAxios()
-    return useQuery(['categories', 'locale', intl.locale], async () => {
-        const queryObject = {
-            locale: intl.locale,
-        }
-        const query = queryString.stringify(queryObject, {arrayFormat: 'bracket'})
+    return useQuery({
+        queryKey: ['categories', 'locale', intl.locale],
+        queryFn: async () => {
+            const queryObject = {
+                locale: intl.locale,
+            }
+            const query = queryString.stringify(queryObject, {arrayFormat: 'bracket'})
 
-        const res = await axios.get(`categories?${query}`)
-        return res.data.data
-    }, {
+            const res = await axios.get(`categories?${query}`)
+            return res.data.data
+        },
         ...options
     })
 }
