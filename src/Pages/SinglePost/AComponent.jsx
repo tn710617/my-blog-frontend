@@ -1,9 +1,15 @@
 import React from "react";
 
-export default function AComponent(props) {
+export default function AComponent(incomingProps = {}) {
+    const { children, ...rest } = incomingProps || {}
     return (
-        <a {...props} className={"underline text-blue-600 hover:text-blue-800 visited:text-purple-600"}>
-            {props.children}
+        <a
+            {...rest}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="underline text-blue-600 hover:text-blue-800 visited:text-purple-600"
+        >
+            {children}
         </a>
     )
 }

@@ -15,9 +15,8 @@ import AComponent from "./AComponent";
 
 export default function PostBody({content}) {
     return (
-        <ReactMarkdown
-            className='markdown'
-            linkTarget='_blank'
+        <div className='markdown'>
+            <ReactMarkdown
             rehypePlugins={[rehypeRaw, rehypeSlug, rehypeAutolinkHeadings]}
             remarkPlugins={[remarkGfm]}
             components={{
@@ -38,5 +37,6 @@ export default function PostBody({content}) {
         >
             {content}
         </ReactMarkdown>
+        </div>
     )
 }

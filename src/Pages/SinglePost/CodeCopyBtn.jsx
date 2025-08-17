@@ -5,12 +5,26 @@ import {FaCheckSquare} from "react-icons/fa";
 export default function CodeCopyBtn({children}) {
     const [copyOk, setCopyOk] = React.useState(false);
 
-    const icon = copyOk ? <FaCheckSquare className={"text-white"}/> : <FaCopy/>;
+    const icon = copyOk ? <FaCheckSquare className="text-white"/> : <FaCopy/>;
+
+    const extractText = (nodes) => {
+        if (nodes == null) return ''
+        if (typeof nodes === 'string') return nodes
+        const arr = React.Children.toArray(nodes)
+        return arr.map((n) => {
+            if (typeof n === 'string') return n
+            if (n && n.props && n.props.children) return extractText(n.props.children)
+            return ''
+        }).join('')
+    }
 
     useEffect(() => {
         if (copyOk === false) return
 
-        navigator.clipboard.writeText(children[0].props.children[0].trim());
+        const text = extractText(children).trim()
+        if (text.length > 0) {
+            navigator.clipboard.writeText(text)
+        }
 
         const timeoutId = setTimeout(() => {
             setCopyOk(false);

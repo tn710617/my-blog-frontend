@@ -1,8 +1,9 @@
 import React from "react";
 import {useRef, useEffect} from "react";
 
-export default function HeaderComponent(props) {
-    const {tagName} = props.node;
+export default function HeaderComponent(props = {}) {
+    const node = props?.node || {}
+    const tagName = node.tagName;
     const ref = useRef(null);
 
     const handleHeaderClicked = (e) => {
@@ -35,7 +36,7 @@ export default function HeaderComponent(props) {
 
         // Clean up the timeout
         return () => clearTimeout(timeoutId);
-    }, [props.id, window.location.hash]);
+    }, [props.id]);
 
 
     let HeaderTag = "h4"; // Default to h4
