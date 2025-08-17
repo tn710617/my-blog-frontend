@@ -70,12 +70,12 @@
     ]
   },
   "engines": {
-    "node": ">=20.5.0 || ^18.17.0",
+    "node": ">=18.9.0",
     "yarn": ">=1.22.0"
   },
   "jest": {
     "transformIgnorePatterns": [
-      "node_modules/(?!query-string)"
+      "node_modules/(?!axios|query-string|decode-uri-component|split-on-first|filter-obj)"
     ]
   },
   "devDependencies": {
