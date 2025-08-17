@@ -6,7 +6,9 @@ export default function getAxios(headers = {}, version = '') {
     const commonConfig = {
         baseURL: baseUrl,
         headers: {'Content-Type': 'application/json', ...headers},
-        withCredentials: true
+        withCredentials: true,
+        xsrfCookieName: 'XSRF-TOKEN',
+        xsrfHeaderName: 'X-XSRF-TOKEN',
     }
 
     return axios.create({...commonConfig});
