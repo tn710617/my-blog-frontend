@@ -69,6 +69,10 @@
       "last 1 safari version"
     ]
   },
+  "engines": {
+    "node": ">=20.5.0 || ^18.17.0",
+    "yarn": ">=1.22.0"
+  },
   "jest": {
     "transformIgnorePatterns": [
       "node_modules/(?!query-string)"
@@ -77,6 +81,7 @@
   "devDependencies": {
     "@yaireo/tagify": "^4.17.7",
     "gh-pages": "^4.0.0",
+    "msw": "1",
     "tailwindcss": "^3.2.3"
   }
 }

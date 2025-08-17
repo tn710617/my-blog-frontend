@@ -1,5 +1,5 @@
 # Development Dockerfile for React Blog Frontend
-FROM node:18-alpine as development
+FROM node:20-alpine as development
 
 # Set working directory
 WORKDIR /app
@@ -31,7 +31,7 @@ EXPOSE 3000
 CMD ["yarn", "start"]
 
 # Production build stage (for future use)
-FROM node:18-alpine as build
+FROM node:20-alpine as build
 
 WORKDIR /app
 COPY package.json yarn.lock* ./
