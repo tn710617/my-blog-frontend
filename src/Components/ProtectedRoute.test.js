@@ -37,5 +37,26 @@ describe('ProtectedRoute', () => {
     // Login modal should be opened via store
     expect(useLoginModalStore.getState().showLoginModal).toBe(true)
   })
-})
 
+  it('renders child route when logged in', async () => {
+    // Seed auth store and localStorage to appear logged in
+    useAuthStore.setState({ isLoggedIn: true })
+    localStorage.setItem('learn_or_die_is_logged_in', 'true')
+
+    render(
+      <MemoryRouter initialEntries={["/protected"]}>
+        <Routes>
+          <Route path="/" element={<div>Home</div>} />
+          <Route element={<ProtectedRoute redirectPath="/" /> }>
+            <Route path="/protected" element={<div>Secret</div>} />
+          </Route>
+        </Routes>
+      </MemoryRouter>
+    )
+
+    expect(await screen.findByText('Secret')).toBeInTheDocument()
+    expect(screen.queryByText('Home')).toBeNull()
+    // Modal should remain closed
+    expect(useLoginModalStore.getState().showLoginModal).toBe(false)
+  })
+})
