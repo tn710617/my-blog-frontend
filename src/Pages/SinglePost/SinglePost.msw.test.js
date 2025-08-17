@@ -1,3 +1,4 @@
+/* eslint-disable import/first */
 import React from 'react'
 import { render, screen } from '@testing-library/react'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
@@ -31,4 +32,3 @@ describe('SinglePost page (MSW)', () => {
     expect(screen.getByText('Body')).toBeInTheDocument()
   })
 })
-

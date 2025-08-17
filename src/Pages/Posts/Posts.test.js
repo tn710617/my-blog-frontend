@@ -1,3 +1,4 @@
+/* eslint-disable import/first */
 import React from 'react'
 import { render, screen, fireEvent } from '@testing-library/react'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'

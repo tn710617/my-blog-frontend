@@ -1,5 +1,5 @@
 import React from 'react'
-import { render, screen, fireEvent } from '@testing-library/react'
+import { render, fireEvent } from '@testing-library/react'
 import SearchBoxComponent from './SearchBoxComponent'
 
 jest.mock('./SearchBoxInput', () => () => <div>SearchInput</div>)
@@ -22,4 +22,3 @@ describe('SearchBoxComponent', () => {
     expect(setDropdown).toHaveBeenCalledWith(false)
   })
 })
-

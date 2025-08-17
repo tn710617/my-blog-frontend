@@ -1,3 +1,4 @@
+/* eslint-disable import/first */
 import React from 'react'
 import { render, screen } from '@testing-library/react'
 import { MemoryRouter } from 'react-router-dom'
@@ -51,4 +52,3 @@ describe('Nav', () => {
     expect(screen.queryByText('Login')).toBeNull()
   })
 })
-
