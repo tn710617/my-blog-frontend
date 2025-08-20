@@ -21,7 +21,7 @@ const root = ReactDOM.createRoot(document.getElementById('root'));
 root.render(
     <React.StrictMode>
         <QueryClientProvider client={queryClient}>
-            <BrowserRouter basename={process.env.PUBLIC_URL}>
+            <BrowserRouter basename={import.meta.env.VITE_PUBLIC_URL || import.meta.env.PUBLIC_URL || '/'}>
                 <SetLocale>
                     <App/>
                 </SetLocale>

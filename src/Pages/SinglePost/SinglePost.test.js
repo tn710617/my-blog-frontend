@@ -7,10 +7,10 @@ import { MemoryRouter } from 'react-router-dom'
 import en from '../../locales/en.json'
 
 // Mock ESM-heavy markdown body component
-jest.mock('./PostBody', () => () => <div>Body</div>)
+vi.mock('./PostBody', () => () => <div>Body</div>)
 
 // Mock API to avoid network/ESM deps
-jest.mock('../../APIs/posts', () => ({
+vi.mock('../../APIs/posts', () => ({
   useShowPost: () => ({
     isSuccess: true,
     data: {
@@ -26,7 +26,7 @@ jest.mock('../../APIs/posts', () => ({
       locale: 'en',
     },
   }),
-  useDeletePost: () => ({ mutateAsync: jest.fn(), isLoading: false }),
+  useDeletePost: () => ({ mutateAsync: vi.fn(), isLoading: false }),
 }))
 
 import SinglePost from '.'

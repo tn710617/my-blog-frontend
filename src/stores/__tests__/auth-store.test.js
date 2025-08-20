@@ -4,7 +4,7 @@
 
 describe('useAuthStore', () => {
   beforeEach(() => {
-    jest.resetModules()
+    vi.resetModules()
     localStorage.clear()
   })
 

@@ -4,7 +4,7 @@ import LoadMorePageComponent from './LoadMorePageComponent'
 
 describe('LoadMorePageComponent', () => {
   it('renders load more text and calls fetchNextPage when enabled', () => {
-    const fetchNextPage = jest.fn()
+    const fetchNextPage = vi.fn()
     const pagination = { hasNextPage: true, isFetching: false, fetchNextPage }
 
     render(
@@ -23,7 +23,7 @@ describe('LoadMorePageComponent', () => {
   })
 
   it('shows loading text when fetching', () => {
-    const pagination = { hasNextPage: true, isFetching: true, fetchNextPage: jest.fn() }
+    const pagination = { hasNextPage: true, isFetching: true, fetchNextPage: vi.fn() }
     render(
       <LoadMorePageComponent
         pagination={pagination}
@@ -36,7 +36,7 @@ describe('LoadMorePageComponent', () => {
   })
 
   it('disables and shows last page text when no next page', () => {
-    const pagination = { hasNextPage: false, isFetching: false, fetchNextPage: jest.fn() }
+    const pagination = { hasNextPage: false, isFetching: false, fetchNextPage: vi.fn() }
     render(
       <LoadMorePageComponent
         pagination={pagination}

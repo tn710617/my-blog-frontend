@@ -13,7 +13,7 @@ const renderWithIntl = (ui) =>
 
 describe('PostsInfo', () => {
   it('calls setSort for latest and recently updated', () => {
-    const setSort = jest.fn()
+    const setSort = vi.fn()
     renderWithIntl(<PostsInfo sort="created_at" setSort={setSort} />)
 
     // Click Recently Updated

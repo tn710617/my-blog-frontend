@@ -6,7 +6,7 @@ describe('useLocaleStore', () => {
   const originalNavigator = global.navigator
 
   beforeEach(() => {
-    jest.resetModules()
+    vi.resetModules()
     localStorage.clear()
     // Set a controllable navigator
     Object.defineProperty(global, 'navigator', {

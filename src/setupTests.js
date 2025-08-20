@@ -1,8 +1,15 @@
-// jest-dom adds custom jest matchers for asserting on DOM nodes.
-// allows you to do things like:
-// expect(element).toHaveTextContent(/react/i)
-// learn more: https://github.com/testing-library/jest-dom
-import '@testing-library/jest-dom';
+import { expect, afterEach, beforeAll, afterAll } from 'vitest'
+import { cleanup } from '@testing-library/react'
+import * as matchers from '@testing-library/jest-dom/matchers'
+
+// Extend Vitest's expect with jest-dom matchers
+expect.extend(matchers)
+
+// Clean up after each test
+afterEach(() => {
+  cleanup()
+})
+
 // MSW: mock service worker for API calls in tests
 import { server } from './mocks/server'
 

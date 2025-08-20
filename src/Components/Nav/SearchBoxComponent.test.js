@@ -2,12 +2,12 @@ import React from 'react'
 import { render, fireEvent } from '@testing-library/react'
 import SearchBoxComponent from './SearchBoxComponent'
 
-jest.mock('./SearchBoxInput', () => () => <div>SearchInput</div>)
+vi.mock('./SearchBoxInput', () => () => <div>SearchInput</div>)
 
 describe('SearchBoxComponent', () => {
   it('closes on ESC key', () => {
-    const setShow = jest.fn()
-    const setDropdown = jest.fn()
+    const setShow = vi.fn()
+    const setDropdown = vi.fn()
     render(
       <SearchBoxComponent
         showSearchBoxComponent={true}

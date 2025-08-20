@@ -27,8 +27,8 @@ USER reactuser
 # Expose port 3000
 EXPOSE 3000
 
-# Start development server
-CMD ["yarn", "start"]
+# Start Vite development server
+CMD ["yarn", "dev"]
 
 # Production build stage (for future use)
 FROM node:22-alpine as build
@@ -37,7 +37,7 @@ WORKDIR /app
 COPY package.json yarn.lock* ./
 RUN yarn install --frozen-lockfile
 COPY . .
-RUN yarn run build
+RUN yarn run build-production
 
 # Production stage
 FROM nginx:alpine as production

@@ -4,7 +4,7 @@ import { MemoryRouter } from 'react-router-dom'
 import { render, screen } from '@testing-library/react'
 
 // Mock Layout to render children via Outlet to avoid heavy imports
-jest.mock('./Components/Layout', () => {
+vi.mock('./Components/Layout', () => {
   const React = require('react')
   const { Outlet } = require('react-router-dom')
   return function MockLayout() {
@@ -18,7 +18,7 @@ jest.mock('./Components/Layout', () => {
 })
 
 // Mock gated route to simply render children
-jest.mock('./Components/ProtectedRoute', () => {
+vi.mock('./Components/ProtectedRoute', () => {
   const React = require('react')
   const { Outlet } = require('react-router-dom')
   return function MockProtected() {
@@ -27,11 +27,11 @@ jest.mock('./Components/ProtectedRoute', () => {
 })
 
 // Mock pages to avoid API and ESM deps
-jest.mock('./Pages/Posts', () => () => <div>Posts Page</div>)
-jest.mock('./Pages/SinglePost', () => () => <div>Single Post Page</div>)
-jest.mock('./Pages/CreatePost', () => () => <div>Create Post Page</div>)
-jest.mock('./Pages/EditPost', () => () => <div>Edit Post Page</div>)
-jest.mock('./Pages/About', () => () => <div>About Page</div>)
+vi.mock('./Pages/Posts', () => () => <div>Posts Page</div>)
+vi.mock('./Pages/SinglePost', () => () => <div>Single Post Page</div>)
+vi.mock('./Pages/CreatePost', () => () => <div>Create Post Page</div>)
+vi.mock('./Pages/EditPost', () => () => <div>Edit Post Page</div>)
+vi.mock('./Pages/About', () => () => <div>About Page</div>)
 
 import App from './App'
 

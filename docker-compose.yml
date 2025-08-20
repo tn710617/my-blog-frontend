@@ -10,10 +10,18 @@ services:
     volumes:
       # Mount source code for hot reloading
       - .:/app
-      # Use anonymous volume for node_modules (performance optimization)
-      - /app/node_modules
+      # Use named volume for node_modules (persistence + performance)
+      - node_modules:/app/node_modules
     environment:
-      # Pass through environment variables from .env.local
+      # Pass through Vite environment variables from .env.local
+      - VITE_API_URL
+      - VITE_ENV
+      - VITE_DOMAIN
+      - VITE_API_VERSION
+      - VITE_GITHUB_URL
+      - VITE_MEDIUM_URL
+      - VITE_LINKEDIN_URL
+      # Legacy React App variables (compatibility)
       - REACT_APP_API_URL
       - REACT_APP_ENV
       - REACT_APP_DOMAIN
@@ -25,7 +33,7 @@ services:
       - CHOKIDAR_USEPOLLING=true
       - WATCHPACK_POLLING=true
     env_file:
-      - .env.local
+      - .env.development
     # Enable host networking for API access
     extra_hosts:
       - "host.docker.internal:host-gateway"
@@ -33,6 +41,9 @@ services:
     tty: true
     networks:
       - blog-network
+
+volumes:
+  node_modules:
 
 networks:
   blog-network:

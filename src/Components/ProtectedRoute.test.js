@@ -1,17 +1,18 @@
 import React from 'react'
+import { vi } from 'vitest'
 import { MemoryRouter, Route, Routes } from 'react-router-dom'
 import { render, screen } from '@testing-library/react'
 import ProtectedRoute from './ProtectedRoute'
 import { useAuthStore, useLoginModalStore } from '../stores'
 
 // Mock the is-logged-in query to avoid network/React Query behaviors
-jest.mock('../APIs/auth', () => ({
+vi.mock('../APIs/auth', () => ({
   useIsLoggedIn: () => ({})
 }))
 
 describe('ProtectedRoute', () => {
   beforeEach(() => {
-    jest.resetModules()
+    vi.resetModules()
     localStorage.clear()
     // Reset store state
     useAuthStore.setState({ isLoggedIn: false })

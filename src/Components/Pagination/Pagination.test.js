@@ -14,7 +14,7 @@ const renderWithIntl = (ui) => {
 
 describe('Pagination component', () => {
   it('renders pages and handles page click', () => {
-    const setCurrentPage = jest.fn()
+    const setCurrentPage = vi.fn()
     renderWithIntl(
       <Pagination currentPage={1} totalPages={5} totalPosts={50} setCurrentPage={setCurrentPage} />
     )
@@ -32,7 +32,7 @@ describe('Pagination component', () => {
   })
 
   it('disables previous at first page and next at last page', () => {
-    const setCurrentPage = jest.fn()
+    const setCurrentPage = vi.fn()
 
     // At first page: previous disabled
     const { rerender } = renderWithIntl(
@@ -53,7 +53,7 @@ describe('Pagination component', () => {
   })
 
   it('calls setCurrentPage on next/previous click', () => {
-    const setCurrentPage = jest.fn()
+    const setCurrentPage = vi.fn()
     renderWithIntl(
       <Pagination currentPage={2} totalPages={5} totalPosts={50} setCurrentPage={setCurrentPage} />
     )

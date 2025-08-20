@@ -4,7 +4,7 @@
 
 describe('useEditPostFormStore', () => {
   beforeEach(() => {
-    jest.resetModules()
+    vi.resetModules()
     localStorage.clear()
   })
 

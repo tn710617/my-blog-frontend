@@ -39,7 +39,7 @@ describe('🛡️ SSR Safety', () => {
 
   it('should have safe default values in server environment', () => {
     // Re-import after simulating server environment
-    jest.resetModules()
+    vi.resetModules()
     const { useAuthStore, useLocaleStore } = require('../index')
     
     // Auth store should have safe default
@@ -50,7 +50,7 @@ describe('🛡️ SSR Safety', () => {
   })
 
   it('should handle helper functions safely in server environment', () => {
-    jest.resetModules()
+    vi.resetModules()
     const helpers = require('../../helpers')
     
     // Should not crash and return safe defaults

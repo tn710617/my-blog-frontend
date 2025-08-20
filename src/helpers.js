@@ -1,5 +1,6 @@
 export function getCurrentUri(currentLocation) {
-    return process.env.REACT_APP_DOMAIN + currentLocation.pathname + currentLocation.search
+    const domain = import.meta.env.VITE_DOMAIN || import.meta.env.REACT_APP_DOMAIN
+    return domain + currentLocation.pathname + currentLocation.search
 }
 
 export function getMetamaskDAppDeepLink(currentLocation) {

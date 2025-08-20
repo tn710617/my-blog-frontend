@@ -2,6 +2,7 @@
  * Tests for SSR-safe helpers in src/helpers.js
  * Covers server (no window/localStorage) and browser behavior
  */
+import { vi, describe, it, expect, afterEach } from 'vitest'
 
 describe('helpers: localStorage SSR-safety and behavior', () => {
   const originalWindow = global.window
@@ -11,7 +12,7 @@ describe('helpers: localStorage SSR-safety and behavior', () => {
     // Restore environment to JSDOM defaults after each test
     if (originalWindow) global.window = originalWindow
     if (originalLocalStorage) global.localStorage = originalLocalStorage
-    jest.resetModules()
+    vi.resetModules()
   })
 
   it('SSR: functions are no-ops and safe without window/localStorage', () => {
@@ -22,7 +23,7 @@ describe('helpers: localStorage SSR-safety and behavior', () => {
     delete global.window
     // eslint-disable-next-line no-undef
     delete global.localStorage
-    jest.resetModules()
+    vi.resetModules()
 
     const helpers = require('./helpers')
 
@@ -35,7 +36,7 @@ describe('helpers: localStorage SSR-safety and behavior', () => {
     // Ensure JSDOM localStorage is clean and window exists
     expect(typeof window).toBe('object')
     localStorage.clear()
-    jest.resetModules()
+    vi.resetModules()
 
     const helpers = require('./helpers')
 

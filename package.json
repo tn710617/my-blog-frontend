@@ -6,7 +6,7 @@
     "@headlessui/react": "^1.7.19",
     "@tanstack/react-query": "^5.85.3",
     "@tanstack/react-query-devtools": "^5.85.3",
-    "@testing-library/jest-dom": "^5.17.0",
+    "@testing-library/jest-dom": "^6.7.0",
     "@testing-library/react": "^13.4.0",
     "@testing-library/user-event": "^13.5.0",
     "@toast-ui/react-editor": "^3.2.3",
@@ -30,7 +30,6 @@
     "react-intl": "^6.8.9",
     "react-markdown": "^8.0.7",
     "react-router-dom": "^6.30.1",
-    "react-scripts": "5.0.1",
     "react-syntax-highlighter": "^15.6.1",
     "react-tag-input": "^6.10.6",
     "rehype-autolink-headings": "^7.1.0",
@@ -43,12 +42,12 @@
     "zustand": "^5.0.7"
   },
   "scripts": {
-    "start": "GENERATE_SOURCEMAP=false env-cmd -f .env.local react-scripts start",
-    "build-production": "GENERATE_SOURCEMAP=false env-cmd -f .env.production react-scripts build",
-    "build": "react-scripts build",
-    "test": "react-scripts test",
+    "dev": "vite --mode development",
+    "build-production": "vite build --mode production",
+    "build": "vite build",
+    "test": "vitest run --config vite.config.js",
     "deploy": "sh ./scripts/deploy.sh",
-    "eject": "react-scripts eject",
+    "preview": "vite preview",
     "lint": "eslint src --ext .js,.jsx,.ts,.tsx"
   },
   "eslintConfig": {
@@ -73,15 +72,17 @@
     "node": ">=18.9.0",
     "yarn": ">=1.22.0"
   },
-  "jest": {
-    "transformIgnorePatterns": [
-      "node_modules/(?!axios|query-string|decode-uri-component|split-on-first|filter-obj)"
-    ]
-  },
   "devDependencies": {
+    "@vitejs/plugin-react": "^5.0.1",
+    "@vitest/ui": "^3.2.4",
     "@yaireo/tagify": "^4.35.3",
+    "autoprefixer": "^10.4.21",
     "gh-pages": "^4.0.0",
+    "identity-obj-proxy": "^3.0.0",
+    "jsdom": "^26.1.0",
     "msw": "1",
-    "tailwindcss": "^3.4.17"
+    "tailwindcss": "^3.4.17",
+    "vite": "^7.1.3",
+    "vitest": "^3.2.4"
   }
 }

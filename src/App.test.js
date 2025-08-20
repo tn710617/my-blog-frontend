@@ -1,25 +1,39 @@
 /* eslint-disable import/first */
-import React from 'react'
-import { render, screen } from '@testing-library/react'
-import { MemoryRouter } from 'react-router-dom'
+import React from "react"
+import { render, screen } from "@testing-library/react"
+import { MemoryRouter } from "react-router-dom"
 
 // Mock Layout to avoid importing Nav and API-related modules
-jest.mock('./Components/Layout', () => () => <div>Layout</div>)
-jest.mock('./Pages/Posts', () => () => <div>Posts</div>)
-jest.mock('./Pages/SinglePost', () => () => <div>SinglePost</div>)
-jest.mock('./Pages/CreatePost', () => () => <div>CreatePost</div>)
-jest.mock('./Pages/EditPost', () => () => <div>EditPost</div>)
-jest.mock('./Components/ProtectedRoute', () => () => <div>ProtectedRoute</div>)
-jest.mock('./Pages/About', () => () => <div>About</div>)
+vi.mock("./Components/Layout", () => ({
+  default: () => React.createElement("div", null, "Layout")
+}))
+vi.mock("./Pages/Posts", () => ({
+  default: () => React.createElement("div", null, "Posts")
+}))
+vi.mock("./Pages/SinglePost", () => ({
+  default: () => React.createElement("div", null, "SinglePost")
+}))
+vi.mock("./Pages/CreatePost", () => ({
+  default: () => React.createElement("div", null, "CreatePost")
+}))
+vi.mock("./Pages/EditPost", () => ({
+  default: () => React.createElement("div", null, "EditPost")
+}))
+vi.mock("./Components/ProtectedRoute", () => ({
+  default: () => React.createElement("div", null, "ProtectedRoute")
+}))
+vi.mock("./Pages/About", () => ({
+  default: () => React.createElement("div", null, "About")
+}))
 
-import App from './App'
+import App from "./App"
 
-test('renders Layout without heavy dependencies', () => {
+test("renders Layout without heavy dependencies", () => {
   render(
-    <MemoryRouter>
-      <App />
-    </MemoryRouter>
+    React.createElement(MemoryRouter, null,
+      React.createElement(App)
+    )
   )
-
-  expect(screen.getByText(/Layout/)).toBeInTheDocument()
+  
+  expect(screen.getByText("Layout")).toBeInTheDocument()
 })

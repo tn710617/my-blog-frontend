@@ -6,18 +6,18 @@ import { IntlProvider } from 'react-intl'
 import en from '../../locales/en.json'
 
 // Mock APIs and child components to avoid network/ESM
-jest.mock('../../APIs/categories', () => ({
+vi.mock('../../APIs/categories', () => ({
   useCategories: () => ({ isSuccess: true, data: [] }),
 }))
-jest.mock('../../APIs/auth', () => ({
-  useLoginWithMetaMask: () => ({ mutateAsync: jest.fn(), isLoading: false }),
-  useLogout: () => ({ mutateAsync: jest.fn(), isLoading: false }),
+vi.mock('../../APIs/auth', () => ({
+  useLoginWithMetaMask: () => ({ mutateAsync: vi.fn(), isLoading: false }),
+  useLogout: () => ({ mutateAsync: vi.fn(), isLoading: false }),
 }))
-jest.mock('./SearchBoxComponent', () => () => <div />)
+vi.mock('./SearchBoxComponent', () => () => <div />)
 
 // Mock helpers with a controllable value
-jest.mock('../../helpers', () => ({
-  isLoggedInInLocalStorage: jest.fn(),
+vi.mock('../../helpers', () => ({
+  isLoggedInInLocalStorage: vi.fn(),
 }))
 
 import Nav from '.'
@@ -35,7 +35,7 @@ const renderNav = () => {
 
 describe('Nav', () => {
   afterEach(() => {
-    jest.clearAllMocks()
+    vi.clearAllMocks()
   })
 
   it('shows Login when not logged in', () => {

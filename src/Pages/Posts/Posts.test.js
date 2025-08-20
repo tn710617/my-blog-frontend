@@ -7,10 +7,10 @@ import { IntlProvider } from 'react-intl'
 import en from '../../locales/en.json'
 
 // Mock child component that pulls in query-string via tags API
-jest.mock('./PopularTags', () => () => <div>PopularTags</div>)
+vi.mock('./PopularTags', () => () => <div>PopularTags</div>)
 
 // Mock APIs to avoid ESM deps and network
-jest.mock('../../APIs/categories', () => ({
+vi.mock('../../APIs/categories', () => ({
   useCategories: () => ({
     isSuccess: true,
     status: 'success',
@@ -20,7 +20,7 @@ jest.mock('../../APIs/categories', () => ({
   }),
 }))
 
-jest.mock('../../APIs/posts', () => ({
+vi.mock('../../APIs/posts', () => ({
   useIndexPosts: () => ({
     isSuccess: true,
     status: 'success',

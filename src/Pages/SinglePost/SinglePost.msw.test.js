@@ -7,7 +7,7 @@ import { MemoryRouter } from 'react-router-dom'
 import en from '../../locales/en.json'
 
 // Avoid ESM issues from react-markdown in test
-jest.mock('./PostBody', () => () => <div>Body</div>)
+vi.mock('./PostBody', () => () => <div>Body</div>)
 
 import SinglePost from '.'
 
