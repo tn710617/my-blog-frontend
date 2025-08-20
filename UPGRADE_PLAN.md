@@ -3,15 +3,45 @@
 ## Overview
 This document tracks the comprehensive package upgrade plan for the blog frontend project. Each upgrade follows a standardized 8-step process to ensure safety and functionality preservation.
 
-## Workflow Pattern (Applied to Each Package)
-1. **Backup**: Create dedicated backup branch 
-2. **Research**: Analyze breaking changes from official docs
+## Git Branching Strategy
+
+### Branch Hierarchy
+```
+main (production)
+└── upgrade (main upgrade branch)
+    ├── upgrade/phase-1-gh-pages
+    ├── upgrade/phase-2-react-query  
+    ├── upgrade/phase-3-testing-libraries
+    ├── upgrade/phase-4-utilities
+    ├── upgrade/phase-5-mermaid
+    ├── upgrade/phase-6-react-icons
+    ├── upgrade/phase-7-headless-ui
+    ├── upgrade/phase-8-react-router
+    └── upgrade/phase-9-react-markdown
+```
+
+### Branch Descriptions
+- **`main`** - Production branch (stable)
+- **`upgrade`** - Main upgrade branch (integrates all upgrade phases)
+- **`upgrade/phase-N-package-name`** - Individual upgrade phase branches
+- **`vite-migration`** - Completed Vite migration (can be merged to `upgrade` as starting point)
+
+### Setup Process
+1. Create main upgrade branch: `git checkout -b upgrade vite-migration`
+2. For each phase: `git checkout -b upgrade/phase-N-package-name upgrade`
+3. After phase completion: Merge back to `upgrade`
+4. Final step: Merge `upgrade` to `main`
+
+### Workflow Pattern (Applied to Each Package)
+1. **Branch**: Create phase-specific branch from `upgrade` branch
+2. **Research**: Analyze breaking changes from official docs  
 3. **Scan**: Find all usage patterns in codebase
 4. **Upgrade**: Install new package version
 5. **Refactor**: Fix breaking changes and update code
 6. **Auto Test**: Run test suite, lint, and build (with proper container management)
 7. **Manual Test**: Show affected pages for verification
-8. **Confirmation**: Wait for approval before next upgrade
+8. **Merge**: After approval, merge phase branch to `upgrade` branch
+9. **Cleanup**: Delete phase branch after successful merge
 
 ### Container Management for Builds
 **Important**: Before running any build command:
@@ -28,39 +58,42 @@ This document tracks the comprehensive package upgrade plan for the blog fronten
 - [x] Run comprehensive baseline tests (test, lint, build) - **BUILD FAILED**
 - [ ] Create functional testing checklist document
 
-### Phase 0.5: CRITICAL - Vite Migration (Build System Overhaul)
+### Phase 0.5: CRITICAL - Vite Migration (Build System Overhaul) ✅ **COMPLETED**
 **CRITICAL**: React 19.1.1 is incompatible with react-scripts 5.0.1 - requires complete build system migration
 
 #### Step-by-Step Vite Migration Process:
-- [ ] Create backup branch for Vite migration
-- [ ] Research Vite breaking changes and compatibility requirements
-- [ ] Scan codebase for all react-scripts dependencies and configurations
-- [ ] Create detailed migration checklist for 11 affected files
-- [ ] Remove react-scripts dependencies
-- [ ] Install Vite and required plugins
-- [ ] Create vite.config.js with proper configuration
-- [ ] Move and update index.html (public/ → root)
-- [ ] Rename and update src/index.js → src/main.jsx
-- [ ] Update all environment variable usage (process.env → import.meta.env)
-- [ ] Update package.json scripts and dependencies
-- [ ] Update Docker configuration for Vite compatibility
-- [ ] Fix any import/path issues that arise
-- [ ] Stop containers: `docker-compose down`
-- [ ] Start fresh: `docker-compose up -d`
-- [ ] Test development server works (yarn dev)
-- [ ] Test production build works (yarn build)
-- [ ] Test all environment configurations (.env.local, .env.production)
-- [ ] Verify hot reload functionality
-- [ ] Run comprehensive test suite
-- [ ] Show affected pages/functionality to user for manual testing
-- [ ] Wait for user manual testing confirmation
+- [x] Create backup branch for Vite migration
+- [x] Research Vite breaking changes and compatibility requirements
+- [x] Scan codebase for all react-scripts dependencies and configurations
+- [x] Create detailed migration checklist for 11 affected files
+- [x] Remove react-scripts dependencies
+- [x] Install Vite and required plugins
+- [x] Create vite.config.js with proper configuration
+- [x] Move and update index.html (public/ → root)
+- [x] Rename and update src/index.js → src/main.jsx
+- [x] Update all environment variable usage (process.env → import.meta.env)
+- [x] Update package.json scripts and dependencies
+- [x] Update Docker configuration for Vite compatibility
+- [x] Fix any import/path issues that arise
+- [x] Stop containers: `docker-compose down`
+- [x] Start fresh: `docker-compose up -d`
+- [x] Test development server works (yarn dev)
+- [x] Test production build works (yarn build)
+- [x] Test all environment configurations (.env.local, .env.production)
+- [x] Verify hot reload functionality
+- [x] Run comprehensive test suite (Jest → Vitest migration)
+- [x] Show affected pages/functionality to user for manual testing
+- [x] Wait for user manual testing confirmation
+- [x] **BONUS**: Fixed layout issues (PostCSS/Tailwind compilation)
+- [x] **BONUS**: Fixed CSRF token authentication (Axios withXSRFToken configuration)
 
 **Risk Level**: VERY HIGH (Complete build system change)
 **Affected Areas**: Entire build system, all file imports, environment variables, Docker setup, all testing workflows
 **Manual Test Focus**: Complete application functionality, development workflow, build process, deployment
 
 ### Phase 1: gh-pages Upgrade (4.0.0 → 6.3.0) - Security Fix
-- [ ] Create backup branch for this upgrade
+**Branch**: `upgrade/phase-1-gh-pages`
+- [ ] Create branch: `git checkout -b upgrade/phase-1-gh-pages upgrade`
 - [ ] Research breaking changes (4.0.0 → 6.3.0)
 - [ ] Scan codebase for gh-pages usage patterns
 - [ ] Perform package upgrade (yarn add gh-pages@^6.3.0)
@@ -70,12 +103,15 @@ This document tracks the comprehensive package upgrade plan for the blog fronten
 - [ ] Run automated tests (test, lint, build, deploy)
 - [ ] Show affected pages/functionality to user for manual testing
 - [ ] Wait for user manual testing confirmation
+- [ ] Merge to upgrade: `git checkout upgrade && git merge upgrade/phase-1-gh-pages`
+- [ ] Delete phase branch: `git branch -d upgrade/phase-1-gh-pages`
 
 **Affected Areas**: Deployment scripts
 **Manual Test Focus**: Deployment process
 
 ### Phase 2: React Query Upgrade (5.85.3 → 5.85.5) - Minor Update
-- [ ] Create backup branch for this upgrade
+**Branch**: `upgrade/phase-2-react-query`
+- [ ] Create branch: `git checkout -b upgrade/phase-2-react-query upgrade`
 - [ ] Research breaking changes (5.85.3 → 5.85.5)
 - [ ] Scan codebase for React Query usage patterns
 - [ ] Perform package upgrade
@@ -85,12 +121,15 @@ This document tracks the comprehensive package upgrade plan for the blog fronten
 - [ ] Run automated tests (test, lint, build)
 - [ ] Show affected pages/functionality to user for manual testing
 - [ ] Wait for user manual testing confirmation
+- [ ] Merge to upgrade: `git checkout upgrade && git merge upgrade/phase-2-react-query`
+- [ ] Delete phase branch: `git branch -d upgrade/phase-2-react-query`
 
 **Affected Areas**: Data fetching, API calls
 **Manual Test Focus**: All pages with data loading
 
 ### Phase 3: Testing Libraries Upgrade - Medium Risk
-- [ ] Create backup branch for this upgrade
+**Branch**: `upgrade/phase-3-testing-libraries`
+- [ ] Create branch: `git checkout -b upgrade/phase-3-testing-libraries upgrade`
 - [ ] Research breaking changes (@testing-library packages)
 - [ ] Scan codebase for testing library usage patterns
 - [ ] Perform package upgrades
@@ -100,12 +139,15 @@ This document tracks the comprehensive package upgrade plan for the blog fronten
 - [ ] Run automated tests (test, lint, build)
 - [ ] Show test results to user for verification
 - [ ] Wait for user manual testing confirmation
+- [ ] Merge to upgrade: `git checkout upgrade && git merge upgrade/phase-3-testing-libraries`
+- [ ] Delete phase branch: `git branch -d upgrade/phase-3-testing-libraries`
 
 **Affected Areas**: Test files only
 **Manual Test Focus**: Verify test results
 
 ### Phase 4: Utility Libraries Upgrade - Medium Risk
-- [ ] Create backup branch for this upgrade
+**Branch**: `upgrade/phase-4-utilities`
+- [ ] Create branch: `git checkout -b upgrade/phase-4-utilities upgrade`
 - [ ] Research breaking changes (query-string, uuid, web-vitals)
 - [ ] Scan codebase for utility library usage patterns
 - [ ] Perform package upgrades
@@ -115,12 +157,15 @@ This document tracks the comprehensive package upgrade plan for the blog fronten
 - [ ] Run automated tests (test, lint, build)
 - [ ] Show affected pages/functionality to user for manual testing
 - [ ] Wait for user manual testing confirmation
+- [ ] Merge to upgrade: `git checkout upgrade && git merge upgrade/phase-4-utilities`
+- [ ] Delete phase branch: `git branch -d upgrade/phase-4-utilities`
 
 **Affected Areas**: URL handling, ID generation, performance
 **Manual Test Focus**: Navigation, form submissions
 
 ### Phase 5: Mermaid Upgrade (10.9.3 → 11.10.0) - Medium Risk
-- [ ] Create backup branch for this upgrade
+**Branch**: `upgrade/phase-5-mermaid`
+- [ ] Create branch: `git checkout -b upgrade/phase-5-mermaid upgrade`
 - [ ] Research breaking changes (10.9.3 → 11.10.0)
 - [ ] Scan codebase for Mermaid usage patterns
 - [ ] Perform package upgrade (yarn add mermaid@^11.10.0)
@@ -130,12 +175,15 @@ This document tracks the comprehensive package upgrade plan for the blog fronten
 - [ ] Run automated tests (test, lint, build)
 - [ ] Show affected pages with diagrams to user for manual testing
 - [ ] Wait for user manual testing confirmation
+- [ ] Merge to upgrade: `git checkout upgrade && git merge upgrade/phase-5-mermaid`
+- [ ] Delete phase branch: `git branch -d upgrade/phase-5-mermaid`
 
 **Affected Areas**: Diagram rendering in posts
 **Manual Test Focus**: Posts with diagrams/charts
 
 ### Phase 6: React Icons Upgrade (4.12.0 → 5.5.0) - Medium Risk
-- [ ] Create backup branch for this upgrade
+**Branch**: `upgrade/phase-6-react-icons`
+- [ ] Create branch: `git checkout -b upgrade/phase-6-react-icons upgrade`
 - [ ] Research breaking changes (4.12.0 → 5.5.0)
 - [ ] Scan codebase for React Icons usage patterns
 - [ ] Perform package upgrade (yarn add react-icons@^5.5.0)
@@ -145,12 +193,15 @@ This document tracks the comprehensive package upgrade plan for the blog fronten
 - [ ] Run automated tests (test, lint, build)
 - [ ] Show all pages with icons to user for visual verification
 - [ ] Wait for user manual testing confirmation
+- [ ] Merge to upgrade: `git checkout upgrade && git merge upgrade/phase-6-react-icons`
+- [ ] Delete phase branch: `git branch -d upgrade/phase-6-react-icons`
 
 **Affected Areas**: All UI icons
 **Manual Test Focus**: Visual verification of all pages
 
 ### Phase 7: Headless UI Upgrade (1.7.19 → 2.2.7) - High Risk
-- [ ] Create backup branch for this upgrade
+**Branch**: `upgrade/phase-7-headless-ui`
+- [ ] Create branch: `git checkout -b upgrade/phase-7-headless-ui upgrade`
 - [ ] Research breaking changes (1.7.19 → 2.2.7)
 - [ ] Scan codebase for Headless UI component usage
 - [ ] Perform package upgrade (yarn add @headlessui/react@^2.2.7)
@@ -160,12 +211,15 @@ This document tracks the comprehensive package upgrade plan for the blog fronten
 - [ ] Run automated tests (test, lint, build)
 - [ ] Show pages with dropdowns/modals/dialogs to user for manual testing
 - [ ] Wait for user manual testing confirmation
+- [ ] Merge to upgrade: `git checkout upgrade && git merge upgrade/phase-7-headless-ui`
+- [ ] Delete phase branch: `git branch -d upgrade/phase-7-headless-ui`
 
 **Affected Areas**: Dropdowns, modals, interactive components
 **Manual Test Focus**: All interactive UI elements
 
 ### Phase 8: React Router Upgrade (6.30.1 → 7.8.1) - High Risk
-- [ ] Create backup branch for this upgrade
+**Branch**: `upgrade/phase-8-react-router`
+- [ ] Create branch: `git checkout -b upgrade/phase-8-react-router upgrade`
 - [ ] Research breaking changes (6.30.1 → 7.8.1)
 - [ ] Scan codebase for React Router usage patterns
 - [ ] Perform package upgrade (yarn add react-router-dom@^7.8.1)
@@ -175,12 +229,15 @@ This document tracks the comprehensive package upgrade plan for the blog fronten
 - [ ] Run automated tests (test, lint, build)
 - [ ] Show all navigation/routing functionality to user for manual testing
 - [ ] Wait for user manual testing confirmation
+- [ ] Merge to upgrade: `git checkout upgrade && git merge upgrade/phase-8-react-router`
+- [ ] Delete phase branch: `git branch -d upgrade/phase-8-react-router`
 
 **Affected Areas**: All routing and navigation
 **Manual Test Focus**: Complete site navigation flow
 
 ### Phase 9: React Markdown Upgrade (8.0.7 → 10.1.0) - Very High Risk
-- [ ] Create backup branch for this upgrade
+**Branch**: `upgrade/phase-9-react-markdown`
+- [ ] Create branch: `git checkout -b upgrade/phase-9-react-markdown upgrade`
 - [ ] Research breaking changes (8.0.7 → 10.1.0)
 - [ ] Scan codebase for React Markdown usage and custom renderers
 - [ ] Perform package upgrade with related plugins
@@ -190,16 +247,22 @@ This document tracks the comprehensive package upgrade plan for the blog fronten
 - [ ] Run automated tests (test, lint, build)
 - [ ] Show all pages with markdown content to user for manual testing
 - [ ] Wait for user manual testing confirmation
+- [ ] Merge to upgrade: `git checkout upgrade && git merge upgrade/phase-9-react-markdown`
+- [ ] Delete phase branch: `git branch -d upgrade/phase-9-react-markdown`
 
 **Affected Areas**: All markdown content rendering
 **Manual Test Focus**: All posts, markdown content, code blocks
 
 ### Final Phase: Verification and Cleanup
+**Branch**: `upgrade` (all phases merged)
 - [ ] Run comprehensive test suite on all upgrades
 - [ ] Performance comparison with baseline
 - [ ] Security audit verification
 - [ ] Create upgrade documentation and lessons learned
-- [ ] Clean up temporary branches and finalize changes
+- [ ] Final merge to main: `git checkout main && git merge upgrade`
+- [ ] Tag release: `git tag v1.0.0-upgraded`
+- [ ] Clean up upgrade branch: `git branch -d upgrade`
+- [ ] Celebrate successful upgrade! 🎉
 
 ## Manual Testing Checklist
 
@@ -215,13 +278,26 @@ This document tracks the comprehensive package upgrade plan for the blog fronten
 
 ## Rollback Procedures
 
-**If any upgrade fails:**
+### Phase-Level Rollback (If individual phase fails):
 1. `docker-compose down`
-2. `git checkout [backup-branch-name]`
+2. `git checkout upgrade` (return to main upgrade branch)
+3. `git branch -D upgrade/phase-N-package-name` (delete failed phase branch)
+4. `docker-compose up -d`
+5. `docker-compose exec app yarn install`
+6. Reassess phase approach
+
+### Complete Rollback (If upgrade branch has issues):
+1. `docker-compose down`
+2. `git checkout main` (return to stable production)
 3. `docker-compose up -d`
 4. `docker-compose exec app yarn install`
 5. Test functionality restoration
-6. Reassess upgrade approach
+6. Reassess entire upgrade strategy
+
+### Branch Recovery:
+- Each phase branch can be recreated from `upgrade` branch
+- Vite migration changes are preserved in `vite-migration` branch
+- Original state preserved in `main` branch
 
 ## Notes and Updates
 
@@ -244,6 +320,6 @@ This document tracks the comprehensive package upgrade plan for the blog fronten
 
 ---
 
-**Last Updated**: 2025-08-19
-**Current Phase**: Phase 0.5 (Vite Migration) - Ready to Start
-**Next Action**: Begin systematic Vite migration with full backup and testing protocol
+**Last Updated**: 2025-08-20
+**Current Phase**: Setup - Ready to Create Upgrade Branch
+**Next Action**: Create `upgrade` branch from `vite-migration` branch, then proceed with Phase 1

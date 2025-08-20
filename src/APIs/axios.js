@@ -7,6 +7,7 @@ export default function getAxios(headers = {}, version = '') {
         baseURL: baseUrl,
         headers: {'Content-Type': 'application/json', ...headers},
         withCredentials: true,
+        withXSRFToken: true,
         xsrfCookieName: 'XSRF-TOKEN',
         xsrfHeaderName: 'X-XSRF-TOKEN',
     }
