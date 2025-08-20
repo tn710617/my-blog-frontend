@@ -9,26 +9,26 @@ This document tracks the comprehensive package upgrade plan for the blog fronten
 ```
 main (production)
 └── upgrade (main upgrade branch)
-    ├── upgrade/phase-1-gh-pages
-    ├── upgrade/phase-2-react-query  
-    ├── upgrade/phase-3-testing-libraries
-    ├── upgrade/phase-4-utilities
-    ├── upgrade/phase-5-mermaid
-    ├── upgrade/phase-6-react-icons
-    ├── upgrade/phase-7-headless-ui
-    ├── upgrade/phase-8-react-router
-    └── upgrade/phase-9-react-markdown
+    ├── upgrade-phase-1-gh-pages
+    ├── upgrade-phase-2-react-query  
+    ├── upgrade-phase-3-testing-libraries
+    ├── upgrade-phase-4-utilities
+    ├── upgrade-phase-5-mermaid
+    ├── upgrade-phase-6-react-icons
+    ├── upgrade-phase-7-headless-ui
+    ├── upgrade-phase-8-react-router
+    └── upgrade-phase-9-react-markdown
 ```
 
 ### Branch Descriptions
 - **`main`** - Production branch (stable)
 - **`upgrade`** - Main upgrade branch (integrates all upgrade phases)
-- **`upgrade/phase-N-package-name`** - Individual upgrade phase branches
+- **`upgrade-phase-N-package-name`** - Individual upgrade phase branches
 - **`vite-migration`** - Completed Vite migration (can be merged to `upgrade` as starting point)
 
 ### Setup Process
 1. Create main upgrade branch: `git checkout -b upgrade vite-migration`
-2. For each phase: `git checkout -b upgrade/phase-N-package-name upgrade`
+2. For each phase: `git checkout -b upgrade-phase-N-package-name upgrade`
 3. After phase completion: Merge back to `upgrade`
 4. Final step: Merge `upgrade` to `main`
 
@@ -92,8 +92,8 @@ main (production)
 **Manual Test Focus**: Complete application functionality, development workflow, build process, deployment
 
 ### Phase 1: gh-pages Upgrade (4.0.0 → 6.3.0) - Security Fix
-**Branch**: `upgrade/phase-1-gh-pages`
-- [ ] Create branch: `git checkout -b upgrade/phase-1-gh-pages upgrade`
+**Branch**: `upgrade-phase-1-gh-pages`
+- [ ] Create branch: `git checkout -b upgrade-phase-1-gh-pages upgrade`
 - [ ] Research breaking changes (4.0.0 → 6.3.0)
 - [ ] Scan codebase for gh-pages usage patterns
 - [ ] Perform package upgrade (yarn add gh-pages@^6.3.0)
@@ -103,15 +103,15 @@ main (production)
 - [ ] Run automated tests (test, lint, build, deploy)
 - [ ] Show affected pages/functionality to user for manual testing
 - [ ] Wait for user manual testing confirmation
-- [ ] Merge to upgrade: `git checkout upgrade && git merge upgrade/phase-1-gh-pages`
-- [ ] Delete phase branch: `git branch -d upgrade/phase-1-gh-pages`
+- [ ] Merge to upgrade: `git checkout upgrade && git merge upgrade-phase-1-gh-pages`
+- [ ] Delete phase branch: `git branch -d upgrade-phase-1-gh-pages`
 
 **Affected Areas**: Deployment scripts
 **Manual Test Focus**: Deployment process
 
 ### Phase 2: React Query Upgrade (5.85.3 → 5.85.5) - Minor Update
-**Branch**: `upgrade/phase-2-react-query`
-- [ ] Create branch: `git checkout -b upgrade/phase-2-react-query upgrade`
+**Branch**: `upgrade-phase-2-react-query`
+- [ ] Create branch: `git checkout -b upgrade-phase-2-react-query upgrade`
 - [ ] Research breaking changes (5.85.3 → 5.85.5)
 - [ ] Scan codebase for React Query usage patterns
 - [ ] Perform package upgrade
@@ -121,15 +121,15 @@ main (production)
 - [ ] Run automated tests (test, lint, build)
 - [ ] Show affected pages/functionality to user for manual testing
 - [ ] Wait for user manual testing confirmation
-- [ ] Merge to upgrade: `git checkout upgrade && git merge upgrade/phase-2-react-query`
-- [ ] Delete phase branch: `git branch -d upgrade/phase-2-react-query`
+- [ ] Merge to upgrade: `git checkout upgrade && git merge upgrade-phase-2-react-query`
+- [ ] Delete phase branch: `git branch -d upgrade-phase-2-react-query`
 
 **Affected Areas**: Data fetching, API calls
 **Manual Test Focus**: All pages with data loading
 
 ### Phase 3: Testing Libraries Upgrade - Medium Risk
-**Branch**: `upgrade/phase-3-testing-libraries`
-- [ ] Create branch: `git checkout -b upgrade/phase-3-testing-libraries upgrade`
+**Branch**: `upgrade-phase-3-testing-libraries`
+- [ ] Create branch: `git checkout -b upgrade-phase-3-testing-libraries upgrade`
 - [ ] Research breaking changes (@testing-library packages)
 - [ ] Scan codebase for testing library usage patterns
 - [ ] Perform package upgrades
@@ -139,15 +139,15 @@ main (production)
 - [ ] Run automated tests (test, lint, build)
 - [ ] Show test results to user for verification
 - [ ] Wait for user manual testing confirmation
-- [ ] Merge to upgrade: `git checkout upgrade && git merge upgrade/phase-3-testing-libraries`
-- [ ] Delete phase branch: `git branch -d upgrade/phase-3-testing-libraries`
+- [ ] Merge to upgrade: `git checkout upgrade && git merge upgrade-phase-3-testing-libraries`
+- [ ] Delete phase branch: `git branch -d upgrade-phase-3-testing-libraries`
 
 **Affected Areas**: Test files only
 **Manual Test Focus**: Verify test results
 
 ### Phase 4: Utility Libraries Upgrade - Medium Risk
-**Branch**: `upgrade/phase-4-utilities`
-- [ ] Create branch: `git checkout -b upgrade/phase-4-utilities upgrade`
+**Branch**: `upgrade-phase-4-utilities`
+- [ ] Create branch: `git checkout -b upgrade-phase-4-utilities upgrade`
 - [ ] Research breaking changes (query-string, uuid, web-vitals)
 - [ ] Scan codebase for utility library usage patterns
 - [ ] Perform package upgrades
@@ -157,15 +157,15 @@ main (production)
 - [ ] Run automated tests (test, lint, build)
 - [ ] Show affected pages/functionality to user for manual testing
 - [ ] Wait for user manual testing confirmation
-- [ ] Merge to upgrade: `git checkout upgrade && git merge upgrade/phase-4-utilities`
-- [ ] Delete phase branch: `git branch -d upgrade/phase-4-utilities`
+- [ ] Merge to upgrade: `git checkout upgrade && git merge upgrade-phase-4-utilities`
+- [ ] Delete phase branch: `git branch -d upgrade-phase-4-utilities`
 
 **Affected Areas**: URL handling, ID generation, performance
 **Manual Test Focus**: Navigation, form submissions
 
 ### Phase 5: Mermaid Upgrade (10.9.3 → 11.10.0) - Medium Risk
-**Branch**: `upgrade/phase-5-mermaid`
-- [ ] Create branch: `git checkout -b upgrade/phase-5-mermaid upgrade`
+**Branch**: `upgrade-phase-5-mermaid`
+- [ ] Create branch: `git checkout -b upgrade-phase-5-mermaid upgrade`
 - [ ] Research breaking changes (10.9.3 → 11.10.0)
 - [ ] Scan codebase for Mermaid usage patterns
 - [ ] Perform package upgrade (yarn add mermaid@^11.10.0)
@@ -175,15 +175,15 @@ main (production)
 - [ ] Run automated tests (test, lint, build)
 - [ ] Show affected pages with diagrams to user for manual testing
 - [ ] Wait for user manual testing confirmation
-- [ ] Merge to upgrade: `git checkout upgrade && git merge upgrade/phase-5-mermaid`
-- [ ] Delete phase branch: `git branch -d upgrade/phase-5-mermaid`
+- [ ] Merge to upgrade: `git checkout upgrade && git merge upgrade-phase-5-mermaid`
+- [ ] Delete phase branch: `git branch -d upgrade-phase-5-mermaid`
 
 **Affected Areas**: Diagram rendering in posts
 **Manual Test Focus**: Posts with diagrams/charts
 
 ### Phase 6: React Icons Upgrade (4.12.0 → 5.5.0) - Medium Risk
-**Branch**: `upgrade/phase-6-react-icons`
-- [ ] Create branch: `git checkout -b upgrade/phase-6-react-icons upgrade`
+**Branch**: `upgrade-phase-6-react-icons`
+- [ ] Create branch: `git checkout -b upgrade-phase-6-react-icons upgrade`
 - [ ] Research breaking changes (4.12.0 → 5.5.0)
 - [ ] Scan codebase for React Icons usage patterns
 - [ ] Perform package upgrade (yarn add react-icons@^5.5.0)
@@ -193,15 +193,15 @@ main (production)
 - [ ] Run automated tests (test, lint, build)
 - [ ] Show all pages with icons to user for visual verification
 - [ ] Wait for user manual testing confirmation
-- [ ] Merge to upgrade: `git checkout upgrade && git merge upgrade/phase-6-react-icons`
-- [ ] Delete phase branch: `git branch -d upgrade/phase-6-react-icons`
+- [ ] Merge to upgrade: `git checkout upgrade && git merge upgrade-phase-6-react-icons`
+- [ ] Delete phase branch: `git branch -d upgrade-phase-6-react-icons`
 
 **Affected Areas**: All UI icons
 **Manual Test Focus**: Visual verification of all pages
 
 ### Phase 7: Headless UI Upgrade (1.7.19 → 2.2.7) - High Risk
-**Branch**: `upgrade/phase-7-headless-ui`
-- [ ] Create branch: `git checkout -b upgrade/phase-7-headless-ui upgrade`
+**Branch**: `upgrade-phase-7-headless-ui`
+- [ ] Create branch: `git checkout -b upgrade-phase-7-headless-ui upgrade`
 - [ ] Research breaking changes (1.7.19 → 2.2.7)
 - [ ] Scan codebase for Headless UI component usage
 - [ ] Perform package upgrade (yarn add @headlessui/react@^2.2.7)
@@ -211,15 +211,15 @@ main (production)
 - [ ] Run automated tests (test, lint, build)
 - [ ] Show pages with dropdowns/modals/dialogs to user for manual testing
 - [ ] Wait for user manual testing confirmation
-- [ ] Merge to upgrade: `git checkout upgrade && git merge upgrade/phase-7-headless-ui`
-- [ ] Delete phase branch: `git branch -d upgrade/phase-7-headless-ui`
+- [ ] Merge to upgrade: `git checkout upgrade && git merge upgrade-phase-7-headless-ui`
+- [ ] Delete phase branch: `git branch -d upgrade-phase-7-headless-ui`
 
 **Affected Areas**: Dropdowns, modals, interactive components
 **Manual Test Focus**: All interactive UI elements
 
 ### Phase 8: React Router Upgrade (6.30.1 → 7.8.1) - High Risk
-**Branch**: `upgrade/phase-8-react-router`
-- [ ] Create branch: `git checkout -b upgrade/phase-8-react-router upgrade`
+**Branch**: `upgrade-phase-8-react-router`
+- [ ] Create branch: `git checkout -b upgrade-phase-8-react-router upgrade`
 - [ ] Research breaking changes (6.30.1 → 7.8.1)
 - [ ] Scan codebase for React Router usage patterns
 - [ ] Perform package upgrade (yarn add react-router-dom@^7.8.1)
@@ -229,15 +229,15 @@ main (production)
 - [ ] Run automated tests (test, lint, build)
 - [ ] Show all navigation/routing functionality to user for manual testing
 - [ ] Wait for user manual testing confirmation
-- [ ] Merge to upgrade: `git checkout upgrade && git merge upgrade/phase-8-react-router`
-- [ ] Delete phase branch: `git branch -d upgrade/phase-8-react-router`
+- [ ] Merge to upgrade: `git checkout upgrade && git merge upgrade-phase-8-react-router`
+- [ ] Delete phase branch: `git branch -d upgrade-phase-8-react-router`
 
 **Affected Areas**: All routing and navigation
 **Manual Test Focus**: Complete site navigation flow
 
 ### Phase 9: React Markdown Upgrade (8.0.7 → 10.1.0) - Very High Risk
-**Branch**: `upgrade/phase-9-react-markdown`
-- [ ] Create branch: `git checkout -b upgrade/phase-9-react-markdown upgrade`
+**Branch**: `upgrade-phase-9-react-markdown`
+- [ ] Create branch: `git checkout -b upgrade-phase-9-react-markdown upgrade`
 - [ ] Research breaking changes (8.0.7 → 10.1.0)
 - [ ] Scan codebase for React Markdown usage and custom renderers
 - [ ] Perform package upgrade with related plugins
@@ -247,8 +247,8 @@ main (production)
 - [ ] Run automated tests (test, lint, build)
 - [ ] Show all pages with markdown content to user for manual testing
 - [ ] Wait for user manual testing confirmation
-- [ ] Merge to upgrade: `git checkout upgrade && git merge upgrade/phase-9-react-markdown`
-- [ ] Delete phase branch: `git branch -d upgrade/phase-9-react-markdown`
+- [ ] Merge to upgrade: `git checkout upgrade && git merge upgrade-phase-9-react-markdown`
+- [ ] Delete phase branch: `git branch -d upgrade-phase-9-react-markdown`
 
 **Affected Areas**: All markdown content rendering
 **Manual Test Focus**: All posts, markdown content, code blocks
@@ -281,7 +281,7 @@ main (production)
 ### Phase-Level Rollback (If individual phase fails):
 1. `docker-compose down`
 2. `git checkout upgrade` (return to main upgrade branch)
-3. `git branch -D upgrade/phase-N-package-name` (delete failed phase branch)
+3. `git branch -D upgrade-phase-N-package-name` (delete failed phase branch)
 4. `docker-compose up -d`
 5. `docker-compose exec app yarn install`
 6. Reassess phase approach
