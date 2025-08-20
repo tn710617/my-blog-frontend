@@ -16,7 +16,7 @@
     "env-cmd": "^10.1.0",
     "ethers": "^6.15.0",
     "lodash": "^4.17.21",
-    "mermaid": "^10.9.3",
+    "mermaid": "^11.10.0",
     "query-string": "^9.2.0",
     "react": "^19.1.1",
     "react-copy-to-clipboard": "^5.1.0",

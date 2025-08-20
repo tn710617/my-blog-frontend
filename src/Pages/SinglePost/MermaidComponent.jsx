@@ -7,8 +7,13 @@ export default function MermaidComponent({children}) {
     const [transformCode, setTransformCode] = React.useState("")
 
     const renderMermaid = useCallback(async (string) => {
-        const {svg} = await mermaid.render(markId.current, children)
-        setTransformCode(svg)
+        try {
+            const {svg} = await mermaid.render(markId.current, children)
+            setTransformCode(svg)
+        } catch (error) {
+            console.error('Mermaid rendering failed:', error)
+            setTransformCode('<div class="error text-red-500 p-4 border border-red-300 rounded">Failed to render Mermaid diagram</div>')
+        }
     }, [children])
 
     useEffect(() => {
