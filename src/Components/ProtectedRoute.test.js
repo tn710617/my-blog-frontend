@@ -60,4 +60,52 @@ describe('ProtectedRoute', () => {
     // Modal should remain closed
     expect(useLoginModalStore.getState().showLoginModal).toBe(false)
   })
+
+  it('redirects to custom path when specified', async () => {
+    render(
+      <MemoryRouter initialEntries={["/protected"]}>
+        <Routes>
+          <Route path="/login" element={<div>Login Page</div>} />
+          <Route element={<ProtectedRoute redirectPath="/login" /> }>
+            <Route path="/protected" element={<div>Secret</div>} />
+          </Route>
+        </Routes>
+      </MemoryRouter>
+    )
+
+    // Should redirect to custom login page
+    expect(await screen.findByText('Login Page')).toBeInTheDocument()
+    expect(screen.queryByText('Secret')).toBeNull()
+    expect(useLoginModalStore.getState().showLoginModal).toBe(true)
+  })
+
+  it('logs out user when auth store becomes false', async () => {
+    // Start logged in
+    useAuthStore.setState({ isLoggedIn: true })
+    localStorage.setItem('learn_or_die_is_logged_in', 'true')
+
+    render(
+      <MemoryRouter initialEntries={["/protected"]}>
+        <Routes>
+          <Route path="/" element={<div>Home</div>} />
+          <Route element={<ProtectedRoute redirectPath="/" /> }>
+            <Route path="/protected" element={<div>Secret</div>} />
+          </Route>
+        </Routes>
+      </MemoryRouter>
+    )
+
+    // Should show protected content initially
+    expect(await screen.findByText('Secret')).toBeInTheDocument()
+
+    // Simulate logout - auth store becomes false
+    useAuthStore.setState({ isLoggedIn: false })
+
+    // Should redirect to home and open login modal
+    expect(await screen.findByText('Home')).toBeInTheDocument()
+    expect(useLoginModalStore.getState().showLoginModal).toBe(true)
+    
+    // localStorage should be cleared
+    expect(localStorage.getItem('learn_or_die_is_logged_in')).toBeNull()
+  })
 })
