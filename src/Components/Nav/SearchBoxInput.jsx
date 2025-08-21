@@ -1,7 +1,7 @@
 import React, {useEffect} from "react";
 import {BsSearch} from "react-icons/bs";
 import SearchResultDropdown from "./SearchResultDropdown";
-import {DebounceInput} from "react-debounce-input";
+import {useDebounce} from "../../hooks/useDebounce";
 import {useInfinitePosts} from "../../APIs/posts";
 import {useIntl} from "react-intl";
 
@@ -13,7 +13,8 @@ export default function SearchBoxInput({
     const searchBoxInputIdPrefix = React.useId()
     const intl = useIntl()
     const [searchTerm, setSearchTerm] = React.useState("")
-    const infinitePosts = useInfinitePosts({enabled: searchTerm.length !== 0}, null, [], null, searchTerm)
+    const debouncedSearchTerm = useDebounce(searchTerm, 1000)
+    const infinitePosts = useInfinitePosts({enabled: debouncedSearchTerm.length !== 0}, null, [], null, debouncedSearchTerm)
     const searchBoxInputRef = React.useRef()
 
     // click event would bubble up to the parent element, so we need to stop it, otherwise the input would be closed immediately
@@ -42,20 +43,18 @@ export default function SearchBoxInput({
                 <label htmlFor={`${searchBoxInputIdPrefix}-search-box`}>
                     <BsSearch/>
                 </label>
-                <DebounceInput
+                <input
                     id={`${searchBoxInputIdPrefix}-search-box`}
                     type={'text'}
-                    inputRef={searchBoxInputRef}
+                    ref={searchBoxInputRef}
                     placeholder={intl.formatMessage({id: "nav.search_box.placeholder"})}
                     className={"border-0 outline-none w-full focus:text-black peer"}
                     onChange={handleSearchBoxInputChanged}
-                    debounceTimeout={1000}
-                    forceNotifyByEnter={true}
                 />
             </div>
             {
-                showSearchResultDropdown && infinitePosts.isSuccess && searchTerm !== '' &&
-                <SearchResultDropdown searchTerm={searchTerm} searchedPosts={infinitePosts}
+                showSearchResultDropdown && infinitePosts.isSuccess && debouncedSearchTerm !== '' &&
+                <SearchResultDropdown searchTerm={debouncedSearchTerm} searchedPosts={infinitePosts}
                                       setShowSearchBoxComponent={setShowSearchBoxComponent}/>
             }
         </div>
