@@ -26,8 +26,19 @@
 - **COMMIT FREQUENTLY**: Git commit after each working feature or significant progress
 - **TEST EACH STEP**: Verify each test works before moving to the next
 - **DOCUMENT PROGRESS**: Update todo list after each completed increment
+- **UPDATE PLAN FILE**: After completing each step, mark corresponding todos as checked [x] in TEST_COVERAGE_PLAN.md
+- **PREVENT DUPLICATION**: Always check plan file to avoid re-implementing completed features
+- **TRACK COMPLETION**: Include test counts and completion status for accountability
 - **BRANCH STRATEGY**: Use focused branches for each testing phase
 - **ROLLBACK READY**: Each commit should be a working state we can return to
+
+## 📝 PLAN FILE MAINTENANCE RULE
+**Maintain accurate documentation of progress:**
+- **AFTER EACH STEP**: Immediately update TEST_COVERAGE_PLAN.md with [x] checkmarks
+- **INCLUDE TEST COUNTS**: Document exact number of tests added (e.g., "✅ COMPLETED (7 tests)")
+- **COMMIT PLAN UPDATES**: Always commit plan file updates with descriptive messages
+- **PREVENT CONFUSION**: Clear marking prevents doubling work or missing implementation
+- **STATUS TRACKING**: Use ✅ **COMPLETED**, (in progress), and [ ] pending markers consistently
 
 ## ⚠️ DOCKER ENVIRONMENT REQUIREMENT
 **ALWAYS use Docker commands for all test operations**
