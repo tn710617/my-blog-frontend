@@ -1,7 +1,7 @@
 import React from "react";
 import {useIntl} from "react-intl";
 import {usePaginationStore, useCategoryStore, usePostTagsStore} from "../../stores";
-import {useNavigate} from "react-router-dom";
+import {useNavigate} from "react-router";
 
 export default function AboutButton({onClick, isLoading}) {
     const intl = useIntl()

@@ -5,7 +5,7 @@ import {AiOutlineClose} from "react-icons/ai";
 import {BsFillMoonStarsFill} from "react-icons/bs";
 import {useEffect, useState} from "react";
 import {BsFillSunFill} from "react-icons/bs";
-import {Link} from "react-router-dom";
+import {Link} from "react-router";
 import {useCategories} from "../../APIs/categories";
 import Categories from "./Categories";
 import SearchBoxComponent from "./SearchBoxComponent";

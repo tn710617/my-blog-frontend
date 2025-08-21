@@ -22,7 +22,7 @@ export function isLoggedInInLocalStorage() {
 export function loginInLocalStorage() {
     if (!isClient) return
     try {
-        localStorage.setItem('learn_or_die_is_logged_in', true)
+        localStorage.setItem('learn_or_die_is_logged_in', 'true')
     } catch {
         // Silently fail
     }

@@ -2,12 +2,14 @@
 import React from 'react'
 import { render, screen, fireEvent } from '@testing-library/react'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
-import { MemoryRouter } from 'react-router-dom'
+import { MemoryRouter } from 'react-router'
 import { IntlProvider } from 'react-intl'
 import en from '../../locales/en.json'
 
 // Mock child component that pulls in query-string via tags API
-vi.mock('./PopularTags', () => () => <div>PopularTags</div>)
+vi.mock('./PopularTags', () => ({
+  default: () => <div>PopularTags</div>
+}))
 
 // Mock APIs to avoid ESM deps and network
 vi.mock('../../APIs/categories', () => ({

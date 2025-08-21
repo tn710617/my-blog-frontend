@@ -2,7 +2,7 @@ import React, {useEffect, useMemo, useState} from 'react';
 import taiwanFlag from './taiwan.png';
 import enFlag from './en.png';
 import {useLocaleStore} from "../../stores";
-import {useLocation, useNavigate} from "react-router-dom";
+import {useLocation, useNavigate} from "react-router";
 import {useRef} from "react";
 
 const LocaleDropdown = () => {

@@ -1,6 +1,6 @@
 import React, {useEffect} from "react";
 import PostBody from "./PostBody";
-import {useNavigate, useSearchParams} from "react-router-dom";
+import {useNavigate, useSearchParams} from "react-router";
 import {useShowPost} from "../../APIs/posts";
 import PostMetadata from "../../Components/PostMetadata";
 import PostTags from "../../Components/PostTags";

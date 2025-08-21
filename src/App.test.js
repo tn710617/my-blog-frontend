@@ -1,7 +1,7 @@
 /* eslint-disable import/first */
 import React from "react"
 import { render, screen } from "@testing-library/react"
-import { MemoryRouter } from "react-router-dom"
+import { MemoryRouter } from "react-router"
 
 // Mock Layout to avoid importing Nav and API-related modules
 vi.mock("./Components/Layout", () => ({

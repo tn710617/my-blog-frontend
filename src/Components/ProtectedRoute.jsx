@@ -1,5 +1,5 @@
 import React, {useState} from "react";
-import {Outlet, useLocation, useNavigate} from "react-router-dom";
+import {Outlet, useLocation, useNavigate} from "react-router";
 import {useAuthStore, useLoginModalStore} from "../stores";
 import {useEffect} from "react";
 import {isLoggedInInLocalStorage, loginInLocalStorage, logoutInLocalStorage} from "../helpers";

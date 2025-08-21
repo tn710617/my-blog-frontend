@@ -1,7 +1,7 @@
 import React from "react";
 import {AiFillEdit} from "react-icons/ai";
 import {useIntl} from "react-intl";
-import {Link} from "react-router-dom";
+import {Link} from "react-router";
 
 export default function EditButton({postId}) {
     const intl = useIntl()

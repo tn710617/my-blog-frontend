@@ -1,6 +1,6 @@
 import React from "react";
 import CategoryIcon from "../CategoryIcon";
-import {useNavigate} from "react-router-dom";
+import {useNavigate} from "react-router";
 import removeMd from "remove-markdown";
 
 export default function SearchResult({searchedPosts, setShowSearchBoxComponent}) {

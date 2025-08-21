@@ -2,7 +2,7 @@ import React from "react";
 import lodash from "lodash";
 import PostTags from "../../Components/PostTags";
 import PostMetadata from "../../Components/PostMetadata";
-import {useNavigate} from "react-router-dom";
+import {useNavigate} from "react-router";
 import removeMd from "remove-markdown";
 
 export default function PostCard({post}) {

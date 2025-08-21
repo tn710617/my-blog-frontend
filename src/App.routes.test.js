@@ -1,37 +1,51 @@
 /* eslint-disable import/first */
 import React from 'react'
-import { MemoryRouter } from 'react-router-dom'
+import { MemoryRouter } from 'react-router'
 import { render, screen } from '@testing-library/react'
 
 // Mock Layout to render children via Outlet to avoid heavy imports
 vi.mock('./Components/Layout', () => {
   const React = require('react')
-  const { Outlet } = require('react-router-dom')
-  return function MockLayout() {
-    return (
-      <div>
-        <div>Layout</div>
-        <Outlet />
-      </div>
-    )
+  const { Outlet } = require('react-router')
+  return {
+    default: function MockLayout() {
+      return (
+        <div>
+          <div>Layout</div>
+          <Outlet />
+        </div>
+      )
+    }
   }
 })
 
 // Mock gated route to simply render children
 vi.mock('./Components/ProtectedRoute', () => {
   const React = require('react')
-  const { Outlet } = require('react-router-dom')
-  return function MockProtected() {
-    return <Outlet />
+  const { Outlet } = require('react-router')
+  return {
+    default: function MockProtected() {
+      return <Outlet />
+    }
   }
 })
 
 // Mock pages to avoid API and ESM deps
-vi.mock('./Pages/Posts', () => () => <div>Posts Page</div>)
-vi.mock('./Pages/SinglePost', () => () => <div>Single Post Page</div>)
-vi.mock('./Pages/CreatePost', () => () => <div>Create Post Page</div>)
-vi.mock('./Pages/EditPost', () => () => <div>Edit Post Page</div>)
-vi.mock('./Pages/About', () => () => <div>About Page</div>)
+vi.mock('./Pages/Posts', () => ({
+  default: () => <div>Posts Page</div>
+}))
+vi.mock('./Pages/SinglePost', () => ({
+  default: () => <div>Single Post Page</div>
+}))
+vi.mock('./Pages/CreatePost', () => ({
+  default: () => <div>Create Post Page</div>
+}))
+vi.mock('./Pages/EditPost', () => ({
+  default: () => <div>Edit Post Page</div>
+}))
+vi.mock('./Pages/About', () => ({
+  default: () => <div>About Page</div>
+}))
 
 import App from './App'
 

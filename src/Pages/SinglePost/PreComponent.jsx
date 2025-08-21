@@ -5,16 +5,22 @@ import PostBody from "./PostBody";
 import {useAuthStore} from "../../stores";
 
 export default function PreComponent(props = {}) {
+    // React Markdown 10.0 compatibility: 
+    // In v10, pre contains code element with className, need to access it properly
     const childrenArray = React.Children.toArray(props?.children)
-    const firstChild = childrenArray[0]
-    const className = firstChild?.props?.className || ''
+    const codeElement = childrenArray[0]
+    
+    // Get className from the code element inside pre
+    const className = codeElement?.props?.className || ''
     const match = /language-(\w+)/.exec(className)
     const language = match ? match[1] : null
     const isLoggedIn = useAuthStore((state) => state.isLoggedIn)
+    
+    // Get the actual code content from the code element
+    const codeContent = codeElement?.props?.children || ''
 
     if (language === "mermaid") {
-        const mermaidCode = (firstChild?.props?.children?.[0])
-        return <MermaidComponent>{mermaidCode}</MermaidComponent>
+        return <MermaidComponent>{codeContent}</MermaidComponent>
     }
 
     // render the secret code
@@ -27,7 +33,7 @@ export default function PreComponent(props = {}) {
         }
 
         return (
-            <PostBody content={firstChild?.props?.children?.[0]} />
+            <PostBody content={codeContent} />
         )
     }
 

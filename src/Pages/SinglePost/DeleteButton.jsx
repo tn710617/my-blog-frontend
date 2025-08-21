@@ -3,7 +3,7 @@ import {useIntl} from "react-intl";
 import {useDeletePost} from "../../APIs/posts";
 import {MdDelete} from "react-icons/md";
 import toast from "react-hot-toast";
-import {useNavigate} from "react-router-dom";
+import {useNavigate} from "react-router";
 import DeleteConfirmationModal from "./DeleteConfirmationModal";
 
 

@@ -2,7 +2,7 @@ import React, {useEffect, useMemo} from "react";
 import {useTags} from "../../APIs/tags";
 import {useAuthStore} from "../../stores";
 import {useQueryClient} from "@tanstack/react-query";
-import {useLocation, useNavigate} from "react-router-dom";
+import {useLocation, useNavigate} from "react-router";
 
 const DISPLAY_POPULAR_TAGS = 10
 

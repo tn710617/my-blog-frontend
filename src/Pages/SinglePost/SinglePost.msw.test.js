@@ -3,11 +3,13 @@ import React from 'react'
 import { render, screen } from '@testing-library/react'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { IntlProvider } from 'react-intl'
-import { MemoryRouter } from 'react-router-dom'
+import { MemoryRouter } from 'react-router'
 import en from '../../locales/en.json'
 
 // Avoid ESM issues from react-markdown in test
-vi.mock('./PostBody', () => () => <div>Body</div>)
+vi.mock('./PostBody', () => ({
+  default: () => <div>Body</div>
+}))
 
 import SinglePost from '.'
 

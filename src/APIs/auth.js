@@ -1,6 +1,6 @@
 import {useMutation, useQuery} from "@tanstack/react-query";
 import {ethers} from "ethers";
-import {useLocation} from "react-router-dom";
+import {useLocation} from "react-router";
 import {isBrowser, isMobile} from "react-device-detect";
 import {getMetamaskDAppDeepLink, loginInLocalStorage, logoutInLocalStorage} from "../helpers";
 import {useAuthStore} from "../stores";

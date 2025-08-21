@@ -3,7 +3,7 @@ import CategoryIcon from "./CategoryIcon";
 import {MdFiberNew} from "react-icons/md";
 import {GrUpdate} from "react-icons/gr";
 import {FormattedDate} from "react-intl";
-import {useNavigate} from "react-router-dom";
+import {useNavigate} from "react-router";
 import {useCategoryStore, usePostSortStore} from "../stores";
 import {RiGitRepositoryPrivateLine} from "react-icons/ri";
 

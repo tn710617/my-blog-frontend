@@ -1,7 +1,7 @@
 import {useTags} from "../../APIs/tags";
 import React, {useEffect, useMemo} from "react";
 import {usePostTagsStore, usePaginationStore, useCategoryStore, useAuthStore} from "../../stores";
-import {useNavigate} from "react-router-dom";
+import {useNavigate} from "react-router";
 import {useQueryClient} from "@tanstack/react-query";
 
 const DISPLAY_POPULAR_TAGS = 20

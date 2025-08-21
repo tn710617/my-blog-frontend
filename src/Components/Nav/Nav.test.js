@@ -1,7 +1,7 @@
 /* eslint-disable import/first */
 import React from 'react'
 import { render, screen } from '@testing-library/react'
-import { MemoryRouter } from 'react-router-dom'
+import { MemoryRouter } from 'react-router'
 import { IntlProvider } from 'react-intl'
 import en from '../../locales/en.json'
 
@@ -13,7 +13,9 @@ vi.mock('../../APIs/auth', () => ({
   useLoginWithMetaMask: () => ({ mutateAsync: vi.fn(), isLoading: false }),
   useLogout: () => ({ mutateAsync: vi.fn(), isLoading: false }),
 }))
-vi.mock('./SearchBoxComponent', () => () => <div />)
+vi.mock('./SearchBoxComponent', () => ({
+  default: () => <div />
+}))
 
 // Mock helpers with a controllable value
 vi.mock('../../helpers', () => ({

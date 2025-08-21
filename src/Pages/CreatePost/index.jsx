@@ -11,7 +11,7 @@ import {useCategories} from "../../APIs/categories";
 import {useStorePost} from "../../APIs/posts";
 import PostTitleInput from "../../Components/PostTitleInput";
 import Modal from "../../Components/Modal";
-import {useNavigate} from "react-router-dom";
+import {useNavigate} from "react-router";
 import {handleStorePostError} from "./handlers";
 import DateInput from "../../Components/DateInput";
 import IsPublicSelect from "../../Components/IsPublicSelect";

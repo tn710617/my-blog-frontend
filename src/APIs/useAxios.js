@@ -2,7 +2,7 @@ import getAxios from "./axios";
 import {useEffect} from "react";
 import {useLoginModalStore, useAuthStore} from "../stores";
 import {logoutInLocalStorage} from "../helpers";
-import {useNavigate} from "react-router-dom";
+import {useNavigate} from "react-router";
 
 const version = import.meta.env.VITE_API_VERSION || import.meta.env.REACT_APP_API_VERSION
 const normalAxios = getAxios({}, version)

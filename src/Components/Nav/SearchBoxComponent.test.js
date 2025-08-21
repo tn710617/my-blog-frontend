@@ -2,7 +2,9 @@ import React from 'react'
 import { render, fireEvent } from '@testing-library/react'
 import SearchBoxComponent from './SearchBoxComponent'
 
-vi.mock('./SearchBoxInput', () => () => <div>SearchInput</div>)
+vi.mock('./SearchBoxInput', () => ({
+  default: () => <div>SearchInput</div>
+}))
 
 describe('SearchBoxComponent', () => {
   it('closes on ESC key', () => {

@@ -1,7 +1,7 @@
 import React from "react";
 import CategoryIcon from "../CategoryIcon";
 import {useCategoryStore} from "../../stores";
-import {useNavigate} from "react-router-dom";
+import {useNavigate} from "react-router";
 
 export default function MobileCategories({categories}) {
     const navigate = useNavigate()
