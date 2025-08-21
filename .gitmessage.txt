@@ -1,0 +1,36 @@
+# commit log 請遵造以下格式，並注意冒號後面有一個空格
+# 
+# <[type]>: <subject> {必要, 請參考下面的解說}
+# 
+# <body> {非必要, 請參考下面的解說}
+# 
+#
+# 範例:
+# [feat]: 實作 login api function
+#
+# 完成登入功能，並串接 Line Login
+#
+# <Type>
+# 請遵守下列標籤
+# feat: 新功能
+# fix: Bug 修復
+# config: 設定檔改變
+# env: 更新 env
+# document: 文件改變，例如修改 README.md，或是修改 API 文件
+# deployment: 部署相關，與 CI 可能有重疊，若該 commit 重點在部署，例如修改特定環境中的 config，或，那請使用 deployment
+# style: 代碼格式改變
+# refactor: 重構，與 perf 可能有重疊，依目的選擇 type。偏向於重構代碼結構，例如改變資料夾結構，或以設計模式重構
+# perf: 性能優化，與 refactor 可能有重疊，依目的選擇 type。偏向於提升代碼執行效率，例如改變演算法
+# test: 測試相關，包含測試新增、修改、刪除等
+# upgrade: 框架版本更新，例如 PHP 版本更新
+# ci: 與 CI 相關的設定，與 Deployment 可能有重疊，若該 commit 重點在 CI 設定，例如修改 testing image，那請使用 ci
+# add: 增加一些跟功能無關的檔案
+# 3rd: 增加第三方套件
+# db: 有關資料庫的修改
+#
+# <Subject>
+# 用來簡要描述影響本次變動，概述即可
+# 
+# <Body>
+# 具體的修改訊息，越詳細越好
+# 
