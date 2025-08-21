@@ -13,7 +13,6 @@
     "axios": "^1.11.0",
     "codemirror": "5.65.20",
     "dayjs": "^1.11.13",
-    "env-cmd": "^10.1.0",
     "ethers": "^6.15.0",
     "lodash": "^4.17.21",
     "mermaid": "^11.10.0",
@@ -72,6 +71,7 @@
   },
   "devDependencies": {
     "@testing-library/dom": "^10.4.0",
+    "@types/debug": "^4.1.12",
     "@types/node": "^24.3.0",
     "@vitejs/plugin-react": "^5.0.1",
     "@vitest/ui": "^3.2.4",
