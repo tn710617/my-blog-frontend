@@ -32,5 +32,23 @@ describe('useAuthStore', () => {
     // No other keys should be present beyond isLoggedIn in persisted state
     expect(Object.keys(parsed.state)).toEqual(['isLoggedIn'])
   })
+
+  it('restores auth state from localStorage on initialization', () => {
+    // Pre-populate localStorage with auth state
+    const authState = {
+      state: { isLoggedIn: true },
+      version: 0
+    }
+    localStorage.setItem('learn_or_die_auth_storage', JSON.stringify(authState))
+
+    // Clear module cache to force re-initialization
+    vi.resetModules()
+    
+    // Import fresh store instance
+    const { useAuthStore } = require('..')
+
+    // Store should initialize with persisted state
+    expect(useAuthStore.getState().isLoggedIn).toBe(true)
+  })
 })
 
