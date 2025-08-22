@@ -1,7 +1,7 @@
 import React from 'react'
 import { vi } from 'vitest'
 import { MemoryRouter, Route, Routes } from 'react-router'
-import { render, screen } from '@testing-library/react'
+import { render, screen, act } from '@testing-library/react'
 import ProtectedRoute from './ProtectedRoute'
 import { useAuthStore, useLoginModalStore } from '../stores'
 
@@ -99,7 +99,9 @@ describe('ProtectedRoute', () => {
     expect(await screen.findByText('Secret')).toBeInTheDocument()
 
     // Simulate logout - auth store becomes false
-    useAuthStore.setState({ isLoggedIn: false })
+    act(() => {
+      useAuthStore.setState({ isLoggedIn: false })
+    })
 
     // Should redirect to home and open login modal
     expect(await screen.findByText('Home')).toBeInTheDocument()

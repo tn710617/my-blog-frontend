@@ -27,7 +27,9 @@ describe('useDebounce Hook', () => {
     expect(result.current).toBe('initial')
 
     // Update the value
-    rerender({ value: 'updated', delay: 500 })
+    act(() => {
+      rerender({ value: 'updated', delay: 500 })
+    })
 
     // Value should still be initial before delay
     expect(result.current).toBe('initial')
@@ -47,7 +49,9 @@ describe('useDebounce Hook', () => {
     )
 
     // Update the value
-    rerender({ value: 'updated', delay: 500 })
+    act(() => {
+      rerender({ value: 'updated', delay: 500 })
+    })
 
     // Advance timer past the delay
     act(() => {
@@ -64,7 +68,9 @@ describe('useDebounce Hook', () => {
     )
 
     // First value change
-    rerender({ value: 'first', delay: 500 })
+    act(() => {
+      rerender({ value: 'first', delay: 500 })
+    })
 
     // Advance timer partially
     act(() => {
@@ -74,7 +80,9 @@ describe('useDebounce Hook', () => {
     expect(result.current).toBe('initial')
 
     // Second value change should reset timer
-    rerender({ value: 'second', delay: 500 })
+    act(() => {
+      rerender({ value: 'second', delay: 500 })
+    })
 
     // Advance by another 300ms (total 600ms from start, but only 300ms from second change)
     act(() => {
@@ -100,19 +108,29 @@ describe('useDebounce Hook', () => {
     )
 
     // Simulate rapid typing
-    rerender({ value: 'r', delay: 300 })
+    act(() => {
+      rerender({ value: 'r', delay: 300 })
+    })
     act(() => { vi.advanceTimersByTime(50) })
 
-    rerender({ value: 're', delay: 300 })
+    act(() => {
+      rerender({ value: 're', delay: 300 })
+    })
     act(() => { vi.advanceTimersByTime(50) })
 
-    rerender({ value: 'rea', delay: 300 })
+    act(() => {
+      rerender({ value: 'rea', delay: 300 })
+    })
     act(() => { vi.advanceTimersByTime(50) })
 
-    rerender({ value: 'reac', delay: 300 })
+    act(() => {
+      rerender({ value: 'reac', delay: 300 })
+    })
     act(() => { vi.advanceTimersByTime(50) })
 
-    rerender({ value: 'react', delay: 300 })
+    act(() => {
+      rerender({ value: 'react', delay: 300 })
+    })
 
     // Should still be initial value
     expect(result.current).toBe('initial')
@@ -132,7 +150,9 @@ describe('useDebounce Hook', () => {
       { initialProps: { value: 'test', delay: 1000 } }
     )
 
-    rerender({ value: 'updated', delay: 1000 })
+    act(() => {
+      rerender({ value: 'updated', delay: 1000 })
+    })
 
     // Should not update after 500ms
     act(() => {
@@ -153,7 +173,9 @@ describe('useDebounce Hook', () => {
       { initialProps: { value: 'initial', delay: 0 } }
     )
 
-    rerender({ value: 'immediate', delay: 0 })
+    act(() => {
+      rerender({ value: 'immediate', delay: 0 })
+    })
 
     // With zero delay, should update on next tick
     act(() => {
@@ -171,7 +193,9 @@ describe('useDebounce Hook', () => {
       { initialProps: { value: 'initial', delay: 500 } }
     )
 
-    rerender({ value: 'updated', delay: 500 })
+    act(() => {
+      rerender({ value: 'updated', delay: 500 })
+    })
 
     // Unmount before delay completes
     unmount()
