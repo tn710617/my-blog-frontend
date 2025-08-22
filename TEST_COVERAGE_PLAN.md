@@ -25,6 +25,10 @@
 - **SMALL INCREMENTS**: Complete one feature/test at a time, not entire phases
 - **COMMIT FREQUENTLY**: Git commit after each working feature or significant progress
 - **TEST EACH STEP**: Verify each test works before moving to the next
+- **VERIFY ALL TESTS PASS**: Always run full test suite and ensure all tests pass before making any commit
+  - **WHY**: Prevents introducing broken tests into version control
+  - **HOW**: `docker-compose exec app yarn test --run` before each commit
+  - **WHEN**: Before every commit, after completing any step or increment
 - **DOCUMENT PROGRESS**: Update todo list after each completed increment
 - **UPDATE PLAN FILE**: After completing each step, mark corresponding todos as checked [x] in TEST_COVERAGE_PLAN.md
 - **PREVENT DUPLICATION**: Always check plan file to avoid re-implementing completed features
@@ -48,6 +52,10 @@
   - ❌ `yarn test` → ✅ `docker-compose exec app yarn test`
   - ❌ `npm test` → ✅ `docker-compose exec app yarn test --run`
   - ❌ `vitest` → ✅ `docker-compose exec app yarn test --ui`
+- **CONTAINER RESTART REQUIREMENT**: Always restart containers after test changes
+  - **WHY**: File changes may not reflect immediately in container
+  - **HOW**: `docker-compose restart` or `docker-compose down && docker-compose up -d`
+  - **WHEN**: After creating/modifying test files, after significant code changes
 - **BENEFIT**: Matches deployment environment, consistent test results
 
 ## Current Test Status Analysis
@@ -203,7 +211,10 @@
   - PostTags component (12 tests)
   - PopularTags component (15 tests)
   - usePostTagsStore (12 tests)
-- [ ] Test pagination with filters
+- [x] Test pagination with filters ✅ **COMPLETED** (38 tests)
+  - usePaginationStore (12 tests)
+  - PaginationWithFilters integration (17 tests)
+  - PaginationIntegration (9 tests)
 
 ### Phase 4: Internationalization Testing (MEDIUM PRIORITY)
 **Goal**: Test multi-language support  
@@ -403,25 +414,25 @@ describe('ComponentName', () => {
 
 ---
 
-**CURRENT STATUS**: PHASE 3 IN PROGRESS - SEARCH AND FILTERING TESTING
+**CURRENT STATUS**: PHASE 3 COMPLETED - SEARCH AND FILTERING TESTING ✅
 
 **PROGRESS SUMMARY**:
 - ✅ Phase 0: Fix Broken Tests - COMPLETED
 - ✅ Phase 1: Core Authentication Testing - COMPLETED (13 tests)
 - ✅ Phase 2: Post Management Testing - COMPLETED (51 tests)  
-- 🔄 Phase 3: Search and Filtering Testing - IN PROGRESS (96 tests so far)
+- ✅ Phase 3: Search and Filtering Testing - COMPLETED (134 tests)
   - ✅ useDebounce hook testing (8 tests)
   - ✅ SearchBoxInput component testing (13 tests)
   - ✅ Search result display and highlighting (36 tests)
-  - ✅ Category filtering functionality - COMPLETED (25 tests)
-  - ✅ Tag filtering and combinations - COMPLETED (39 tests)
-  - ⏳ Pagination with filters - NEXT
+  - ✅ Category filtering functionality (25 tests)
+  - ✅ Tag filtering and combinations (39 tests)
+  - ✅ Pagination with filters (38 tests)
 - ⏳ Phase 4-6: Additional Coverage - PENDING
 - ⏳ Phase 7: Test Quality Improvements - PENDING (act() warnings logged)
 
-**CURRENT TEST COUNT**: 222 tests total (from 50 baseline → 172 new tests added)
+**CURRENT TEST COUNT**: 260 tests total (from 50 baseline → 210 new tests added)
 
-**NEXT ACTION**: Continue Phase 3 with pagination with filters testing
+**NEXT ACTION**: Phase 3 completed successfully. Ready to proceed to Phase 4 (Internationalization) or Phase 7 (Cleanup) based on user priorities.
 
 **ESTIMATED REMAINING**: 
 - Phase 3 completion: 2-3 hours
