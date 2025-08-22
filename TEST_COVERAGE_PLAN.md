@@ -222,19 +222,29 @@
 **Impact**: Medium - Global user experience
 
 **Features to Test**:
-- **Locale Switching**: Language selection, content updates
+- **Locale Switching**: Language selection, content updates ✅
 - **Translation Loading**: Async loading, fallback handling
 - **Date Formatting**: Locale-specific date/time display
-- **URL Handling**: Locale persistence, routing
+- **URL Handling**: Locale persistence, routing ✅
 
 **Test Types**:
-- **Store**: Locale store behavior, persistence
-- **Component**: Language selector, content updates
+- **Store**: Locale store behavior, persistence ✅
+- **Component**: Language selector, content updates ✅
 - **Integration**: Locale change + content refresh
 
 **Steps**:
-- [ ] Test locale store functionality
-- [ ] Test language selection component
+- [x] Test locale store functionality ✅ **COMPLETED** (17 tests)
+- [x] Test language selection component ✅ **COMPLETED** (12 tests)
+  - LocaleDropdown component with comprehensive coverage:
+    - Basic rendering (English/Chinese locales, dropdown arrow)
+    - Dropdown interaction (show/hide options, click behavior)
+    - Language selection (locale changes, dropdown closing, store updates)
+    - Navigation integration (proper behavior on different pages)
+    - Accessibility (button roles, image alt texts)  
+    - Locale switching (all available options, language switching)
+  - Successfully resolved React Router v7 + Vitest mocking challenges
+  - Applied React Testing Library best practices for multiple DOM elements
+  - Fixed test isolation issues with Zustand store state persistence
 - [ ] Test content translation updates
 - [ ] Test date/time formatting by locale
 - [ ] Test locale persistence across sessions
@@ -414,7 +424,7 @@ describe('ComponentName', () => {
 
 ---
 
-**CURRENT STATUS**: PHASE 3 COMPLETED - SEARCH AND FILTERING TESTING ✅
+**CURRENT STATUS**: PHASE 4 IN PROGRESS - INTERNATIONALIZATION TESTING ✅
 
 **PROGRESS SUMMARY**:
 - ✅ Phase 0: Fix Broken Tests - COMPLETED
@@ -427,15 +437,26 @@ describe('ComponentName', () => {
   - ✅ Category filtering functionality (25 tests)
   - ✅ Tag filtering and combinations (39 tests)
   - ✅ Pagination with filters (38 tests)
-- ⏳ Phase 4-6: Additional Coverage - PENDING
+- ⏳ Phase 4: Internationalization Testing - IN PROGRESS (2/5 steps completed)
+  - ✅ Test locale store functionality (17 tests)
+  - ✅ Test language selection component (12 tests) - LocaleDropdown comprehensive coverage
+  - [ ] Test content translation updates
+  - [ ] Test date/time formatting by locale
+  - [ ] Test locale persistence across sessions
+- ⏳ Phase 5-6: Additional Coverage - PENDING
 - ⏳ Phase 7: Test Quality Improvements - PENDING (act() warnings logged)
 
-**CURRENT TEST COUNT**: 260 tests total (from 50 baseline → 210 new tests added)
+**CURRENT TEST COUNT**: 287 tests total (from 50 baseline → 237 new tests added)
 
-**NEXT ACTION**: Phase 3 completed successfully. Ready to proceed to Phase 4 (Internationalization) or Phase 7 (Cleanup) based on user priorities.
+**NEXT ACTION**: Continue Phase 4 Step 3 (content translation updates) or proceed to Phase 5-7 based on user priorities.
 
 **ESTIMATED REMAINING**: 
-- Phase 3 completion: 2-3 hours
-- Phase 4-6 (Optional): 4-6 hours  
+- Phase 4 completion: 1-2 hours (3 steps remaining)
+- Phase 5-6 (Optional): 3-4 hours  
 - Phase 7 (Cleanup): 1-2 hours
-- **Total Remaining**: 7-11 hours
+- **Total Remaining**: 5-8 hours
+
+**KEY ACHIEVEMENTS**:
+- **React Router v7 + Vitest Integration**: Successfully resolved complex mocking challenges
+- **Comprehensive Component Testing**: LocaleDropdown with full interaction, accessibility, and navigation coverage
+- **Test Quality Improvements**: Enhanced test isolation and React Testing Library best practices
