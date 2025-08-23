@@ -259,7 +259,19 @@
   - Translation fallback behavior testing for invalid locales
   - Parameterized translation testing with {value} interpolation
   - Multi-component integration and simultaneous update verification
-- [ ] Test date/time formatting by locale
+- [x] Test date/time formatting by locale ✅ **COMPLETED** (15 tests)
+  - DateTimeFormattingByLocale comprehensive test coverage:
+    - PostMetadata date formatting in English and Chinese locales (5 tests)
+    - MonthlyPostHistory month name formatting (3 tests)
+    - YearlyPostHistory article count formatting (2 tests)
+    - Footer copyright year formatting (2 tests)
+    - FormattedDate integration and timezone handling (2 tests)
+    - Locale switching integration with dynamic updates (2 tests)
+  - Full English ↔ Chinese date format testing (March 15, 2024 ↔ 2024年3月15日)
+  - FormattedDate component integration with year="numeric" month="long" day="numeric"
+  - Month name translation testing (Jan/Jul ↔ 一月/七月)
+  - Article count parameterized translations (5 articles ↔ 5 篇文章)
+  - Cross-component date formatting consistency validation
 - [ ] Test locale persistence across sessions
 
 ### Phase 5: Navigation and Layout Testing (LOW PRIORITY)
@@ -459,7 +471,7 @@ describe('ComponentName', () => {
 - ⏳ Phase 5-6: Additional Coverage - PENDING
 - ⏳ Phase 7: Test Quality Improvements - PENDING (act() warnings logged)
 
-**CURRENT TEST COUNT**: 300 tests total (from 50 baseline → 250 new tests added)
+**CURRENT TEST COUNT**: 316 tests total (from 50 baseline → 266 new tests added)
 
 **NEXT ACTION**: Continue Phase 4 Step 3 (content translation updates) or proceed to Phase 5-7 based on user priorities.
 
