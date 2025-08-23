@@ -78,10 +78,10 @@ export default function Nav() {
                         {
                             isLoggedInInLocalStorage() ?
                                 <LogoutButton onClick={async () => await logout.mutateAsync()}
-                                              isLoading={logout.isLoading}/>
+                                              isLoading={logout.isPending}/>
                                 :
                                 <LoginButton onClick={async () => await login.mutateAsync()}
-                                             isLoading={login.isLoading}/>
+                                             isLoading={login.isPending}/>
                         }
                     </div>
                 </nav>
