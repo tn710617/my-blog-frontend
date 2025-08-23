@@ -8,7 +8,9 @@ describe('useDebounce Hook', () => {
   })
 
   afterEach(() => {
-    vi.runOnlyPendingTimers()
+    act(() => {
+      vi.runAllTimers()
+    })
     vi.useRealTimers()
   })
 
@@ -35,9 +37,7 @@ describe('useDebounce Hook', () => {
     expect(result.current).toBe('initial')
 
     // Advance timer by 400ms (less than delay)
-    act(() => {
-      vi.advanceTimersByTime(400)
-    })
+    vi.advanceTimersByTime(400)
 
     expect(result.current).toBe('initial')
   })
