@@ -41,21 +41,15 @@ vi.mock('../../../APIs/posts', () => ({
   useStorePost: () => mockStorePost
 }))
 
-// Mock Toast UI Editor
-vi.mock('@toast-ui/react-editor', () => ({
-  Editor: React.forwardRef((props, ref) => {
-    React.useImperativeHandle(ref, () => ({
-      getInstance: () => ({
-        getMarkdown: () => 'Mock markdown content',
-        setMarkdown: vi.fn()
-      })
-    }))
-    
+// Mock @uiw/react-md-editor
+vi.mock('@uiw/react-md-editor', () => ({
+  default: React.forwardRef((props, ref) => {
     return (
       <textarea
         data-testid="mock-editor"
-        onChange={(e) => props.onChange && props.onChange()}
-        placeholder="Mock Toast UI Editor"
+        value={props.value || ''}
+        onChange={(e) => props.onChange && props.onChange(e.target.value)}
+        placeholder="Mock Markdown Editor"
       />
     )
   })
@@ -109,7 +103,7 @@ describe('CreatePost Form Validation Workflow', () => {
     // Check main form elements
     expect(screen.getByText('Write an Article')).toBeInTheDocument()
     expect(screen.getByPlaceholderText('Post Title')).toBeInTheDocument()
-    expect(screen.getByTestId('mock-editor')).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: /Add bold text/i })).toBeInTheDocument()
     expect(screen.getByText('Save')).toBeInTheDocument()
     expect(screen.getByText('Reset')).toBeInTheDocument()
   })

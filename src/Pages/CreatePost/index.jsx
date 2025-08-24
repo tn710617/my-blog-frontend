@@ -3,9 +3,7 @@ import Tagify from "@yaireo/tagify"
 import {useRef, useState, useEffect} from "react";
 import {BsSave2Fill} from "react-icons/bs";
 import {BiReset} from "react-icons/bi";
-import {Editor} from '@toast-ui/react-editor';
-import 'codemirror/lib/codemirror.css';
-import '@toast-ui/editor/dist/toastui-editor.css';
+import MarkdownEditor from "../../Components/MarkdownEditor";
 import {useTags} from "../../APIs/tags";
 import {useCategories} from "../../APIs/categories";
 import {useStorePost} from "../../APIs/posts";
@@ -67,9 +65,7 @@ export default function CreatePost() {
         })
     }
 
-    const handleChange = () => {
-        const editorInstance = editorRef.current.getInstance();
-        const value = editorInstance.getMarkdown()
+    const handleChange = (value = "") => {
         setForm({...form, post_content: value})
         setMarkdownContentLen(value.length)
     };
@@ -187,13 +183,11 @@ export default function CreatePost() {
                         <DateInput form={form} setForm={setForm}/>
                     </div>
                     <div>
-                        <Editor
+                        <MarkdownEditor
                             ref={editorRef}
                             initialValue=" "
                             previewStyle="tab"
                             height="600px"
-                            initialEditType="markdown"
-                            useCommandShortcut={true}
                             onChange={handleChange}
                         />
                     </div>
