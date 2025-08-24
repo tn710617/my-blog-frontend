@@ -5,25 +5,41 @@ import { MemoryRouter } from 'react-router'
 import { IntlProvider } from 'react-intl'
 import en from '../../locales/en.json'
 
-// Mock APIs and child components to avoid network/ESM
+// Mock APIs and child components to avoid network/ESM and store issues
 vi.mock('../../APIs/categories', () => ({
   useCategories: () => ({ isSuccess: true, data: [] }),
 }))
 vi.mock('../../APIs/auth', () => ({
-  useLoginWithMetaMask: () => ({ mutateAsync: vi.fn(), isLoading: false }),
-  useLogout: () => ({ mutateAsync: vi.fn(), isLoading: false }),
+  useLoginWithMetaMask: () => ({ mutateAsync: vi.fn(), isPending: false }),
+  useLogout: () => ({ mutateAsync: vi.fn(), isPending: false }),
 }))
 vi.mock('./SearchBoxComponent', () => ({
-  default: () => <div />
+  default: () => <div data-testid="search-component" />
+}))
+vi.mock('./Categories', () => ({
+  default: () => <div data-testid="categories" />
+}))
+vi.mock('./MobileCategories', () => ({
+  default: () => <div data-testid="mobile-categories" />
+}))
+vi.mock('./AboutButton', () => ({
+  default: () => <div data-testid="about-button" />
+}))
+vi.mock('./LocaleDropdown', () => ({
+  default: () => <div data-testid="locale-dropdown" />
 }))
 
-// Mock helpers with a controllable value
-vi.mock('../../helpers', () => ({
-  isLoggedInInLocalStorage: vi.fn(),
-}))
+// Mock the auth store only
+vi.mock('../../stores', async (importOriginal) => {
+  const actual = await importOriginal()
+  return {
+    ...actual,
+    useAuthStore: vi.fn(),
+  }
+})
 
 import Nav from '.'
-import * as helpers from '../../helpers'
+import { useAuthStore } from '../../stores'
 
 const renderNav = () => {
   return render(
@@ -41,14 +57,14 @@ describe('Nav', () => {
   })
 
   it('shows Login when not logged in', () => {
-    helpers.isLoggedInInLocalStorage.mockReturnValue(false)
+    useAuthStore.mockImplementation((selector) => selector({ isLoggedIn: false }))
     renderNav()
     expect(screen.getByText('Login')).toBeInTheDocument()
     expect(screen.queryByText('Logout')).toBeNull()
   })
 
   it('shows Logout when logged in', () => {
-    helpers.isLoggedInInLocalStorage.mockReturnValue(true)
+    useAuthStore.mockImplementation((selector) => selector({ isLoggedIn: true }))
     renderNav()
     expect(screen.getByText('Logout')).toBeInTheDocument()
     expect(screen.queryByText('Login')).toBeNull()

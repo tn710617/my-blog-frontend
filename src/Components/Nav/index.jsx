@@ -42,7 +42,6 @@ export default function Nav() {
     const login = useLoginWithMetaMask()
     const logout = useLogout()
     const isLoggedIn = useAuthStore((state) => state.isLoggedIn)
-    console.log(isLoggedIn)
 
     return (
         <>
