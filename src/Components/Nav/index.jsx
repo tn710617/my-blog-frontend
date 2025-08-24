@@ -11,7 +11,7 @@ import Categories from "./Categories";
 import SearchBoxComponent from "./SearchBoxComponent";
 import MobileCategories from "./MobileCategories";
 import {useLoginWithMetaMask, useLogout} from "../../APIs/auth";
-import {isLoggedInInLocalStorage} from "../../helpers";
+import {useAuthStore} from "../../stores";
 import LogoutButton from "./LogoutButton";
 import LoginButton from "./LoginButton";
 import AboutButton from "./AboutButton";
@@ -41,6 +41,8 @@ export default function Nav() {
 
     const login = useLoginWithMetaMask()
     const logout = useLogout()
+    const isLoggedIn = useAuthStore((state) => state.isLoggedIn)
+    console.log(isLoggedIn)
 
     return (
         <>
@@ -76,7 +78,7 @@ export default function Nav() {
                             <FcSearch className={"text-4xl p-2 rounded hover:bg-gray-200"}/>
                         </button>
                         {
-                            isLoggedInInLocalStorage() ?
+                            isLoggedIn ?
                                 <LogoutButton onClick={async () => await logout.mutateAsync()}
                                               isLoading={logout.isPending}/>
                                 :
