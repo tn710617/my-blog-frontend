@@ -17,7 +17,7 @@ export function getWorkExperiencesZhTw() {
                     <li>規劃並且實作產品部署架構：
                         <ul className={"list-disc list-outside ml-4"}>
                             <li>實作 HA 架構：<b>GCP LB</b> & <b>GCP Instance Group</b> & <b>Docker Swarm</b></li>
-                            <li>建置符合團隊運作 CI/CD 管道：<b>Git Push</b> --> <b>審查</b> --> <b>一鍵部署</b></li>
+                            <li>建置符合團隊運作 CI/CD 管道：<b>Git Push</b> → <b>審查</b> → <b>一鍵部署</b></li>
                             <li>針對各項服務實作固定頻率健康檢查，包含但不限於 <b>APP Service</b>，<b>Web
                                 Service</b>，<b>DB</b>，<b>Redis</b>，<b>Node</b>，<b>VPN Server</b></li>
                             <li>任一服務健康檢查未通過時，發送通知到 <b>Email</b> & <b>Slack channel</b></li>

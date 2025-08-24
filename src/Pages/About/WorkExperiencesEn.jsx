@@ -22,7 +22,7 @@ export function getWorkExperiencesEn() {
                             <li>Implementing HA architecture: <b>GCP LB</b> & <b>GCP Instance Group</b> & <b>Docker
                                 Swarm</b></li>
                             <li>Building CI/CD pipeline to fit team operations: <b>Git
-                                Push</b> --> <b>Review</b> --> <b>One-click deployment</b></li>
+                                Push</b> → <b>Review</b> → <b>One-click deployment</b></li>
                             <li>Implementing scheduled health checks for various services, including but not limited
                                 to <b>APP Service</b>, <b>Web Service</b>, <b>DB</b>, <b>Redis</b>, <b>Node</b>, <b>VPN
                                     Server</b></li>
