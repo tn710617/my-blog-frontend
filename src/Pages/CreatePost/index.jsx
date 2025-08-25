@@ -22,17 +22,14 @@ import PublishMediumSelection from "../../Components/PublishMediumSelection";
 
 export default function CreatePost() {
     const [isTagifyLoaded, setIsTagifyLoaded] = useState(false)
-    const [, setIsMarkdownLoaded] = useState(false)
-    const [isTagInputLoaded, setIsTagInputLoaded] = useState(false)
     const [showPostCreatedModal, setShowPostCreatedModal] = useState(false)
-    const tagInputRef = useRef();
-    const editorRef = useRef()
+    const tagInputRef = useRef(null);
     const [markdownContentLen, setMarkdownContentLen] = useState(0)
-    
+
     const form = usePostFormStore((state) => state.form)
     const setFormInternal = usePostFormStore((state) => state.setForm)
     const clearForm = usePostFormStore((state) => state.clearForm)
-    
+
     // Compatibility wrapper for components that expect setForm(newFormObject)
     const setForm = (newForm) => setFormInternal(newForm)
     const tags = useTags()
@@ -44,9 +41,7 @@ export default function CreatePost() {
 
     const handleResetButtonClick = (event) => {
         event.preventDefault()
-        const editorInstance = editorRef.current.getInstance();
         const tagify = tagInputRef.current.__tagify
-        editorInstance.setMarkdown("")
         tagify.removeAllTags()
         clearForm()
     }
@@ -91,7 +86,6 @@ export default function CreatePost() {
     }
 
 
-
     useEffect(() => {
         function initTagify() {
             const whitelist = tags.data.map((tag) => tag.tag_name)
@@ -128,25 +122,13 @@ export default function CreatePost() {
             const tagify = tagInputRef.current.__tagify
             tagify.removeAllTags()
             tagify.addTags(tagNamesArray)
-            setIsTagInputLoaded(true)
         }
 
         if (tags.status === 'success' && isTagifyLoaded) {
             loadTagInput()
         }
 
-    }, [tags.status, tags.data, isTagifyLoaded, setIsTagInputLoaded])
-
-    useEffect(() => {
-        function loadMarkdownInput() {
-            editorRef.current.getInstance().setMarkdown(form.post_content)
-            setIsMarkdownLoaded(true)
-        }
-
-        if (isTagInputLoaded) {
-            loadMarkdownInput()
-        }
-    }, [editorRef, isTagInputLoaded, setIsMarkdownLoaded])
+    }, [tags.status, tags.data, isTagifyLoaded, form.tag_ids])
 
     return (
         <div className={"m-4 flex justify-center lg:space-x-5"}>
@@ -184,11 +166,9 @@ export default function CreatePost() {
                     </div>
                     <div>
                         <MarkdownEditor
-                            ref={editorRef}
-                            initialValue=" "
-                            previewStyle="tab"
-                            height="600px"
+                            value={form.post_content}
                             onChange={handleChange}
+                            height={600}
                         />
                     </div>
                     <div className={"flex justify-between items-center lg:hidden"}>

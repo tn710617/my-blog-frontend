@@ -103,7 +103,7 @@ describe('CreatePost Form Validation Workflow', () => {
     // Check main form elements
     expect(screen.getByText('Write an Article')).toBeInTheDocument()
     expect(screen.getByPlaceholderText('Post Title')).toBeInTheDocument()
-    expect(screen.getByRole('button', { name: /Add bold text/i })).toBeInTheDocument()
+    expect(screen.getByTestId('mock-editor')).toBeInTheDocument()
     expect(screen.getByText('Save')).toBeInTheDocument()
     expect(screen.getByText('Reset')).toBeInTheDocument()
   })

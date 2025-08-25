@@ -24,7 +24,6 @@ import PublishMediumSelection from "../../Components/PublishMediumSelection";
 
 export default function EditPost() {
     const [isTagifyLoaded, setIsTagifyLoaded] = useState(false)
-    const [isMarkdownLoaded, setIsMarkdownLoaded] = useState(false)
     const [isTagInputLoaded, setIsTagInputLoaded] = useState(false)
     const [resetNumber, setResetNumber] = useState(1)
     const [searchParams] = useSearchParams()
@@ -34,7 +33,6 @@ export default function EditPost() {
     })
     const updatePost = useUpdatePost()
     const tagInputRef = useRef();
-    const editorRef = useRef()
     const [markdownContentLen, setMarkdownContentLen] = useState(0)
 
     // Use Zustand store for user edits only
@@ -159,7 +157,6 @@ export default function EditPost() {
         // Reset UI state and clear cached form
         // This will cause useEffect to repopulate from existing showPost.data
         setIsTagInputLoaded(false)
-        setIsMarkdownLoaded(false)
         setResetNumber(prev => prev + 1)
         clearForm(postId)
         // Note: No server reload needed - uses existing showPost.data
@@ -234,7 +231,7 @@ export default function EditPost() {
         if (isDisplayFormIdenticalToServerData && cachedForm) {
             clearForm(postId)
         }
-    }, [isDisplayFormIdenticalToServerData, cachedForm, postId, clearForm, showPost])
+    }, [isDisplayFormIdenticalToServerData, cachedForm, postId, clearForm])
 
     useEffect(() => {
         function loadTagInputFromCachedPost() {
@@ -268,38 +265,8 @@ export default function EditPost() {
 
     }, [tags.status, tags.data, showPost.data?.tags, isTagifyLoaded, showPost.status, hasUnsavedChanges, displayForm.tag_ids])
 
-    useEffect(() => {
-        function loadMarkdownInputFromCachedPost() {
-            const editorInstance = editorRef.current.getInstance()
-            const currentContent = editorInstance.getMarkdown()
-
-            // Only update if content actually changed
-            if (currentContent !== displayForm.post_content) {
-                editorInstance.setMarkdown(displayForm.post_content)
-            }
-            setIsMarkdownLoaded(true)
-        }
-
-        function loadMarkdownInputFromShowPost() {
-            const editorInstance = editorRef.current.getInstance()
-            const currentContent = editorInstance.getMarkdown()
-
-            // Only update if content actually changed
-            if (currentContent !== showPost.data.post_content) {
-                editorInstance.setMarkdown(showPost.data.post_content)
-            }
-            setIsMarkdownLoaded(true)
-        }
-
-        if (showPost.status === 'success' && isTagInputLoaded) {
-            if (hasUnsavedChanges) {
-                loadMarkdownInputFromCachedPost()
-                return
-            }
-
-            loadMarkdownInputFromShowPost()
-        }
-    }, [showPost.status, editorRef, resetNumber, isTagInputLoaded, showPost.data, hasUnsavedChanges, displayForm.post_content])
+    // Note: With controlled MarkdownEditor, no manual content loading needed
+    // The editor automatically updates via the value prop from displayForm.post_content
 
     return (
         <div className={"m-4 flex justify-center lg:space-x-5"}>
@@ -334,11 +301,9 @@ export default function EditPost() {
                     </div>
                     <div>
                         <MarkdownEditor
-                            ref={editorRef}
-                            initialValue=" "
-                            previewStyle="tab"
-                            height="600px"
+                            value={displayForm.post_content}
                             onChange={handleChange}
+                            height={600}
                         />
                     </div>
                     <div className={"flex justify-between items-center lg:hidden"}>
