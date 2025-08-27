@@ -32,7 +32,7 @@ export default function CreatePost() {
     const storePost = useStorePost()
 
     // Form management with our custom hook
-    const { form, setForm, clearForm, markdownContentLen, handleMarkdownChange, hasContent } = useCreatePostForm()
+    const { form, setForm, clearForm, markdownContentLen, handleMarkdownChange, hasContent, hasRequiredContent } = useCreatePostForm()
 
     // Tag management with our reusable hook
     const tagify = useTagifyManager({
@@ -49,6 +49,7 @@ export default function CreatePost() {
     // Event handlers
     const handleResetButtonClick = (event) => {
         event.preventDefault()
+        if (!hasContent) return
         clearForm()
     }
 
@@ -60,6 +61,7 @@ export default function CreatePost() {
 
     const handleStoreButtonClick = (event) => {
         event.preventDefault()
+        if (!hasRequiredContent) return
         storePost.mutate(form, {
             onError: (error) => handleStorePostError(error, setPostTitleValid),
             onSuccess: handleStoreButtonSuccess
@@ -112,19 +114,24 @@ export default function CreatePost() {
                     <div className={"flex justify-between items-center lg:hidden"}>
                         <div>{markdownContentLen} / 30000</div>
                         <div className={"flex gap-2"}>
-                            <div className={"py-2 px-4 bg-red-500 w-[113px] text-center rounded-lg"} role={"button"}
-                                 onClick={handleResetButtonClick}
+                            <div
+                                className={`py-2 px-4 w-[113px] text-center rounded-lg ${hasContent ? 'bg-red-500 cursor-pointer' : 'bg-gray-400 cursor-not-allowed'}`}
+                                role={"button"}
+                                onClick={handleResetButtonClick}
                             >
-                                <button className={"text-2xl text-white flex justify-center items-center gap-2"}>
+                                <button className={"text-2xl text-white flex justify-center items-center gap-2"}
+                                        disabled={!hasContent}>
                                     <BiReset
                                         className={"text-2xl text-white"}/>{intl.formatMessage({id: "store_post.reset_button"})}
                                 </button>
                             </div>
-                            <div className={"py-2 px-4 bg-blue-500 w-[113px] text-center rounded-lg"}
-                                 role={"button"}
-                                 onClick={handleStoreButtonClick}
+                            <div
+                                className={`py-2 px-4 w-[113px] text-center rounded-lg ${hasRequiredContent && !storePost.isLoading ? 'bg-blue-500 cursor-pointer' : 'bg-gray-400 cursor-not-allowed'}`}
+                                role={"button"}
+                                onClick={handleStoreButtonClick}
                             >
-                                <button className={"text-2xl text-white flex justify-center items-center gap-2"}>
+                                <button className={"text-2xl text-white flex justify-center items-center gap-2"}
+                                        disabled={!hasRequiredContent || storePost.isLoading}>
                                     <BsSave2Fill/>{intl.formatMessage({id: "store_post.save_button"})}
                                 </button>
                             </div>
@@ -138,17 +145,20 @@ export default function CreatePost() {
             <div className={"lg:w-1/6 xl:w-2/6 justify-center lg:block my-auto hidden relative"}>
                 <div className={"fixed flex flex-col gap-3"}>
                     <div>{markdownContentLen} / 30000</div>
-                    <div className={"p-4 bg-blue-500 inline-block w-[60px] text-center rounded-xl"}
-                         role={"button"}
-                         onClick={handleStoreButtonClick}
+                    <div
+                        className={`p-4 inline-block w-[60px] text-center rounded-xl ${hasRequiredContent && !storePost.isLoading ? 'bg-blue-500 cursor-pointer' : 'bg-gray-400 cursor-not-allowed'}`}
+                        role={"button"}
+                        onClick={handleStoreButtonClick}
                     >
-                        <button className={"text-2xl text-white"}
+                        <button className={"text-2xl text-white"} disabled={!hasRequiredContent || storePost.isLoading}
                         ><BsSave2Fill className={storePost.isLoading ? "animate-spin" : ''}/></button>
                     </div>
-                    <div className={"p-3 bg-red-500 inline-block w-[60px] text-center rounded-xl"} role={"button"}
-                         onClick={handleResetButtonClick}
+                    <div
+                        className={`p-3 inline-block w-[60px] text-center rounded-xl ${hasContent ? 'bg-red-500 cursor-pointer' : 'bg-gray-400 cursor-not-allowed'}`}
+                        role={"button"}
+                        onClick={handleResetButtonClick}
                     >
-                        <button
+                        <button disabled={!hasContent}
                         ><BiReset className={"text-3xl text-white"}/></button>
                     </div>
                 </div>

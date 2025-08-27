@@ -148,20 +148,23 @@ describe('CreatePost Form Validation Workflow', () => {
     renderWithProviders(<CreatePost />)
     
     const titleInput = screen.getByPlaceholderText('Post Title')
+    const contentEditor = screen.getByTestId('mock-editor')
     const saveButton = screen.getByText('Save')
     
     // Initially valid styling
     expect(titleInput.className).not.toContain('border-red-300')
     
-    // Enter a title
+    // Enter a title and content (both required for save)
     fireEvent.change(titleInput, { target: { value: 'My Test Post' } })
+    fireEvent.change(contentEditor, { target: { value: 'Test content' } })
     
     // Click save to trigger form submission
     fireEvent.click(saveButton)
     
     expect(mockMutate).toHaveBeenCalledWith(
       expect.objectContaining({
-        post_title: 'My Test Post'
+        post_title: 'My Test Post',
+        post_content: 'Test content'
       }),
       expect.any(Object)
     )
@@ -209,10 +212,12 @@ describe('CreatePost Form Validation Workflow', () => {
     renderWithProviders(<CreatePost />)
     
     const titleInput = screen.getByPlaceholderText('Post Title')
+    const contentEditor = screen.getByTestId('mock-editor')
     const saveButton = screen.getByText('Save')
     
-    // Fill out the form
+    // Fill out the form with both title and content
     fireEvent.change(titleInput, { target: { value: 'Submit Test' } })
+    fireEvent.change(contentEditor, { target: { value: 'Test content for submission' } })
     
     // Submit form
     fireEvent.click(saveButton)
@@ -221,7 +226,8 @@ describe('CreatePost Form Validation Workflow', () => {
     expect(mockMutate).toHaveBeenCalledTimes(1)
     expect(mockMutate).toHaveBeenCalledWith(
       expect.objectContaining({
-        post_title: 'Submit Test'
+        post_title: 'Submit Test',
+        post_content: 'Test content for submission'
       }),
       expect.objectContaining({
         onError: expect.any(Function),
@@ -244,9 +250,12 @@ describe('CreatePost Form Validation Workflow', () => {
     renderWithProviders(<CreatePost />)
     
     const titleInput = screen.getByPlaceholderText('Post Title')
+    const contentEditor = screen.getByTestId('mock-editor')
     const saveButton = screen.getByText('Save')
     
+    // Fill both required fields
     fireEvent.change(titleInput, { target: { value: 'Success Test' } })
+    fireEvent.change(contentEditor, { target: { value: 'Success test content' } })
     fireEvent.click(saveButton)
     
     // Get the success callback and call it
@@ -273,13 +282,51 @@ describe('CreatePost Form Validation Workflow', () => {
     expect(characterCounts).toHaveLength(2) // Mobile and desktop versions
   })
 
+  it('enables reset button when any form field is changed from defaults', () => {
+    renderWithProviders(<CreatePost />)
+    
+    const resetButtons = screen.getAllByText('Reset')
+    expect(resetButtons.length).toBeGreaterThan(0) // Should have reset buttons
+    
+    // Initially disabled (no changes from defaults)
+    resetButtons.forEach(button => {
+      expect(button).toBeDisabled()
+    })
+    
+    // Test that title change enables reset button
+    const titleInput = screen.getByPlaceholderText('Post Title')
+    fireEvent.change(titleInput, { target: { value: 'Test Title' } })
+    
+    // Reset buttons should now be enabled
+    resetButtons.forEach(button => {
+      expect(button).not.toBeDisabled()
+    })
+    
+    // Reset form and verify buttons are disabled again
+    fireEvent.click(resetButtons[0])
+    resetButtons.forEach(button => {
+      expect(button).toBeDisabled()
+    })
+    
+    // Test that content change enables reset button
+    const contentEditor = screen.getByTestId('mock-editor')
+    fireEvent.change(contentEditor, { target: { value: 'Test content' } })
+    
+    resetButtons.forEach(button => {
+      expect(button).not.toBeDisabled()
+    })
+  })
+
   it('provides error and success callbacks for form submission', () => {
     renderWithProviders(<CreatePost />)
     
     const titleInput = screen.getByPlaceholderText('Post Title')
+    const contentEditor = screen.getByTestId('mock-editor')
     const saveButton = screen.getByText('Save')
     
+    // Fill both required fields
     fireEvent.change(titleInput, { target: { value: 'Error Test' } })
+    fireEvent.change(contentEditor, { target: { value: 'Error test content' } })
     fireEvent.click(saveButton)
     
     // Should call mutation with proper error and success handlers

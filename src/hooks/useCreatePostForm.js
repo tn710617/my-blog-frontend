@@ -35,8 +35,30 @@ export const useCreatePostForm = () => {
     setForm({...form, post_content: value})
   }
 
-  // Check if form has any content (for reset button state)
-  const hasContent = form.post_title || form.post_content || form.tag_ids?.length > 0
+  // Define default form values for comparison
+  const defaultForm = {
+    tag_ids: [],
+    post_title: '',
+    post_content: '',
+    category_id: "2",
+    is_public: true,
+    should_publish_medium: false,
+    locale: "zh-TW",
+    created_at: ""
+  }
+
+  // Check if form has any content (for reset button - any changes from defaults)
+  const hasContent = form.post_title !== defaultForm.post_title ||
+                     form.post_content !== defaultForm.post_content ||
+                     form.tag_ids?.length > 0 ||
+                     form.category_id !== defaultForm.category_id ||
+                     form.is_public !== defaultForm.is_public ||
+                     form.should_publish_medium !== defaultForm.should_publish_medium ||
+                     form.locale !== defaultForm.locale ||
+                     form.created_at !== defaultForm.created_at
+
+  // Check if form has required content for saving (title AND content required)
+  const hasRequiredContent = form.post_title && form.post_content
 
   return {
     form,
@@ -44,6 +66,7 @@ export const useCreatePostForm = () => {
     clearForm,
     markdownContentLen,
     handleMarkdownChange,
-    hasContent
+    hasContent,
+    hasRequiredContent
   }
 }
