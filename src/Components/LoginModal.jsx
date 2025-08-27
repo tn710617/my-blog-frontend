@@ -17,7 +17,7 @@ export default function LoginModal() {
         <Modal title={intl.formatMessage({id: "login_modal.title"})} open={showLoginModal}
                handleGoBackButtonClick={handleGoBackButtonClick}
                goBackButtonText={intl.formatMessage({id: "login_modal.button_text"})} body={""}
-               isLoading={loginWithMetaMask.isLoading}
+               isLoading={loginWithMetaMask.isPending}
                onHide={() => setShowLoginModal(false)}
                type={"info"}
         />

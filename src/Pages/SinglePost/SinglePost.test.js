@@ -28,7 +28,7 @@ vi.mock('../../APIs/posts', () => ({
       locale: 'en',
     },
   }),
-  useDeletePost: () => ({ mutateAsync: vi.fn(), isLoading: false }),
+  useDeletePost: () => ({ mutateAsync: vi.fn(), isPending: false }),
 }))
 
 import SinglePost from '.'

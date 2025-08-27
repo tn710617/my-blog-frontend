@@ -33,7 +33,7 @@ vi.mock('../../../APIs/categories', () => ({
 const mockMutate = vi.fn()
 const mockStorePost = {
   mutate: mockMutate,
-  isLoading: false,
+  isPending: false,
   data: { id: 123 }
 }
 

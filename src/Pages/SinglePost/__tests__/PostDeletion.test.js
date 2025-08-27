@@ -12,7 +12,7 @@ import en from '../../../locales/en.json'
 const mockMutateAsync = vi.fn()
 const mockDeletePost = {
   mutateAsync: mockMutateAsync,
-  isLoading: false
+  isPending: false
 }
 
 vi.mock('../../../APIs/posts', () => ({

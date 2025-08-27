@@ -12,7 +12,7 @@ const mockLogoutMutateAsync = vi.fn()
 vi.mock('../../APIs/auth', () => ({
   useLogout: () => ({
     mutateAsync: mockLogoutMutateAsync,
-    isLoading: false
+    isPending: false
   })
 }))
 
@@ -66,7 +66,7 @@ describe('Logout Functionality', () => {
 
     // Create a test component that uses useLogout like Nav component does
     function TestLogoutIntegration() {
-      const logout = { mutateAsync: mockMutateAsync, isLoading: false }
+      const logout = { mutateAsync: mockMutateAsync, isPending: false }
       const isLoggedIn = useAuthStore((state) => state.isLoggedIn)
       
       return (
@@ -74,7 +74,7 @@ describe('Logout Functionality', () => {
           <div>Auth Status: {isLoggedIn ? 'Logged In' : 'Logged Out'}</div>
           <LogoutButton 
             onClick={async () => await logout.mutateAsync()} 
-            isLoading={logout.isLoading} 
+            isLoading={logout.isPending} 
           />
           <div>LocalStorage: {localStorage.getItem('learn_or_die_is_logged_in') || 'null'}</div>
         </div>
@@ -106,7 +106,7 @@ describe('Logout Functionality', () => {
     const mockMutateAsync = vi.fn().mockRejectedValue(mockError)
     
     function TestLogoutError() {
-      const logout = { mutateAsync: mockMutateAsync, isLoading: false }
+      const logout = { mutateAsync: mockMutateAsync, isPending: false }
       const [error, setError] = React.useState(null)
       
       const handleLogout = async () => {
@@ -119,7 +119,7 @@ describe('Logout Functionality', () => {
       
       return (
         <div>
-          <LogoutButton onClick={handleLogout} isLoading={logout.isLoading} />
+          <LogoutButton onClick={handleLogout} isLoading={logout.isPending} />
           {error && <div>Error: {error}</div>}
         </div>
       )

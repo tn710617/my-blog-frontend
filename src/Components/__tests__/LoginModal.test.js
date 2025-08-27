@@ -19,7 +19,7 @@ vi.mock('../../stores', () => ({
 vi.mock('../../APIs/auth', () => ({
   useLoginWithMetaMask: () => ({
     mutateAsync: mockMutateAsync,
-    isLoading: false
+    isPending: false
   })
 }))
 

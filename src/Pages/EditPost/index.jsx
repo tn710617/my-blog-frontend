@@ -145,12 +145,12 @@ export default function EditPost() {
                 <div className={"fixed flex flex-col gap-3"}>
                     <div>{markdownContentLen} / 30000</div>
                     <div
-                        className={`p-4 inline-block w-[60px] text-center rounded-xl ${hasUnsavedChanges && !updatePost.isLoading ? 'bg-blue-500 cursor-pointer' : 'bg-gray-400 cursor-not-allowed'}`}
+                        className={`p-4 inline-block w-[60px] text-center rounded-xl ${hasUnsavedChanges && !updatePost.isPending ? 'bg-blue-500 cursor-pointer' : 'bg-gray-400 cursor-not-allowed'}`}
                         role={"button"}
                         onClick={handleUpdateButtonClick}
                     >
-                        <button className={"text-2xl text-white"} disabled={!hasUnsavedChanges || updatePost.isLoading}
-                        ><BsSave2Fill className={updatePost.isLoading ? "animate-spin" : ''}/></button>
+                        <button className={"text-2xl text-white"} disabled={!hasUnsavedChanges || updatePost.isPending}
+                        ><BsSave2Fill className={updatePost.isPending ? "animate-spin" : ''}/></button>
                     </div>
                     <div
                         className={`p-3 inline-block w-[60px] text-center rounded-xl ${hasUnsavedChanges ? 'bg-red-500 cursor-pointer' : 'bg-gray-400 cursor-not-allowed'}`}

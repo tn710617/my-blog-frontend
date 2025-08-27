@@ -126,12 +126,12 @@ export default function CreatePost() {
                                 </button>
                             </div>
                             <div
-                                className={`py-2 px-4 w-[113px] text-center rounded-lg ${hasRequiredContent && !storePost.isLoading ? 'bg-blue-500 cursor-pointer' : 'bg-gray-400 cursor-not-allowed'}`}
+                                className={`py-2 px-4 w-[113px] text-center rounded-lg ${hasRequiredContent && !storePost.isPending ? 'bg-blue-500 cursor-pointer' : 'bg-gray-400 cursor-not-allowed'}`}
                                 role={"button"}
                                 onClick={handleStoreButtonClick}
                             >
                                 <button className={"text-2xl text-white flex justify-center items-center gap-2"}
-                                        disabled={!hasRequiredContent || storePost.isLoading}>
+                                        disabled={!hasRequiredContent || storePost.isPending}>
                                     <BsSave2Fill/>{intl.formatMessage({id: "store_post.save_button"})}
                                 </button>
                             </div>
@@ -146,12 +146,12 @@ export default function CreatePost() {
                 <div className={"fixed flex flex-col gap-3"}>
                     <div>{markdownContentLen} / 30000</div>
                     <div
-                        className={`p-4 inline-block w-[60px] text-center rounded-xl ${hasRequiredContent && !storePost.isLoading ? 'bg-blue-500 cursor-pointer' : 'bg-gray-400 cursor-not-allowed'}`}
+                        className={`p-4 inline-block w-[60px] text-center rounded-xl ${hasRequiredContent && !storePost.isPending ? 'bg-blue-500 cursor-pointer' : 'bg-gray-400 cursor-not-allowed'}`}
                         role={"button"}
                         onClick={handleStoreButtonClick}
                     >
-                        <button className={"text-2xl text-white"} disabled={!hasRequiredContent || storePost.isLoading}
-                        ><BsSave2Fill className={storePost.isLoading ? "animate-spin" : ''}/></button>
+                        <button className={"text-2xl text-white"} disabled={!hasRequiredContent || storePost.isPending}
+                        ><BsSave2Fill className={storePost.isPending ? "animate-spin" : ''}/></button>
                     </div>
                     <div
                         className={`p-3 inline-block w-[60px] text-center rounded-xl ${hasContent ? 'bg-red-500 cursor-pointer' : 'bg-gray-400 cursor-not-allowed'}`}
