@@ -50,7 +50,7 @@ export const useTagifyManager = ({
             whitelist,
             enforceWhitelist: true,
             dropdown: {enabled: 1},
-            placeholder: placeholder?.text || '',
+            placeholder: placeholder || '',
         })
         setIsTagifyLoaded(true)
 

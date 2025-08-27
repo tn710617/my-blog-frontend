@@ -1,6 +1,6 @@
+import React from "react";
 import {BsFillPenFill} from "react-icons/bs";
-import Tagify from "@yaireo/tagify"
-import {useRef, useState, useEffect} from "react";
+import {useState} from "react";
 import {BsSave2Fill} from "react-icons/bs";
 import {BiReset} from "react-icons/bi";
 import MarkdownEditor from "../../Components/MarkdownEditor";
@@ -17,32 +17,38 @@ import {useIntl} from "react-intl";
 import LocaleSelect from "../../Components/LocaleSelect";
 import CategorySelection from "../../Components/CategorySelection";
 import toast from "react-hot-toast";
-import {usePostFormStore} from "../../stores";
 import PublishMediumSelection from "../../Components/PublishMediumSelection";
+import {useCreatePostForm} from "../../hooks/useCreatePostForm";
+import {useTagifyManager} from "../../hooks/useTagifyManager";
 
 export default function CreatePost() {
-    const [isTagifyLoaded, setIsTagifyLoaded] = useState(false)
-    const [showPostCreatedModal, setShowPostCreatedModal] = useState(false)
-    const tagInputRef = useRef(null);
-    const [markdownContentLen, setMarkdownContentLen] = useState(0)
-
-    const form = usePostFormStore((state) => state.form)
-    const setFormInternal = usePostFormStore((state) => state.setForm)
-    const clearForm = usePostFormStore((state) => state.clearForm)
-
-    // Compatibility wrapper for components that expect setForm(newFormObject)
-    const setForm = (newForm) => setFormInternal(newForm)
-    const tags = useTags()
-    const categories = useCategories()
-    const storePost = useStorePost()
-    const [postTitleValid, setPostTitleValid] = useState(true)
+    // Navigation and internationalization
     const navigate = useNavigate()
     const intl = useIntl()
 
+    // API queries
+    const tags = useTags()
+    const categories = useCategories()
+    const storePost = useStorePost()
+
+    // Form management with our custom hook
+    const { form, setForm, clearForm, markdownContentLen, handleMarkdownChange, hasContent } = useCreatePostForm()
+
+    // Tag management with our reusable hook
+    const tagify = useTagifyManager({
+        tags: tags.data,
+        selectedTagIds: form.tag_ids,
+        onTagChange: (tagIds) => setForm({...form, tag_ids: tagIds}),
+        placeholder: intl.formatMessage({id: "store_post.post_tags.placeholder"})
+    })
+
+    // Local UI state
+    const [showPostCreatedModal, setShowPostCreatedModal] = useState(false)
+    const [postTitleValid, setPostTitleValid] = useState(true)
+
+    // Event handlers
     const handleResetButtonClick = (event) => {
         event.preventDefault()
-        const tagify = tagInputRef.current.__tagify
-        tagify.removeAllTags()
         clearForm()
     }
 
@@ -60,75 +66,10 @@ export default function CreatePost() {
         })
     }
 
-    const handleChange = (value = "") => {
-        setForm({...form, post_content: value})
-        setMarkdownContentLen(value.length)
-    };
-
-    const handleTagChange = (event) => {
-        if (event.target.value === '') {
-            setForm({...form, tag_ids: []})
-            return
-        }
-
-        const tagNamesArray = JSON.parse(event.target.value).map(tag => tag.value)
-        const tagIdsArray = tagNamesArray.map(tag => {
-            const tagObjectsArray = tags.data
-            return tagObjectsArray.find(tagObject => tagObject.tag_name === tag).id
-        })
-
-        setForm({...form, tag_ids: tagIdsArray})
-    }
-
     const handleModalGoBackButtonClick = () => {
         setShowPostCreatedModal(false)
         navigate("/single-post?post_id=" + storePost.data.id)
     }
-
-
-    useEffect(() => {
-        function initTagify() {
-            const whitelist = tags.data.map((tag) => tag.tag_name)
-            const tagify = new Tagify(tagInputRef.current, {
-                whitelist: whitelist,
-                enforceWhitelist: true,
-                dropdown: {
-                    enabled: 1,
-                }
-            });
-
-            setIsTagifyLoaded(true)
-
-            return tagify
-        }
-
-        if (tags.status === 'success') {
-            const tagify = initTagify()
-
-            return () => {
-                tagify.destroy()
-            }
-        }
-    }, [tags.status, tags.data]);
-
-    useEffect(() => {
-        function loadTagInput() {
-            const tagIdsArray = form.tag_ids
-            const tagNamesArray = tagIdsArray.map(tagId => {
-                const tagObjectsArray = tags.data
-                return tagObjectsArray.find(tagObject => tagObject.id === tagId).tag_name
-            })
-
-            const tagify = tagInputRef.current.__tagify
-            tagify.removeAllTags()
-            tagify.addTags(tagNamesArray)
-        }
-
-        if (tags.status === 'success' && isTagifyLoaded) {
-            loadTagInput()
-        }
-
-    }, [tags.status, tags.data, isTagifyLoaded, form.tag_ids])
 
     return (
         <div className={"m-4 flex justify-center lg:space-x-5"}>
@@ -151,13 +92,10 @@ export default function CreatePost() {
                     </div>
                     <div>
                         <input
-                            ref={tagInputRef}
+                            ref={tagify.tagInputRef}
                             type={"text"}
                             className={"outline-0 w-full h-12 text-lg border border-gray-300 rounded-md shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50 focus:outline-0 px-4"}
-                            placeholder={intl.formatMessage({id: "store_post.post_tags.placeholder"})}
-                            onChange={handleTagChange}
-                        >
-                        </input>
+                        />
                     </div>
                     <div className={"flex gap-2 justify-between"}>
                         <IsPublicSelect form={form} setForm={setForm}/>
@@ -167,7 +105,7 @@ export default function CreatePost() {
                     <div>
                         <MarkdownEditor
                             value={form.post_content}
-                            onChange={handleChange}
+                            onChange={handleMarkdownChange}
                             height={600}
                         />
                     </div>

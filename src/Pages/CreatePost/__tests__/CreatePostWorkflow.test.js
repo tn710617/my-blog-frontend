@@ -61,13 +61,49 @@ vi.mock('@yaireo/tagify', () => ({
     constructor(element, options) {
       this.element = element
       this.options = options
+      this.settings = options || {}
+      this.whitelist = options?.whitelist || []
+      this.DOM = {
+        input: element
+      }
+      this.dropdown = {
+        hide: vi.fn()
+      }
       // Simulate tagify being attached to element
       element.__tagify = this
+      this.eventHandlers = new Map()
     }
     
     removeAllTags() {}
     addTags(tags) {}
     destroy() {}
+    
+    // Modern Tagify event methods
+    on(event, handler) {
+      if (!this.eventHandlers.has(event)) {
+        this.eventHandlers.set(event, [])
+      }
+      this.eventHandlers.get(event).push(handler)
+    }
+    
+    off(event, handler) {
+      if (this.eventHandlers.has(event)) {
+        const handlers = this.eventHandlers.get(event)
+        const index = handlers.indexOf(handler)
+        if (index > -1) {
+          handlers.splice(index, 1)
+        }
+      }
+    }
+    
+    // Simulate triggering events for testing
+    trigger(event, data) {
+      if (this.eventHandlers.has(event)) {
+        this.eventHandlers.get(event).forEach(handler => {
+          handler(data)
+        })
+      }
+    }
   }
 }))
 
