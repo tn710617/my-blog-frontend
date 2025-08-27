@@ -157,15 +157,3 @@ export const useEditPostFormStore = create(
     }
   )
 )
-
-// 🚀 SSR-Safe Initialization Hook
-// Call this in your main App component after mounting to properly initialize stores
-export const useInitializeStores = () => {
-  return () => {
-    if (isClient) {
-      // Initialize locale from navigator.language if no stored value exists
-      // Use getState() to avoid subscribing to store changes
-      useLocaleStore.getState().initializeFromNavigator()
-    }
-  }
-}
