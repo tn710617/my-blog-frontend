@@ -51,14 +51,15 @@ describe('🛡️ SSR Safety', () => {
 
   it('should handle helper functions safely in server environment', () => {
     vi.resetModules()
-    const helpers = require('../../helpers')
     
-    // Should not crash and return safe defaults
-    expect(helpers.isLoggedInInLocalStorage()).toBe(false)
+    // Test that importing helpers doesn't crash on server
+    expect(() => {
+      require('../../helpers')
+    }).not.toThrow()
     
-    // Should not crash when called
-    expect(() => helpers.loginInLocalStorage()).not.toThrow()
-    expect(() => helpers.logoutInLocalStorage()).not.toThrow()
+    // Note: URI helpers (getCurrentUri, getMetamaskDAppDeepLink) access import.meta.env
+    // In a real SSR setup, these would need environment variables or fallback values
+    // Authentication localStorage helpers have been migrated to Zustand stores
   })
 })
 

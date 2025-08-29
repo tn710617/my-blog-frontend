@@ -1,8 +1,9 @@
-import {useState} from "react";
+import {useEffect, useState} from "react";
 import DisplayOrHideButton from "../../Components/DisplayOrHideButton";
 import YearlyPostHistory from "./YearlyPostHistory";
 import {useIntl} from "react-intl";
 import {useIndexGroupsPosts} from "../../APIs/posts";
+import {useAuthStore} from "../../stores";
 import {v4 as uuidv4} from "uuid";
 
 
@@ -10,6 +11,11 @@ export default function PostsTimeline() {
     const [showSection, setShowSection] = useState(false)
     const intl = useIntl()
     const indexGroupedPosts = useIndexGroupsPosts({})
+    const userIsLoggedIn = useAuthStore((state) => state.isLoggedIn)
+
+    useEffect(() => {
+        indexGroupedPosts.refetch()
+    }, [userIsLoggedIn]);
 
     return (
         <>

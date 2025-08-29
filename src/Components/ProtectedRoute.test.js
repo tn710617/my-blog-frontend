@@ -107,7 +107,7 @@ describe('ProtectedRoute', () => {
     expect(await screen.findByText('Home')).toBeInTheDocument()
     expect(useLoginModalStore.getState().showLoginModal).toBe(true)
     
-    // localStorage should be cleared
-    expect(localStorage.getItem('learn_or_die_is_logged_in')).toBeNull()
+    // Zustand store should handle persistence automatically
+    expect(useAuthStore.getState().isLoggedIn).toBe(false)
   })
 })
