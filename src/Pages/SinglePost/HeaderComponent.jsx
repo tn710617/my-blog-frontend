@@ -25,7 +25,7 @@ export default function HeaderComponent(props = {}) {
 
                 // Now scroll to the calculated position with offset
                 window.scrollTo({
-                    top: offsetPosition,
+                    top: elementPosition,
                     behavior: "smooth"
                 });
             }

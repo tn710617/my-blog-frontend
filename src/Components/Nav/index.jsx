@@ -16,6 +16,7 @@ import LogoutButton from "./LogoutButton";
 import LoginButton from "./LoginButton";
 import AboutButton from "./AboutButton";
 import LocaleDropdown from "./LocaleDropdown";
+import useScrollDirection from "../../hooks/useScrollDirection";
 
 export default function Nav() {
     const [showMobileNavBar, setShowMobileNavBar] = useState(false)
@@ -23,6 +24,7 @@ export default function Nav() {
     const [showSearchBoxComponent, setShowSearchBoxComponent] = useState(false)
     const [showSearchResultDropdown, setShowSearchResultDropdown] = useState(false)
 
+    const scrollDirection = useScrollDirection()
     const indexCategories = useCategories()
 
     const handleSearchBoxButtonClick = () => {
@@ -45,7 +47,9 @@ export default function Nav() {
 
     return (
         <>
-            <div className={"bg-gray-50/80 backdrop-blur-sm z-50 shadow-lg sticky top-0"}>
+            <div className={`bg-gray-50/80 backdrop-blur-sm z-50 shadow-lg sticky top-0 transition-transform duration-300 ${
+                scrollDirection === "down" ? "-translate-y-full" : "translate-y-0"
+            }`}>
                 <nav className={"flex justify-between px-5 py-3 items-center"}>
                     <button
                         type={"button"}
