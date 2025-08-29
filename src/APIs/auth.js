@@ -2,7 +2,7 @@ import {useMutation, useQuery} from "@tanstack/react-query";
 import {ethers} from "ethers";
 import {useLocation} from "react-router";
 import {isBrowser, isMobile} from "react-device-detect";
-import {getMetamaskDAppDeepLink, loginInLocalStorage, logoutInLocalStorage} from "../helpers";
+import {getMetamaskDAppDeepLink} from "../helpers";
 import {useAuthStore} from "../stores";
 import getAxios from "./axios";
 import useAxios from "./useAxios";
@@ -41,8 +41,8 @@ export function useLogout() {
             return res.data.data
         },
         onSuccess: (data, variables, context) => {
+            // Set auth state to false (Zustand will persist to localStorage automatically)
             setIsLoggedIn(false)
-            logoutInLocalStorage()
         }
     })
 }
@@ -88,8 +88,8 @@ export function useLoginWithMetaMask() {
             return res.data.data
 
         }, onSuccess: (data, variables, context) => {
+            // Set auth state to true (Zustand will persist to localStorage automatically)
             setIsLoggedIn(true)
-            loginInLocalStorage()
         }, onError: (error, variables, context) => {
             if (error.message === 'MetaMask is not installed.') {
                 toast(intl.formatMessage({id: 'toast.login.metaMaskNotInstalled'}))

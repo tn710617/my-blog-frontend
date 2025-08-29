@@ -1,7 +1,6 @@
 import getAxios from "./axios";
 import {useEffect} from "react";
 import {useLoginModalStore, useAuthStore} from "../stores";
-import {logoutInLocalStorage} from "../helpers";
 import {useNavigate} from "react-router";
 
 const version = import.meta.env.VITE_API_VERSION || import.meta.env.REACT_APP_API_VERSION
@@ -26,8 +25,8 @@ const useAxios = (isPrecognitive = false) => {
                     if (prevRequest.url !== 'is-logged-in') {
                         setShowLoginModal(true)
                     }
+                    // Set auth state to false (Zustand will persist to localStorage automatically)
                     setIsLoggedIn(false)
-                    logoutInLocalStorage()
                 }
 
                 if (error?.response?.status === 403) {

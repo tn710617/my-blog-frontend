@@ -2,7 +2,6 @@ import React, {useState} from "react";
 import {Outlet, useLocation, useNavigate} from "react-router";
 import {useAuthStore, useLoginModalStore} from "../stores";
 import {useEffect} from "react";
-import {isLoggedInInLocalStorage, loginInLocalStorage, logoutInLocalStorage} from "../helpers";
 import {useIsLoggedIn} from "../APIs/auth";
 
 export default function ProtectedRoute({redirectPath = '/'}) {
@@ -15,19 +14,13 @@ export default function ProtectedRoute({redirectPath = '/'}) {
 
     const handleCheckIsLoggedInSuccess = () => {
         setIsLoggedInGlobally(true)
-        loginInLocalStorage()
     }
 
     useIsLoggedIn({onSuccess: handleCheckIsLoggedInSuccess})
 
     useEffect(() => {
-        if (!isLoggedInInLocalStorage()) {
-            navigate(redirectPath, {state: {from: location}, replace: true});
-            setShowLoginModal(true)
-        }
-
+        // Check auth state from Zustand store (which persists to localStorage automatically)
         if (!isLoggedInGlobally) {
-            logoutInLocalStorage()
             navigate(redirectPath, {state: {from: location}, replace: true});
             setShowLoginModal(true)
         }
