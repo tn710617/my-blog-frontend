@@ -1,0 +1,76 @@
+import { renderHook, act } from '@testing-library/react';
+import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
+import useScrollDirection from '../useScrollDirection';
+
+describe('useScrollDirection', () => {
+  beforeEach(() => {
+    vi.spyOn(window, 'addEventListener');
+    vi.spyOn(window, 'removeEventListener');
+    Object.defineProperty(window, 'pageYOffset', {
+      value: 0,
+      writable: true,
+    });
+  });
+
+  afterEach(() => {
+    vi.restoreAllMocks();
+  });
+
+  it('should return null initially', () => {
+    const { result } = renderHook(() => useScrollDirection());
+    expect(result.current).toBe(null);
+  });
+
+  it('should add event listener on mount', () => {
+    renderHook(() => useScrollDirection());
+    expect(window.addEventListener).toHaveBeenCalledWith('scroll', expect.any(Function));
+  });
+
+  it('should remove event listener on unmount', () => {
+    const { unmount } = renderHook(() => useScrollDirection());
+    unmount();
+    expect(window.removeEventListener).toHaveBeenCalledWith('scroll', expect.any(Function));
+  });
+
+  it('should detect scroll down', () => {
+    const { result } = renderHook(() => useScrollDirection());
+    
+    act(() => {
+      window.pageYOffset = 100;
+      window.dispatchEvent(new Event('scroll'));
+    });
+
+    expect(result.current).toBe('down');
+  });
+
+  it('should detect scroll up', () => {
+    const { result } = renderHook(() => useScrollDirection());
+    
+    // First scroll down significantly
+    act(() => {
+      window.pageYOffset = 200;
+      window.dispatchEvent(new Event('scroll'));
+    });
+    
+    expect(result.current).toBe('down');
+    
+    // Then scroll up significantly
+    act(() => {
+      window.pageYOffset = 50;
+      window.dispatchEvent(new Event('scroll'));
+    });
+
+    expect(result.current).toBe('up');
+  });
+
+  it('should not change direction for small scroll movements', () => {
+    const { result } = renderHook(() => useScrollDirection());
+    
+    act(() => {
+      window.pageYOffset = 5;
+      window.dispatchEvent(new Event('scroll'));
+    });
+
+    expect(result.current).toBe(null);
+  });
+});

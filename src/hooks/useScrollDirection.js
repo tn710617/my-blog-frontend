@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 
 const useScrollDirection = () => {
   const [scrollDirection, setScrollDirection] = useState(null);
-  const [prevOffset, setPrevOffset] = useState(0);
+  const [prevOffset, setPrevOffset] = useState(() => window.pageYOffset);
 
   useEffect(() => {
     const toggleScrollDirection = () => {
