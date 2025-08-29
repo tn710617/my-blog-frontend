@@ -8,6 +8,14 @@ const useScrollDirection = () => {
     const toggleScrollDirection = () => {
       const scrollY = window.pageYOffset;
       
+      // Don't hide navbar when at the very top of the page
+      if (scrollY <= 0) {
+        setScrollDirection("up");
+        setPrevOffset(scrollY);
+        return;
+      }
+      
+      // Ignore small scroll movements to prevent jittery behavior
       if (Math.abs(scrollY - prevOffset) < 10) {
         return;
       }

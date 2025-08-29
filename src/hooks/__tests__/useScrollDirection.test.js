@@ -73,4 +73,32 @@ describe('useScrollDirection', () => {
 
     expect(result.current).toBe(null);
   });
+
+  it('should always show navbar when at top of page', () => {
+    const { result } = renderHook(() => useScrollDirection());
+    
+    // Scroll down first
+    act(() => {
+      window.pageYOffset = 100;
+      window.dispatchEvent(new Event('scroll'));
+    });
+    
+    expect(result.current).toBe('down');
+    
+    // Then scroll back to top (including negative values for mobile bounce)
+    act(() => {
+      window.pageYOffset = 0;
+      window.dispatchEvent(new Event('scroll'));
+    });
+
+    expect(result.current).toBe('up');
+    
+    // Test negative scroll values (mobile Safari bounce)
+    act(() => {
+      window.pageYOffset = -10;
+      window.dispatchEvent(new Event('scroll'));
+    });
+
+    expect(result.current).toBe('up');
+  });
 });
