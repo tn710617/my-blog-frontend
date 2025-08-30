@@ -1,23 +1,80 @@
 import React, { useEffect, useRef, useState } from 'react';
 import mapboxgl from 'mapbox-gl';
 import 'mapbox-gl/dist/mapbox-gl.css';
+import ReactMarkdown from 'react-markdown';
+
+// Custom styles to override default Mapbox popup styling
+const customPopupStyles = `
+  .travel-pin-popup .mapboxgl-popup-content {
+    padding: 0 !important;
+    border-radius: 0 !important;
+    box-shadow: none !important;
+    background: transparent !important;
+    max-width: none !important;
+    width: auto !important;
+  }
+  
+  .travel-pin-popup .mapboxgl-popup-close-button {
+    display: none !important;
+  }
+  
+  .travel-pin-popup .mapboxgl-popup-tip {
+    border-top-color: rgb(99 102 241) !important;
+  }
+`;
+
+// Utility function to convert markdown to HTML
+const renderMarkdownToHTML = (markdown) => {
+  if (!markdown) return '';
+  
+  // Basic markdown to HTML conversion for popup display
+  return markdown
+    // Bold text
+    .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
+    // Italic text
+    .replace(/\*(.*?)\*/g, '<em>$1</em>')
+    // Code blocks
+    .replace(/`(.*?)`/g, '<code class="bg-gray-100 px-1 py-0.5 rounded text-sm font-mono">$1</code>')
+    // Links
+    .replace(/\[([^\]]+)\]\(([^)]+)\)/g, '<a href="$2" target="_blank" rel="noopener" class="text-blue-600 hover:text-blue-800 underline">$1</a>')
+    // Line breaks
+    .replace(/\n/g, '<br>');
+};
 
 const TravelPins = () => {
   const mapContainer = useRef(null);
   const map = useRef(null);
   const [pins, setPins] = useState([]);
   const [showForm, setShowForm] = useState(false);
+  const [editingPin, setEditingPin] = useState(null);
   const [mapLoaded, setMapLoaded] = useState(false);
   const [mapError, setMapError] = useState(null);
   const [token, setToken] = useState('');
   const [formData, setFormData] = useState({
     title: '',
     note: '',
-    links: '',
     visited_at: '',
     photos: [],
     coordinates: null
   });
+
+  // Inject custom popup styles
+  useEffect(() => {
+    const styleId = 'travel-pins-popup-styles';
+    if (!document.getElementById(styleId)) {
+      const style = document.createElement('style');
+      style.id = styleId;
+      style.textContent = customPopupStyles;
+      document.head.appendChild(style);
+    }
+    
+    return () => {
+      const existingStyle = document.getElementById(styleId);
+      if (existingStyle) {
+        existingStyle.remove();
+      }
+    };
+  }, []);
 
   useEffect(() => {
     // Debug token
@@ -67,7 +124,6 @@ const TravelPins = () => {
           ...prev,
           title: '',
           note: '',
-          links: '',
           visited_at: '',
           photos: [],
           coordinates
@@ -88,19 +144,192 @@ const TravelPins = () => {
     };
   }, []);
 
+  // Global functions for popup interactions
+  useEffect(() => {
+    window.editTravelPin = (pinId) => {
+      const pin = pins.find(p => p.id === pinId);
+      if (pin) {
+        handleEditPin(pin);
+      }
+    };
+
+    window.closeTravelPinPopup = (pinId) => {
+      const pin = pins.find(p => p.id === pinId);
+      if (pin && pin.marker) {
+        pin.marker.getPopup().remove();
+      }
+    };
+
+    return () => {
+      delete window.editTravelPin;
+      delete window.closeTravelPinPopup;
+    };
+  }, [pins]);
+
+  const handleEditPin = (pin) => {
+    setEditingPin(pin);
+    setFormData({
+      title: pin.title,
+      note: pin.note || '',
+      visited_at: pin.visited_at || '',
+      photos: pin.photos || [],
+      coordinates: pin.coordinates
+    });
+    setShowForm(true);
+  };
+
+  const createEnhancedPopup = (pin) => {
+    const popupId = `popup-${pin.id}`;
+    return new mapboxgl.Popup({ 
+      offset: 25,
+      closeButton: false,
+      closeOnClick: false,
+      className: 'travel-pin-popup',
+      maxWidth: 'none'
+    }).setHTML(`
+      <div id="${popupId}" class="p-0 min-w-80 max-w-md bg-white rounded-2xl overflow-hidden shadow-2xl border border-slate-200/50">
+        <!-- Header with elegant gradient -->
+        <div class="bg-gradient-to-r from-indigo-600 via-purple-600 to-blue-600 text-white px-6 py-5 relative">
+          <div class="absolute inset-0 bg-gradient-to-br from-white/10 to-transparent"></div>
+          <div class="flex justify-between items-start relative z-10">
+            <div class="flex-1 pr-4">
+              <h3 class="m-0 text-xl font-bold tracking-tight leading-tight">${pin.title}</h3>
+              ${pin.visited_at ? `
+                <div class="mt-2 flex items-center gap-2 text-sm opacity-90">
+                  <div class="w-1.5 h-1.5 bg-white/60 rounded-full"></div>
+                  <span>Visited ${new Date(pin.visited_at).toLocaleDateString('en-US', { 
+                    year: 'numeric', 
+                    month: 'long', 
+                    day: 'numeric' 
+                  })}</span>
+                </div>
+              ` : ''}
+            </div>
+            <button 
+              onclick="window.closeTravelPinPopup(${pin.id})"
+              class="flex-shrink-0 w-8 h-8 flex items-center justify-center hover:bg-white/20 rounded-full transition-colors duration-200 text-white/80 hover:text-white"
+            >
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                <line x1="18" y1="6" x2="6" y2="18"></line>
+                <line x1="6" y1="6" x2="18" y2="18"></line>
+              </svg>
+            </button>
+          </div>
+        </div>
+
+        <!-- Content with improved spacing and typography -->
+        <div class="p-6 space-y-5">
+          ${pin.note ? `
+            <div class="space-y-3">
+              <div class="flex items-center gap-2">
+                <div class="w-6 h-6 bg-gradient-to-br from-amber-400 to-orange-500 rounded-lg flex items-center justify-center text-white text-sm">
+                  📝
+                </div>
+                <h4 class="text-sm font-bold text-slate-700 uppercase tracking-wide">Travel Notes</h4>
+              </div>
+              <div class="bg-gradient-to-br from-amber-50 to-orange-50 border border-amber-200/50 rounded-xl p-4 text-sm leading-relaxed text-slate-700 shadow-inner">
+                ${renderMarkdownToHTML(pin.note)}
+              </div>
+            </div>
+          ` : ''}
+
+          ${pin.photos && pin.photos.length > 0 ? `
+            <div class="space-y-3">
+              <div class="flex items-center gap-2">
+                <div class="w-6 h-6 bg-gradient-to-br from-pink-400 to-rose-500 rounded-lg flex items-center justify-center text-white text-sm">
+                  📷
+                </div>
+                <h4 class="text-sm font-bold text-slate-700 uppercase tracking-wide">Photos</h4>
+              </div>
+              <div class="bg-gradient-to-br from-pink-50 to-rose-50 border-2 border-dashed border-pink-200 rounded-xl p-4 text-center">
+                <div class="text-2xl mb-2">📸</div>
+                <div class="text-sm font-medium text-slate-600">
+                  ${pin.photos.length} photo${pin.photos.length !== 1 ? 's' : ''} attached
+                </div>
+              </div>
+            </div>
+          ` : ''}
+
+          <!-- Enhanced Coordinates Section -->
+          <div class="space-y-3">
+            <div class="flex items-center gap-2">
+              <div class="w-6 h-6 bg-gradient-to-br from-emerald-400 to-green-500 rounded-lg flex items-center justify-center text-white text-sm">
+                🌍
+              </div>
+              <h4 class="text-sm font-bold text-slate-700 uppercase tracking-wide">Location</h4>
+            </div>
+            <div class="bg-gradient-to-br from-emerald-50 to-green-50 border border-emerald-200/50 rounded-xl p-4">
+              <div class="flex items-center justify-between">
+                <div>
+                  <div class="text-xs text-slate-500 font-medium mb-1">COORDINATES</div>
+                  <div class="font-mono text-sm text-slate-800 font-semibold">
+                    ${pin.coordinates[1].toFixed(6)}, ${pin.coordinates[0].toFixed(6)}
+                  </div>
+                </div>
+                <div class="text-2xl">📍</div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Enhanced Edit Button -->
+          <div class="pt-2 border-t border-slate-100">
+            <button 
+              onclick="window.editTravelPin(${pin.id})"
+              class="w-full bg-gradient-to-r from-indigo-500 via-purple-500 to-blue-500 hover:from-indigo-600 hover:via-purple-600 hover:to-blue-600 text-white font-bold py-3.5 px-6 rounded-xl transition-all duration-300 shadow-lg hover:shadow-xl hover:-translate-y-0.5 text-sm uppercase tracking-wide"
+            >
+              <span class="flex items-center justify-center gap-2">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path>
+                  <path d="m18.5 2.5 3 3L12 15l-4 1 1-4 9.5-9.5z"></path>
+                </svg>
+                Edit Travel Pin
+              </span>
+            </button>
+          </div>
+        </div>
+      </div>
+    `);
+  };
+
   const handleSavePin = (e) => {
     e.preventDefault();
     if (!formData.title.trim() || !formData.coordinates) return;
 
-    const newPin = {
-      id: Date.now(),
+    const pinData = {
+      id: editingPin ? editingPin.id : Date.now(),
       title: formData.title,
       note: formData.note,
-      links: formData.links.split(',').map(link => link.trim()).filter(Boolean),
       visited_at: formData.visited_at,
       photos: formData.photos,
       coordinates: formData.coordinates
     };
+
+    if (editingPin) {
+      // Update existing pin
+      setPins(prevPins => prevPins.map(pin => 
+        pin.id === editingPin.id ? { ...pin, ...pinData, marker: pin.marker } : pin
+      ));
+      
+      // Update the existing marker's popup
+      const existingPin = pins.find(p => p.id === editingPin.id);
+      if (existingPin && existingPin.marker) {
+        existingPin.marker.setPopup(createEnhancedPopup(pinData));
+      }
+      
+      setEditingPin(null);
+      setShowForm(false);
+      setFormData({
+        title: '',
+        note: '',
+        visited_at: '',
+        photos: [],
+        coordinates: null
+      });
+      return;
+    }
+
+    // Create new pin
+    const newPin = pinData;
 
     // Add marker to map - proper approach without transform conflicts
     const el = document.createElement('div');
@@ -136,31 +365,7 @@ const TravelPins = () => {
       el.style.marginLeft = '0px';
     });
 
-    const popup = new mapboxgl.Popup({ 
-      offset: 25,
-      closeButton: true,
-      closeOnClick: false
-    }).setHTML(`
-      <div style="padding: 12px; min-width: 200px;">
-        <h3 style="margin: 0 0 8px 0; font-weight: bold; font-size: 16px; color: #1f2937;">${newPin.title}</h3>
-        ${newPin.note ? `<p style="margin: 0 0 8px 0; font-size: 13px; color: #4b5563; line-height: 1.4;">${newPin.note}</p>` : ''}
-        ${newPin.visited_at ? `<p style="margin: 0 0 8px 0; font-size: 12px; color: #6b7280;"><strong>Visited:</strong> ${newPin.visited_at}</p>` : ''}
-        ${newPin.links && newPin.links.length > 0 ? `
-          <div style="margin-top: 8px;">
-            <p style="margin: 0 0 4px 0; font-size: 12px; font-weight: bold; color: #374151;">Links:</p>
-            ${newPin.links.map(link => `<a href="${link}" target="_blank" rel="noopener" style="display: block; font-size: 11px; color: #3b82f6; text-decoration: underline; margin: 2px 0;">${link.length > 30 ? link.substring(0, 30) + '...' : link}</a>`).join('')}
-          </div>
-        ` : ''}
-        ${newPin.photos && newPin.photos.length > 0 ? `
-          <div style="margin-top: 8px;">
-            <p style="font-size: 11px; color: #6b7280;"><strong>${newPin.photos.length} photo(s) attached</strong></p>
-          </div>
-        ` : ''}
-        <div style="margin-top: 8px; padding-top: 8px; border-top: 1px solid #e5e7eb;">
-          <p style="font-size: 10px; color: #9ca3af; margin: 0;">📍 ${newPin.coordinates[1].toFixed(4)}, ${newPin.coordinates[0].toFixed(4)}</p>
-        </div>
-      </div>
-    `);
+    const popup = createEnhancedPopup(newPin);
 
     // Add click event to show popup
     el.addEventListener('click', (e) => {
@@ -181,7 +386,6 @@ const TravelPins = () => {
     setFormData({
       title: '',
       note: '',
-      links: '',
       visited_at: '',
       photos: [],
       coordinates: null
@@ -197,7 +401,9 @@ const TravelPins = () => {
       {showForm && (
         <div className="absolute inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
           <div className="bg-white rounded-xl shadow-2xl p-6 w-[400px] max-w-[90vw] max-h-[90vh] overflow-y-auto">
-            <h3 className="text-xl font-semibold mb-4">Add Travel Pin</h3>
+            <h3 className="text-xl font-semibold mb-4">
+              {editingPin ? '✏️ Edit Travel Pin' : '📍 Add Travel Pin'}
+            </h3>
             
             <form onSubmit={handleSavePin} className="space-y-4">
               {/* Title */}
@@ -242,19 +448,6 @@ const TravelPins = () => {
                 />
               </div>
 
-              {/* Links */}
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Related Links
-                </label>
-                <input
-                  type="text"
-                  className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
-                  placeholder="Enter URLs separated by commas"
-                  value={formData.links}
-                  onChange={(e) => setFormData({ ...formData, links: e.target.value })}
-                />
-              </div>
 
               {/* Coordinates Display */}
               {formData.coordinates && (
@@ -267,7 +460,10 @@ const TravelPins = () => {
               <div className="flex gap-3 pt-4">
                 <button
                   type="button"
-                  onClick={() => setShowForm(false)}
+                  onClick={() => {
+                    setShowForm(false);
+                    setEditingPin(null);
+                  }}
                   className="flex-1 px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors"
                 >
                   Cancel
@@ -276,7 +472,7 @@ const TravelPins = () => {
                   type="submit"
                   className="flex-1 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
                 >
-                  Save Pin
+                  {editingPin ? 'Update Pin' : 'Save Pin'}
                 </button>
               </div>
             </form>
