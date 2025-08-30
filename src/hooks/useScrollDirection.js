@@ -2,7 +2,7 @@ import { useState, useEffect, useRef } from 'react';
 
 const useScrollDirection = () => {
   const [scrollDirection, setScrollDirection] = useState(null);
-  const [prevOffset, setPrevOffset] = useState(() => window.pageYOffset);
+  const prevOffsetRef = useRef(window.pageYOffset);
   const lastDirectionRef = useRef(null);
 
   useEffect(() => {
@@ -11,22 +11,22 @@ const useScrollDirection = () => {
       const documentHeight = document.documentElement.scrollHeight;
       const windowHeight = window.innerHeight;
       const maxScroll = documentHeight - windowHeight;
-      
+
       // Don't hide navbar when at the very top of the page
       if (scrollY <= 0) {
         setScrollDirection("up");
-        setPrevOffset(scrollY);
+        prevOffsetRef.current = scrollY;
         lastDirectionRef.current = "up";
         return;
       }
-      
+
       // Ignore small scroll movements to prevent jittery behavior
-      if (Math.abs(scrollY - prevOffset) < 10) {
+      if (Math.abs(scrollY - prevOffsetRef.current) < 10) {
         return;
       }
-      
-      const currentDirection = scrollY > prevOffset ? "down" : "up";
-      
+
+      const currentDirection = scrollY > prevOffsetRef.current ? "down" : "up";
+
       // Special handling for mobile Safari bounce at bottom
       // If we're near the bottom and the direction is "up", check if it's likely a bounce
       if (currentDirection === "up" && scrollY >= maxScroll - 100) {
@@ -34,22 +34,22 @@ const useScrollDirection = () => {
         // Keep the navbar hidden by maintaining "down" direction
         if (lastDirectionRef.current === "down") {
           setScrollDirection("down");
-          setPrevOffset(scrollY);
+          prevOffsetRef.current = scrollY;
           return;
         }
       }
-      
+
       setScrollDirection(currentDirection);
-      setPrevOffset(scrollY);
+      prevOffsetRef.current = scrollY;
       lastDirectionRef.current = currentDirection;
     };
 
-    window.addEventListener("scroll", toggleScrollDirection);
+    window.addEventListener("scroll", toggleScrollDirection, { passive: true });
 
     return () => {
-      window.removeEventListener("scroll", toggleScrollDirection);
+      window.removeEventListener("scroll", toggleScrollDirection, { passive: true });
     };
-  }, [prevOffset]);
+  }, []);
 
   return scrollDirection;
 };
