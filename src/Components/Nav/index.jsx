@@ -15,6 +15,7 @@ import {useAuthStore} from "../../stores";
 import LogoutButton from "./LogoutButton";
 import LoginButton from "./LoginButton";
 import AboutButton from "./AboutButton";
+import TravelPinsButton from "./TravelPinsButton";
 import LocaleDropdown from "./LocaleDropdown";
 import useScrollDirection from "../../hooks/useScrollDirection";
 
@@ -71,6 +72,7 @@ export default function Nav() {
 
                     <div className={"flex gap-5 items-center"}>
                         <AboutButton/>
+                        <TravelPinsButton/>
                         <LocaleDropdown/>
                         <button className={"cursor-pointer hidden"} onClick={() => setDarkMode(!darkMode)}>
                             {darkMode ? <BsFillSunFill className={"text-xl hover:text-yellow-400"}/> :
