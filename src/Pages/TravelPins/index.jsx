@@ -76,6 +76,51 @@ const TravelPins = () => {
     };
   }, []);
 
+  // Separate effect for zoom handling to access pins state
+  useEffect(() => {
+    if (!map.current) return;
+    
+    const handleZoomStart = () => {
+      console.log('Zoom started - closing all popups');
+      console.log('Current pins count:', pins.length);
+      
+      let closedCount = 0;
+      
+      // Method 1: Close popups using pins state
+      pins.forEach((pin, index) => {
+        if (pin.marker && pin.marker.getPopup()) {
+          const popup = pin.marker.getPopup();
+          if (popup.isOpen()) {
+            console.log(`Closing popup for pin ${index}:`, pin.title);
+            popup.remove();
+            closedCount++;
+          }
+        }
+      });
+      
+      // Method 2: Fallback - close any remaining popups via DOM
+      const remainingPopups = document.querySelectorAll('.mapboxgl-popup');
+      if (remainingPopups.length > 0) {
+        console.log(`Found ${remainingPopups.length} remaining popups, closing via DOM`);
+        remainingPopups.forEach(popup => {
+          if (popup.parentNode) {
+            popup.parentNode.removeChild(popup);
+          }
+        });
+      }
+      
+      console.log(`Closed ${closedCount} popups via pins state`);
+    };
+
+    map.current.on('zoomstart', handleZoomStart);
+
+    return () => {
+      if (map.current) {
+        map.current.off('zoomstart', handleZoomStart);
+      }
+    };
+  }, [pins]); // Depend on pins so we can access current markers
+
   useEffect(() => {
     // Debug token
     const mapboxToken = import.meta.env.VITE_MAPBOX_TOKEN || 'pk.eyJ1IjoidG43MTA2MTciLCJhIjoiY21leWM3anFmMHRnOTJxb2llcjJ6dnZpeSJ9.oHx0C295B4I2X21tPKsaMA';
