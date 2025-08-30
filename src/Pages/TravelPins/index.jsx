@@ -76,12 +76,16 @@ const TravelPins = () => {
     };
   }, []);
 
-  // Separate effect for zoom handling to access pins state
+  // Separate effect for zoom handling with debounce
   useEffect(() => {
     if (!map.current) return;
     
-    const handleZoomStart = () => {
-      console.log('Zoom started - closing all popups');
+    let zoomStartLevel = null;
+    let hasClosedPopups = false;
+    let zoomTimeout = null;
+    
+    const closeAllPopups = () => {
+      console.log('Significant zoom detected - closing all popups');
       console.log('Current pins count:', pins.length);
       
       let closedCount = 0;
@@ -110,13 +114,58 @@ const TravelPins = () => {
       }
       
       console.log(`Closed ${closedCount} popups via pins state`);
+      hasClosedPopups = true;
+    };
+
+    const handleZoomStart = () => {
+      zoomStartLevel = map.current.getZoom();
+      hasClosedPopups = false;
+      console.log('Zoom started at level:', zoomStartLevel.toFixed(2));
+      
+      // Clear any existing timeout
+      if (zoomTimeout) {
+        clearTimeout(zoomTimeout);
+        zoomTimeout = null;
+      }
+    };
+
+    const handleZoom = () => {
+      // Only check zoom level if we haven't already closed popups
+      if (!hasClosedPopups && zoomStartLevel !== null) {
+        const currentZoomLevel = map.current.getZoom();
+        const zoomDifference = Math.abs(currentZoomLevel - zoomStartLevel);
+        
+        console.log('Zoom difference:', zoomDifference.toFixed(3));
+        
+        // Close popups if zoom difference is >= 0.1 (significant zoom change)
+        if (zoomDifference >= 0.1) {
+          closeAllPopups();
+        }
+      }
+    };
+
+    const handleZoomEnd = () => {
+      // Reset tracking variables with slight delay to ensure all zoom events are processed
+      zoomTimeout = setTimeout(() => {
+        zoomStartLevel = null;
+        hasClosedPopups = false;
+        console.log('Zoom ended - resetting tracking');
+      }, 100);
     };
 
     map.current.on('zoomstart', handleZoomStart);
+    map.current.on('zoom', handleZoom);
+    map.current.on('zoomend', handleZoomEnd);
 
     return () => {
       if (map.current) {
         map.current.off('zoomstart', handleZoomStart);
+        map.current.off('zoom', handleZoom);
+        map.current.off('zoomend', handleZoomEnd);
+      }
+      // Clear timeout if component unmounts
+      if (zoomTimeout) {
+        clearTimeout(zoomTimeout);
       }
     };
   }, [pins]); // Depend on pins so we can access current markers

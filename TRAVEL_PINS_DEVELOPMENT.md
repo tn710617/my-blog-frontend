@@ -58,6 +58,12 @@ This document outlines the complete development process, guidelines, and impleme
    - Color-coded sections with gradient icons
    - Professional typography and spacing
    - Interactive hover effects and smooth transitions
+4. **Smart Zoom Detection**: Debounced popup closing with 0.1 zoom level threshold:
+   - Prevents accidental closure on minor zoom adjustments
+   - Uses zoom level difference instead of mouse position for reliability
+   - Only closes popups when user makes intentional zoom gestures (≥0.1 zoom levels)
+   - Works consistently across mouse, touch, and keyboard zoom inputs
+   - Provides console debugging for zoom level calculations
 
 ## 🔧 Technical Implementation Guidelines
 
@@ -234,19 +240,35 @@ map.on('click', (e) => {
 });
 ```
 
-### 5. Popup Management Best Practices
+### 5. Popup Management with Smart Zoom Detection
 **Issue**: Multiple popups open simultaneously affecting UX
-**Solution**:
+**Solution**: Zoom level-based detection that only closes popups after significant zoom changes
 ```javascript
-// Close all popups when zooming out
-map.current.on('zoomstart', () => {
-  pins.forEach(pin => {
-    if (pin.marker && pin.marker.getPopup().isOpen()) {
-      pin.marker.getPopup().remove();
+// Smart zoom detection based on zoom level difference (0.1 threshold)
+const handleZoomStart = () => {
+  zoomStartLevel = map.current.getZoom();
+  hasClosedPopups = false;
+};
+
+const handleZoom = () => {
+  if (!hasClosedPopups && zoomStartLevel !== null) {
+    const currentZoomLevel = map.current.getZoom();
+    const zoomDifference = Math.abs(currentZoomLevel - zoomStartLevel);
+    
+    // Close popups only if zoom difference >= 0.1 (significant change)
+    if (zoomDifference >= 0.1) {
+      pins.forEach(pin => {
+        if (pin.marker && pin.marker.getPopup().isOpen()) {
+          pin.marker.getPopup().remove();
+        }
+      });
+      hasClosedPopups = true;
     }
-  });
-});
+  }
+};
 ```
+
+**Why this approach**: Using zoom levels instead of mouse coordinates avoids issues with `e.point` being undefined and provides more reliable zoom detection across different input methods (mouse, touch, keyboard).
 
 ## 📁 File Structure
 
@@ -275,8 +297,11 @@ src/
 - [x] Professional typography and spacing
 - [x] Custom SVG icons and smooth transitions
 
-### In Progress 🚧
-- [ ] Auto-close popups on map zoom (improved UX)
+### Recently Completed ✅
+- [x] Smart popup closing with zoom debounce (10px threshold)
+- [x] Enhanced form UX by removing links input field
+- [x] Markdown rendering support for rich text notes
+- [x] Premium popup design with modern gradients and sections
 
 ### Future Enhancements 🔮
 - [ ] Globe projection (3D view)
@@ -301,9 +326,12 @@ src/
 7. **Rich Content**: Markdown support adds significant value for travel notes and descriptions
 8. **Visual Hierarchy**: Color-coded sections with consistent gradients create professional appearance
 9. **Performance**: Managing popup states prevents overwhelming users with too much open content
+10. **Build Efficiency**: Avoid unnecessary builds during development - use hot reload instead
+11. **Zoom UX**: Debounced interactions prevent accidental popup closures on minor gestures
 
 ## 📝 Development Commands
 
+### 🚀 Essential Commands
 ```bash
 # Start development environment
 docker-compose up -d
@@ -321,6 +349,33 @@ docker-compose restart
 docker-compose logs --tail=20 app
 ```
 
+### ⚡ Build Optimization
+```bash
+# ⚠️ IMPORTANT: Avoid unnecessary builds during development
+# Only run builds when:
+# - Testing production functionality
+# - Preparing for deployment
+# - Debugging production-specific issues
+
+# Development build (faster, with source maps)
+docker-compose exec app yarn run build
+
+# Production build (optimized, slower)
+docker-compose exec app yarn run build-production
+
+# Development server (hot reload - preferred for development)
+docker-compose exec app yarn run dev
+```
+
+### 🧪 Testing & Quality
+```bash
+# Run tests (only when needed)
+docker-compose exec app yarn test
+
+# Test coverage (periodic check)
+docker-compose exec app yarn test --coverage --watchAll=false
+```
+
 ## 🔍 Debugging Tips
 
 1. **Map Not Loading**: Check browser console for token/network errors
@@ -328,6 +383,15 @@ docker-compose logs --tail=20 app
 3. **React Errors**: Verify effect dependencies and cleanup
 4. **Environment Issues**: Confirm Docker environment variable loading
 5. **Styling Problems**: Use browser DevTools to inspect TailwindCSS classes
+6. **Zoom Debounce**: Check console logs for distance calculations during zoom
+7. **Popup Closing**: Monitor console for "Zoom threshold reached" messages
+8. **Performance**: Use React DevTools to profile component re-renders
+
+### 🚨 Development Best Practices
+- **Hot Reload First**: Use `yarn run dev` for development, not builds
+- **Build Sparingly**: Only build when testing production behavior
+- **Console Debugging**: Check browser console for zoom/popup debug info
+- **Docker Logs**: Use `docker-compose logs` for container-level issues
 
 ---
 
