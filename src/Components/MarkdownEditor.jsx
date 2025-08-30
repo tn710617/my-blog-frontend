@@ -1,7 +1,6 @@
 import React from 'react';
 import MDEditor from '@uiw/react-md-editor';
 import '@uiw/react-md-editor/markdown-editor.css';
-import './MarkdownEditor.css';
 
 const MarkdownEditor = ({ 
     value = "", 
@@ -10,7 +9,7 @@ const MarkdownEditor = ({
     ...props 
 }) => {
     return (
-        <div data-color-mode="light" className="markdown-editor-container">
+        <div data-color-mode="light">
             <MDEditor
                 value={value}
                 onChange={onChange}

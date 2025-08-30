@@ -10,6 +10,15 @@ describe('useScrollDirection', () => {
       value: 0,
       writable: true,
     });
+    // Mock document and window dimensions to avoid bounce logic interference
+    Object.defineProperty(document.documentElement, 'scrollHeight', {
+      value: 2000,
+      writable: true,
+    });
+    Object.defineProperty(window, 'innerHeight', {
+      value: 800,
+      writable: true,
+    });
   });
 
   afterEach(() => {
@@ -23,13 +32,13 @@ describe('useScrollDirection', () => {
 
   it('should add event listener on mount', () => {
     renderHook(() => useScrollDirection());
-    expect(window.addEventListener).toHaveBeenCalledWith('scroll', expect.any(Function));
+    expect(window.addEventListener).toHaveBeenCalledWith('scroll', expect.any(Function), { passive: true });
   });
 
   it('should remove event listener on unmount', () => {
     const { unmount } = renderHook(() => useScrollDirection());
     unmount();
-    expect(window.removeEventListener).toHaveBeenCalledWith('scroll', expect.any(Function));
+    expect(window.removeEventListener).toHaveBeenCalledWith('scroll', expect.any(Function), { passive: true });
   });
 
   it('should detect scroll down', () => {
@@ -48,15 +57,15 @@ describe('useScrollDirection', () => {
     
     // First scroll down significantly
     act(() => {
-      window.pageYOffset = 200;
+      window.pageYOffset = 300;
       window.dispatchEvent(new Event('scroll'));
     });
     
     expect(result.current).toBe('down');
     
-    // Then scroll up significantly
+    // Then scroll up significantly (more than 10px threshold)
     act(() => {
-      window.pageYOffset = 50;
+      window.pageYOffset = 100;
       window.dispatchEvent(new Event('scroll'));
     });
 
