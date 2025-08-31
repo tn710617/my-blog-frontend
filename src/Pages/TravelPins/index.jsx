@@ -29,11 +29,17 @@ const customPopupStyles = `
     left: 50% !important;
     transform: translate(-50%, -50%) !important;
     z-index: 1000 !important;
+    max-height: 90vh !important;
+    max-width: 90vw !important;
+    overflow-y: auto !important;
+    -webkit-overflow-scrolling: touch !important;
   }
   
   .travel-pin-popup-center .mapboxgl-popup-content {
     position: relative !important;
     transform: none !important;
+    max-height: none !important;
+    overflow: visible !important;
   }
   
   .travel-pin-popup-center .mapboxgl-popup-tip {
@@ -1283,7 +1289,8 @@ const TravelPins = () => {
                 }
               }}
               placeholder="Search countries... (Ctrl/Cmd + F)"
-              className="w-full pl-10 pr-4 py-3 bg-white border border-gray-300 rounded-xl shadow-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm"
+              className="w-full pl-10 pr-4 py-3 bg-white border border-gray-300 rounded-xl shadow-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              style={{ fontSize: '16px' }}
             />
             
             {/* Search Icon */}
@@ -1382,8 +1389,11 @@ const TravelPins = () => {
 
       {/* Enhanced Pin Creation/Edit Form */}
       {showForm && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-          <div className="bg-white rounded-2xl overflow-hidden shadow-2xl border border-slate-200/50 w-[450px] max-w-[90vw] max-h-[90vh] overflow-y-auto">
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex justify-center z-50 p-4 overflow-y-auto">
+          <div 
+            className="bg-white rounded-2xl overflow-hidden shadow-2xl border border-slate-200/50 w-[450px] max-w-[90vw] my-4 self-start"
+            style={{ WebkitOverflowScrolling: 'touch' }}
+          >
             {/* Same gradient header as display modal */}
             <div className="bg-gradient-to-r from-indigo-600 via-purple-600 to-blue-600 text-white px-6 py-5 relative">
               <div className="absolute inset-0 bg-gradient-to-br from-white/10 to-transparent"></div>
@@ -1428,6 +1438,7 @@ const TravelPins = () => {
                   value={formData.title}
                   onChange={(e) => handleInputChange('title', e.target.value)}
                   className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  style={{ fontSize: '16px' }}
                   placeholder="Enter a title for this location"
                 />
               </div>
@@ -1445,7 +1456,8 @@ const TravelPins = () => {
                     rows={4}
                     value={formData.note}
                     onChange={(e) => handleInputChange('note', e.target.value)}
-                    className="w-full bg-transparent border-none resize-none focus:outline-none text-sm text-slate-700 placeholder:text-slate-500"
+                    className="w-full bg-transparent border-none resize-none focus:outline-none text-slate-700 placeholder:text-slate-500"
+                    style={{ fontSize: '16px' }}
                   />
                 </div>
               </div>
@@ -1463,6 +1475,7 @@ const TravelPins = () => {
                   value={formData.visited_at}
                   onChange={(e) => handleInputChange('visited_at', e.target.value)}
                   className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-green-500"
+                  style={{ fontSize: '16px' }}
                 />
               </div>
 
@@ -1479,7 +1492,8 @@ const TravelPins = () => {
                     type="url"
                     value={formData.photo_url || ''}
                     onChange={(e) => handleInputChange('photo_url', e.target.value)}
-                    className="w-full bg-transparent border-none focus:outline-none text-sm text-slate-700 placeholder:text-slate-500"
+                    className="w-full bg-transparent border-none focus:outline-none text-slate-700 placeholder:text-slate-500"
+                    style={{ fontSize: '16px' }}
                     placeholder="Enter photo URL (e.g., https://example.com/photo.jpg)"
                   />
                   {formData.photo_url && (
