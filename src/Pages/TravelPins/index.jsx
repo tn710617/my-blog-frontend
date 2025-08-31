@@ -57,6 +57,9 @@ const TravelPins = () => {
     photos: [],
     coordinates: null
   });
+  const [hasChanges, setHasChanges] = useState(false);
+  const [originalFormData, setOriginalFormData] = useState(null);
+  const [openPopups, setOpenPopups] = useState(new Set());
 
   // Inject custom popup styles
   useEffect(() => {
@@ -214,14 +217,18 @@ const TravelPins = () => {
         
         console.log('Map clicked at:', e.lngLat);
         const coordinates = [e.lngLat.lng, e.lngLat.lat];
-        setFormData(prev => ({
-          ...prev,
+        const newFormData = {
           title: '',
           note: '',
           visited_at: '',
           photos: [],
           coordinates
-        }));
+        };
+        console.log('New pin creation with formData:', newFormData);
+        setFormData(newFormData);
+        setOriginalFormData(newFormData);
+        setHasChanges(false);
+        console.log('Setting hasChanges to false for new pin');
         setShowForm(true);
       });
 
@@ -251,6 +258,7 @@ const TravelPins = () => {
       const pin = pins.find(p => p.id === pinId);
       if (pin && pin.marker) {
         pin.marker.getPopup().remove();
+        // State tracking is handled by popup 'close' event listener
       }
     };
 
@@ -260,21 +268,117 @@ const TravelPins = () => {
     };
   }, [pins]);
 
-  const handleEditPin = (pin) => {
-    setEditingPin(pin);
+  // ESC key handler for form modal
+  useEffect(() => {
+    if (!showForm) return;
+
+    const handleEscape = (e) => {
+      console.log('Key pressed:', e.key, 'hasChanges:', hasChanges);
+      if (e.key === 'Escape') {
+        console.log('ESC pressed, hasChanges:', hasChanges);
+        if (!hasChanges) {
+          // No changes made, close immediately
+          console.log('No changes, closing form');
+          handleCloseForm();
+        } else {
+          // Has changes, show confirmation dialog
+          console.log('Has changes, showing confirmation');
+          const confirmClose = window.confirm(
+            'You have unsaved changes. Are you sure you want to close?'
+          );
+          if (confirmClose) {
+            handleCloseForm();
+          }
+        }
+      }
+    };
+
+    console.log('Adding ESC event listener, showForm:', showForm, 'hasChanges:', hasChanges);
+    document.addEventListener('keydown', handleEscape);
+    return () => {
+      console.log('Removing ESC event listener');
+      document.removeEventListener('keydown', handleEscape);
+    };
+  }, [showForm, hasChanges]);
+
+  // ESC key handler for closing display popups (when form is not open)
+  useEffect(() => {
+    if (showForm) return; // Don't handle ESC when form is open
+
+    const handleEscapeForPopups = (e) => {
+      if (e.key === 'Escape') {
+        console.log('ESC pressed for popups, openPopups size:', openPopups.size);
+        if (openPopups.size > 0) {
+          // Close all open popups
+          pins.forEach(pin => {
+            if (pin.marker && pin.marker.getPopup().isOpen()) {
+              console.log('Closing popup for pin:', pin.title);
+              pin.marker.getPopup().remove();
+            }
+          });
+          setOpenPopups(new Set());
+        }
+      }
+    };
+
+    document.addEventListener('keydown', handleEscapeForPopups);
+    return () => document.removeEventListener('keydown', handleEscapeForPopups);
+  }, [showForm, pins, openPopups]);
+
+  const handleCloseForm = () => {
+    setShowForm(false);
+    setEditingPin(null);
+    setHasChanges(false);
+    setOriginalFormData(null);
     setFormData({
+      title: '',
+      note: '',
+      visited_at: '',
+      photos: [],
+      coordinates: null
+    });
+  };
+
+  const handleInputChange = (field, value) => {
+    setFormData(prev => {
+      const updatedData = { ...prev, [field]: value };
+      
+      // Check if any field has changed from original (using updated data)
+      if (originalFormData) {
+        const changed = Object.keys(updatedData).some(key => {
+          if (key === 'photos' || key === 'coordinates') return false; // Skip comparison for complex objects
+          const originalValue = originalFormData[key] || '';
+          const currentValue = updatedData[key] || '';
+          return originalValue !== currentValue;
+        });
+        setHasChanges(changed);
+      }
+      
+      return updatedData;
+    });
+  };
+
+  const handleEditPin = (pin) => {
+    const originalData = {
       title: pin.title,
       note: pin.note || '',
       visited_at: pin.visited_at || '',
       photos: pin.photos || [],
       coordinates: pin.coordinates
-    });
+    };
+    
+    console.log('handleEditPin called with originalData:', originalData);
+    setEditingPin(pin);
+    setFormData(originalData);
+    setOriginalFormData(originalData);
+    setHasChanges(false);
+    console.log('Setting hasChanges to false');
     setShowForm(true);
   };
 
   const createEnhancedPopup = (pin) => {
     const popupId = `popup-${pin.id}`;
-    return new mapboxgl.Popup({ 
+    const popup = new mapboxgl.Popup({ 
       offset: 25,
       closeButton: false,
       closeOnClick: false,
@@ -383,6 +487,23 @@ const TravelPins = () => {
         </div>
       </div>
     `);
+    
+    // Add event listeners to track popup state
+    popup.on('open', () => {
+      console.log('Popup opened for pin:', pin.title);
+      setOpenPopups(prev => new Set(prev).add(pin.id));
+    });
+    
+    popup.on('close', () => {
+      console.log('Popup closed for pin:', pin.title);
+      setOpenPopups(prev => {
+        const newSet = new Set(prev);
+        newSet.delete(pin.id);
+        return newSet;
+      });
+    });
+    
+    return popup;
   };
 
   const handleSavePin = (e) => {
@@ -410,15 +531,7 @@ const TravelPins = () => {
         existingPin.marker.setPopup(createEnhancedPopup(pinData));
       }
       
-      setEditingPin(null);
-      setShowForm(false);
-      setFormData({
-        title: '',
-        note: '',
-        visited_at: '',
-        photos: [],
-        coordinates: null
-      });
+      handleCloseForm();
       return;
     }
 
@@ -476,14 +589,7 @@ const TravelPins = () => {
       .addTo(map.current);
 
     setPins(prev => [...prev, { ...newPin, marker }]);
-    setShowForm(false);
-    setFormData({
-      title: '',
-      note: '',
-      visited_at: '',
-      photos: [],
-      coordinates: null
-    });
+    handleCloseForm();
   };
 
   return (
@@ -491,80 +597,127 @@ const TravelPins = () => {
       {/* Map Container */}
       <div ref={mapContainer} className="w-full h-full" />
 
-      {/* Pin Creation Form */}
+      {/* Enhanced Pin Creation/Edit Form */}
       {showForm && (
-        <div className="absolute inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-          <div className="bg-white rounded-xl shadow-2xl p-6 w-[400px] max-w-[90vw] max-h-[90vh] overflow-y-auto">
-            <h3 className="text-xl font-semibold mb-4">
-              {editingPin ? '✏️ Edit Travel Pin' : '📍 Add Travel Pin'}
-            </h3>
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-white rounded-2xl overflow-hidden shadow-2xl border border-slate-200/50 w-[450px] max-w-[90vw] max-h-[90vh] overflow-y-auto">
+            {/* Same gradient header as display modal */}
+            <div className="bg-gradient-to-r from-indigo-600 via-purple-600 to-blue-600 text-white px-6 py-5 relative">
+              <div className="absolute inset-0 bg-gradient-to-br from-white/10 to-transparent"></div>
+              <div className="flex justify-between items-center relative z-10">
+                <div className="flex-1">
+                  <h3 className="text-xl font-bold tracking-tight leading-tight m-0">
+                    {editingPin ? '✏️ Edit Travel Pin' : '📍 Add Travel Pin'}
+                  </h3>
+                </div>
+                <div className="flex items-center gap-3 text-xs opacity-75">
+                  {!hasChanges ? (
+                    <span>Press ESC to close</span>
+                  ) : (
+                    <span>⚠️ Unsaved changes</span>
+                  )}
+                  <button 
+                    onClick={handleCloseForm}
+                    className="w-8 h-8 flex items-center justify-center hover:bg-white/20 rounded-full transition-colors duration-200 text-white/80 hover:text-white"
+                  >
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
+                      <line x1="18" y1="6" x2="6" y2="18"></line>
+                      <line x1="6" y1="6" x2="18" y2="18"></line>
+                    </svg>
+                  </button>
+                </div>
+              </div>
+            </div>
             
-            <form onSubmit={handleSavePin} className="space-y-4">
-              {/* Title */}
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Title *
-                </label>
+            {/* Color-coded form sections */}
+            <form onSubmit={handleSavePin} className="p-6 space-y-5">
+              {/* Title Section */}
+              <div className="space-y-3">
+                <div className="flex items-center gap-2">
+                  <div className="w-6 h-6 bg-gradient-to-br from-blue-400 to-blue-500 rounded-lg flex items-center justify-center text-white text-sm">
+                    📝
+                  </div>
+                  <h4 className="text-sm font-bold text-slate-700 uppercase tracking-wide">Title *</h4>
+                </div>
                 <input
                   type="text"
                   required
+                  value={formData.title}
+                  onChange={(e) => handleInputChange('title', e.target.value)}
                   className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
                   placeholder="Enter a title for this location"
-                  value={formData.title}
-                  onChange={(e) => setFormData({ ...formData, title: e.target.value })}
                 />
               </div>
 
-              {/* Notes */}
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Notes
-                </label>
-                <textarea
-                  rows={3}
-                  className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
-                  placeholder="Add your thoughts about this place..."
-                  value={formData.note}
-                  onChange={(e) => setFormData({ ...formData, note: e.target.value })}
-                />
+              {/* Notes Section */}
+              <div className="space-y-3">
+                <div className="flex items-center gap-2">
+                  <div className="w-6 h-6 bg-gradient-to-br from-amber-400 to-orange-500 rounded-lg flex items-center justify-center text-white text-sm">
+                    📖
+                  </div>
+                  <h4 className="text-sm font-bold text-slate-700 uppercase tracking-wide">Travel Notes</h4>
+                </div>
+                <div className="bg-gradient-to-br from-amber-50 to-orange-50 border border-amber-200/50 rounded-xl p-4">
+                  <textarea
+                    rows={4}
+                    value={formData.note}
+                    onChange={(e) => handleInputChange('note', e.target.value)}
+                    className="w-full bg-transparent border-none resize-none focus:outline-none text-sm text-slate-700 placeholder:text-slate-500"
+                  />
+                </div>
               </div>
 
-              {/* Visit Date */}
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Visit Date
-                </label>
+              {/* Visit Date Section */}
+              <div className="space-y-3">
+                <div className="flex items-center gap-2">
+                  <div className="w-6 h-6 bg-gradient-to-br from-green-400 to-emerald-500 rounded-lg flex items-center justify-center text-white text-sm">
+                    📅
+                  </div>
+                  <h4 className="text-sm font-bold text-slate-700 uppercase tracking-wide">Visit Date</h4>
+                </div>
                 <input
                   type="date"
-                  className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
                   value={formData.visited_at}
-                  onChange={(e) => setFormData({ ...formData, visited_at: e.target.value })}
+                  onChange={(e) => handleInputChange('visited_at', e.target.value)}
+                  className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-green-500"
                 />
               </div>
 
-
-              {/* Coordinates Display */}
+              {/* Coordinates Section */}
               {formData.coordinates && (
-                <div className="text-sm text-gray-500 bg-gray-50 p-2 rounded">
-                  <strong>Coordinates:</strong> {formData.coordinates[0].toFixed(5)}, {formData.coordinates[1].toFixed(5)}
+                <div className="space-y-3">
+                  <div className="flex items-center gap-2">
+                    <div className="w-6 h-6 bg-gradient-to-br from-emerald-400 to-green-500 rounded-lg flex items-center justify-center text-white text-sm">
+                      🌍
+                    </div>
+                    <h4 className="text-sm font-bold text-slate-700 uppercase tracking-wide">Location</h4>
+                  </div>
+                  <div className="bg-gradient-to-br from-emerald-50 to-green-50 border border-emerald-200/50 rounded-xl p-4">
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <div className="text-xs text-slate-500 font-medium mb-1">COORDINATES</div>
+                        <div className="font-mono text-sm text-slate-800 font-semibold">
+                          {formData.coordinates[1].toFixed(6)}, {formData.coordinates[0].toFixed(6)}
+                        </div>
+                      </div>
+                      <div className="text-2xl">📍</div>
+                    </div>
+                  </div>
                 </div>
               )}
 
               {/* Action Buttons */}
-              <div className="flex gap-3 pt-4">
+              <div className="flex gap-3 pt-4 border-t border-slate-100">
                 <button
                   type="button"
-                  onClick={() => {
-                    setShowForm(false);
-                    setEditingPin(null);
-                  }}
-                  className="flex-1 px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors"
+                  onClick={handleCloseForm}
+                  className="flex-1 bg-gradient-to-r from-gray-100 to-gray-200 hover:from-gray-200 hover:to-gray-300 text-gray-700 font-medium py-3 px-4 rounded-xl transition-all duration-300 text-sm uppercase tracking-wide"
                 >
                   Cancel
                 </button>
                 <button
                   type="submit"
-                  className="flex-1 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+                  className="flex-1 bg-gradient-to-r from-indigo-500 via-purple-500 to-blue-500 hover:from-indigo-600 hover:via-purple-600 hover:to-blue-600 text-white font-bold py-3 px-4 rounded-xl transition-all duration-300 shadow-lg hover:shadow-xl hover:-translate-y-0.5 text-sm uppercase tracking-wide"
                 >
                   {editingPin ? 'Update Pin' : 'Save Pin'}
                 </button>
