@@ -67,7 +67,7 @@ describe('Categories Component - Working Tests', () => {
   it('applies proper container styling for desktop', () => {
     renderWithRouter(<Categories categories={mockCategories} />)
     
-    const container = document.querySelector('.hidden.lg\\:flex')
+    const container = document.querySelector('.hidden.xl\\:flex')
     expect(container).toBeInTheDocument()
     expect(container.className).toContain('gap-4')
     expect(container.className).toContain('text-lg')
@@ -126,7 +126,7 @@ describe('Categories Component - Working Tests', () => {
   it('handles empty categories array gracefully', () => {
     renderWithRouter(<Categories categories={[]} />)
     
-    const container = document.querySelector('.hidden.lg\\:flex')
+    const container = document.querySelector('.hidden.xl\\:flex')
     expect(container).toBeInTheDocument()
     expect(container.children).toHaveLength(0)
   })

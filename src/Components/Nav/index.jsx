@@ -58,7 +58,7 @@ export default function Nav() {
                 <nav className={"flex justify-between px-5 py-3 items-center"}>
                     <button
                         type={"button"}
-                        className={"lg:hidden text-xl"}
+                        className={"xl:hidden text-xl"}
                         onClick={() => setShowMobileNavBar(!showMobileNavBar)}
                     >
                         {showMobileNavBar ? <AiOutlineClose/> : <AiOutlineMenu/>}
@@ -75,7 +75,7 @@ export default function Nav() {
 
 
                     <div className={"flex gap-5 items-center"}>
-                        <div className="hidden lg:flex gap-3">
+                        <div className="hidden xl:flex gap-3">
                             <AboutButton/>
                             <TravelPinsButton/>
                         </div>
@@ -111,7 +111,7 @@ export default function Nav() {
                     </div>
                 </nav>
                 <div
-                    className={`lg:hidden ${showMobileNavBar ? 'block' : 'hidden'}`}>
+                    className={`xl:hidden ${showMobileNavBar ? 'block' : 'hidden'}`}>
                     {
                         indexCategories.isSuccess &&
                         <EnhancedMobileNav 

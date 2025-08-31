@@ -79,6 +79,7 @@ const LocaleDropdown = () => {
                         fill="none" 
                         stroke="currentColor" 
                         viewBox="0 0 24 24"
+                        aria-hidden="true"
                     >
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7" />
                     </svg>
@@ -110,7 +111,7 @@ const LocaleDropdown = () => {
                                 <span className="font-medium">{displayLocale.label}</span>
                                 {displayLocale.value === locale && (
                                     <div className="ml-auto text-amber-600">
-                                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden="true">
                                             <polyline points="20,6 9,17 4,12"></polyline>
                                         </svg>
                                     </div>

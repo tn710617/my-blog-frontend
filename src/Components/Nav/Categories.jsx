@@ -46,7 +46,7 @@ export default function Categories({categories}) {
     }
 
     return (
-        <div className={"hidden lg:flex gap-4 text-lg text-gray-400"}>
+        <div className={"hidden xl:flex gap-4 text-lg text-gray-400"}>
             {
                 categories.map(({id, category_name}) => {
                     return (
