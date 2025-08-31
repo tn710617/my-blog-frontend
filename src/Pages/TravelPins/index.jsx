@@ -101,6 +101,7 @@ const TravelPins = () => {
     title: '',
     note: '',
     visited_at: '',
+    photo_url: '',
     photos: [],
     coordinates: null
   });
@@ -122,6 +123,9 @@ const TravelPins = () => {
   const [showEscModal, setShowEscModal] = useState(false);
   const [pendingDeletePin, setPendingDeletePin] = useState(null);
   const [pendingEscAction, setPendingEscAction] = useState(null);
+  const [showPhotoModal, setShowPhotoModal] = useState(false);
+  const [photoModalData, setPhotoModalData] = useState({ url: '', title: '' });
+  const [coordsCopied, setCoordsCopied] = useState(false);
 
   // Inject custom popup styles
   useEffect(() => {
@@ -295,6 +299,7 @@ const TravelPins = () => {
           title: '',
           note: '',
           visited_at: '',
+          photo_url: '',
           photos: [],
           coordinates
         };
@@ -343,10 +348,20 @@ const TravelPins = () => {
       }
     };
 
+    window.openTravelPinPhoto = (photoUrl, photoTitle) => {
+      openPhotoModal(photoUrl, photoTitle);
+    };
+
+    window.copyTravelPinCoordinates = (lng, lat, pinId) => {
+      handleCopyCoordinates([parseFloat(lng), parseFloat(lat)], pinId);
+    };
+
     return () => {
       delete window.editTravelPin;
       delete window.deleteTravelPin;
       delete window.closeTravelPinPopup;
+      delete window.openTravelPinPhoto;
+      delete window.copyTravelPinCoordinates;
     };
   }, [pins]);
 
@@ -398,9 +413,37 @@ const TravelPins = () => {
     return () => document.removeEventListener('keydown', handleDeleteModalEscape);
   }, [showDeleteModal]);
 
+  // ESC key handler for photo modal
+  useEffect(() => {
+    if (!showPhotoModal) return;
+
+    const handlePhotoModalEscape = (e) => {
+      if (e.key === 'Escape') {
+        e.preventDefault();
+        e.stopPropagation();
+        closePhotoModal();
+      }
+    };
+
+    document.addEventListener('keydown', handlePhotoModalEscape);
+    return () => document.removeEventListener('keydown', handlePhotoModalEscape);
+  }, [showPhotoModal]);
+
+  // Body overflow control for photo modal
+  useEffect(() => {
+    if (showPhotoModal) {
+      document.body.style.overflow = 'hidden';
+    } else {
+      document.body.style.overflow = 'unset';
+    }
+    return () => {
+      document.body.style.overflow = 'unset';
+    };
+  }, [showPhotoModal]);
+
   // ESC key handler for closing display popups (when form is not open)
   useEffect(() => {
-    if (showForm || showDeleteModal || showEscModal) return; // Don't handle ESC when modals are open
+    if (showForm || showDeleteModal || showEscModal || showPhotoModal) return; // Don't handle ESC when modals are open
 
     const handleEscapeForPopups = (e) => {
       const activeElementId = document.activeElement?.id;
@@ -499,6 +542,7 @@ const TravelPins = () => {
       title: '',
       note: '',
       visited_at: '',
+      photo_url: '',
       photos: [],
       coordinates: null
     });
@@ -543,6 +587,7 @@ const TravelPins = () => {
       title: pin.title,
       note: pin.note || '',
       visited_at: pin.visited_at || '',
+      photo_url: pin.photo_url || '',
       photos: pin.photos || [],
       coordinates: pin.coordinates
     };
@@ -608,6 +653,72 @@ const TravelPins = () => {
   const cancelEscAction = () => {
     setShowEscModal(false);
     setPendingEscAction(null);
+  };
+
+  // Photo modal handlers
+  const openPhotoModal = (photoUrl, photoTitle) => {
+    setPhotoModalData({ url: photoUrl, title: photoTitle });
+    setShowPhotoModal(true);
+  };
+
+  const closePhotoModal = () => {
+    setShowPhotoModal(false);
+    setPhotoModalData({ url: '', title: '' });
+  };
+
+  // Copy coordinates functionality
+  const handleCopyCoordinates = async (coordinates, pinId) => {
+    const coordText = `${coordinates[1].toFixed(6)}, ${coordinates[0].toFixed(6)}`;
+    
+    // Get the button element if pinId is provided (for popup buttons)
+    const buttonElement = pinId ? document.getElementById(`copy-btn-${pinId}`) : null;
+    
+    try {
+      await navigator.clipboard.writeText(coordText);
+      showCopySuccess(buttonElement);
+    } catch (err) {
+      // Fallback for older browsers
+      const textArea = document.createElement('textarea');
+      textArea.value = coordText;
+      document.body.appendChild(textArea);
+      textArea.select();
+      document.execCommand('copy');
+      document.body.removeChild(textArea);
+      showCopySuccess(buttonElement);
+    }
+  };
+
+  // Visual feedback for copy success
+  const showCopySuccess = (buttonElement) => {
+    if (buttonElement) {
+      // Store original content
+      const originalContent = buttonElement.innerHTML;
+      
+      // Show success state
+      buttonElement.innerHTML = `
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <polyline points="20,6 9,17 4,12"></polyline>
+        </svg>
+        <span class="text-sm font-medium">Copied!</span>
+      `;
+      buttonElement.className = buttonElement.className.replace(
+        'from-emerald-100 to-green-100 hover:from-emerald-200 hover:to-green-200 text-emerald-700 border-emerald-200 hover:border-emerald-300',
+        'from-green-100 to-emerald-100 text-green-700 border-green-300'
+      );
+      
+      // Restore original after 2 seconds
+      setTimeout(() => {
+        buttonElement.innerHTML = originalContent;
+        buttonElement.className = buttonElement.className.replace(
+          'from-green-100 to-emerald-100 text-green-700 border-green-300',
+          'from-emerald-100 to-green-100 hover:from-emerald-200 hover:to-green-200 text-emerald-700 border-emerald-200 hover:border-emerald-300'
+        );
+      }, 2000);
+    } else {
+      // Fallback for non-popup buttons
+      setCoordsCopied(true);
+      setTimeout(() => setCoordsCopied(false), 2000);
+    }
   };
 
   // Debounced search function
@@ -853,15 +964,41 @@ const TravelPins = () => {
             </div>
           ` : ''}
 
-          ${pin.photos && pin.photos.length > 0 ? `
+          ${pin.photo_url ? `
             <div class="space-y-3">
               <div class="flex items-center gap-2">
                 <div class="w-6 h-6 bg-gradient-to-br from-pink-400 to-rose-500 rounded-lg flex items-center justify-center text-white text-sm">
                   📷
                 </div>
-                <h4 class="text-sm font-bold text-slate-700 uppercase tracking-wide">Photos</h4>
+                <h4 class="text-sm font-bold text-slate-700 uppercase tracking-wide">Photo</h4>
               </div>
-              <div class="bg-gradient-to-br from-pink-50 to-rose-50 border-2 border-dashed border-pink-200 rounded-xl p-4 text-center">
+              <div class="bg-gradient-to-br from-pink-50 to-rose-50 border border-pink-200/50 rounded-xl p-2">
+                <img
+                  src="${pin.photo_url}"
+                  alt="${pin.title}"
+                  onclick="window.openTravelPinPhoto('${pin.photo_url}', '${pin.title}')"
+                  class="w-full h-48 object-cover rounded-lg cursor-pointer hover:opacity-90 transition-opacity duration-200"
+                  onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';"
+                />
+                <div style="display: none;" class="flex items-center justify-center h-48 text-slate-400">
+                  <div class="text-center">
+                    <div class="text-2xl mb-2">📷</div>
+                    <div class="text-sm">Image not available</div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          ` : ''}
+
+          ${pin.photos && pin.photos.length > 0 ? `
+            <div class="space-y-3">
+              <div class="flex items-center gap-2">
+                <div class="w-6 h-6 bg-gradient-to-br from-purple-400 to-purple-500 rounded-lg flex items-center justify-center text-white text-sm">
+                  📎
+                </div>
+                <h4 class="text-sm font-bold text-slate-700 uppercase tracking-wide">Attachments</h4>
+              </div>
+              <div class="bg-gradient-to-br from-purple-50 to-purple-50 border-2 border-dashed border-purple-200 rounded-xl p-4 text-center">
                 <div class="text-2xl mb-2">📸</div>
                 <div class="text-sm font-medium text-slate-600">
                   ${pin.photos.length} photo${pin.photos.length !== 1 ? 's' : ''} attached
@@ -870,24 +1007,18 @@ const TravelPins = () => {
             </div>
           ` : ''}
 
-          <div class="space-y-3">
-            <div class="flex items-center gap-2">
-              <div class="w-6 h-6 bg-gradient-to-br from-emerald-400 to-green-500 rounded-lg flex items-center justify-center text-white text-sm">
-                🌍
-              </div>
-              <h4 class="text-sm font-bold text-slate-700 uppercase tracking-wide">Location</h4>
-            </div>
-            <div class="bg-gradient-to-br from-emerald-50 to-green-50 border border-emerald-200/50 rounded-xl p-4">
-              <div class="flex items-center justify-between">
-                <div>
-                  <div class="text-xs text-slate-500 font-medium mb-1">COORDINATES</div>
-                  <div class="font-mono text-sm text-slate-800 font-semibold">
-                    ${pin.coordinates[1].toFixed(6)}, ${pin.coordinates[0].toFixed(6)}
-                  </div>
-                </div>
-                <div class="text-2xl">📍</div>
-              </div>
-            </div>
+          <div class="flex justify-center">
+            <button
+              onclick="window.copyTravelPinCoordinates('${pin.coordinates[0]}', '${pin.coordinates[1]}', ${pin.id})"
+              id="copy-btn-${pin.id}"
+              class="flex items-center gap-2 px-4 py-2 rounded-xl transition-all duration-300 bg-gradient-to-r from-emerald-100 to-green-100 hover:from-emerald-200 hover:to-green-200 text-emerald-700 border border-emerald-200 hover:border-emerald-300 shadow-sm hover:shadow-md hover:-translate-y-0.5"
+            >
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
+                <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
+              </svg>
+              <span class="text-sm font-medium">Copy Location</span>
+            </button>
           </div>
 
           <div class="pt-2 border-t border-slate-100">
@@ -947,6 +1078,7 @@ const TravelPins = () => {
       title: formData.title,
       note: formData.note,
       visited_at: formData.visited_at,
+      photo_url: formData.photo_url,
       photos: formData.photos,
       coordinates: formData.coordinates
     };
@@ -1332,6 +1464,45 @@ const TravelPins = () => {
                 />
               </div>
 
+              {/* Photo URL Section */}
+              <div className="space-y-3">
+                <div className="flex items-center gap-2">
+                  <div className="w-6 h-6 bg-gradient-to-br from-pink-400 to-rose-500 rounded-lg flex items-center justify-center text-white text-sm">
+                    📷
+                  </div>
+                  <h4 className="text-sm font-bold text-slate-700 uppercase tracking-wide">Photo URL</h4>
+                </div>
+                <div className="bg-gradient-to-br from-pink-50 to-rose-50 border border-pink-200/50 rounded-xl p-4">
+                  <input
+                    type="url"
+                    value={formData.photo_url || ''}
+                    onChange={(e) => handleInputChange('photo_url', e.target.value)}
+                    className="w-full bg-transparent border-none focus:outline-none text-sm text-slate-700 placeholder:text-slate-500"
+                    placeholder="Enter photo URL (e.g., https://example.com/photo.jpg)"
+                  />
+                  {formData.photo_url && (
+                    <div className="mt-3 border-t border-pink-200 pt-3">
+                      <div className="text-xs text-slate-500 mb-2">Preview:</div>
+                      <img
+                        src={formData.photo_url}
+                        alt="Preview"
+                        className="w-full h-32 object-cover rounded-lg"
+                        onError={(e) => {
+                          e.target.style.display = 'none';
+                          e.target.nextElementSibling.style.display = 'flex';
+                        }}
+                      />
+                      <div style={{display: 'none'}} className="w-full h-32 bg-slate-100 rounded-lg flex items-center justify-center text-slate-400">
+                        <div className="text-center">
+                          <div className="text-lg mb-1">📷</div>
+                          <div className="text-xs">Invalid URL</div>
+                        </div>
+                      </div>
+                    </div>
+                  )}
+                </div>
+              </div>
+
               {/* Coordinates Section */}
               {formData.coordinates && (
                 <div className="space-y-3">
@@ -1575,6 +1746,33 @@ const TravelPins = () => {
                 >
                   Discard Changes
                 </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Photo Modal/Lightbox */}
+      {showPhotoModal && (
+        <div className="fixed inset-0 bg-black bg-opacity-90 flex items-center justify-center z-[9999]">
+          <div className="relative max-w-[95vw] max-h-[95vh]">
+            <img
+              src={photoModalData.url}
+              alt={photoModalData.title}
+              className="max-w-full max-h-full object-contain rounded-lg"
+            />
+            <button
+              onClick={closePhotoModal}
+              className="absolute top-4 right-4 w-10 h-10 bg-black bg-opacity-50 hover:bg-opacity-70 rounded-full flex items-center justify-center text-white transition-colors duration-200"
+            >
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                <line x1="18" y1="6" x2="6" y2="18"></line>
+                <line x1="6" y1="6" x2="18" y2="18"></line>
+              </svg>
+            </button>
+            <div className="absolute bottom-4 left-4 right-4 text-center">
+              <div className="bg-black bg-opacity-50 text-white px-4 py-2 rounded-lg inline-block">
+                {photoModalData.title}
               </div>
             </div>
           </div>
