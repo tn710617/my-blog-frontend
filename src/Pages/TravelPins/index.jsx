@@ -35,6 +35,8 @@ const customPopupStyles = `
     max-width: 90vw !important;
     overflow-y: auto !important;
     -webkit-overflow-scrolling: touch !important;
+    overscroll-behavior: contain !important;
+    touch-action: pan-y !important;
   }
   
   .travel-pin-popup-center .mapboxgl-popup-content {
@@ -495,6 +497,19 @@ const TravelPins = () => {
       document.body.style.overflow = 'unset';
     };
   }, [showPhotoModal]);
+
+  // Body overflow control for display popups
+  useEffect(() => {
+    const anyBlockingLayer = openPopups.size > 0 && !showForm && !showDeleteModal && !showEscModal && !showPhotoModal;
+    if (anyBlockingLayer) {
+      document.body.style.overflow = 'hidden';
+    } else {
+      document.body.style.overflow = 'unset';
+    }
+    return () => {
+      document.body.style.overflow = 'unset';
+    };
+  }, [openPopups, showForm, showDeleteModal, showEscModal, showPhotoModal]);
 
   // ESC key handler for closing display popups (when form is not open)
   useEffect(() => {
@@ -987,6 +1002,46 @@ const TravelPins = () => {
     popup.on('open', () => {
       console.log('Popup opened for pin:', pin.title);
       setOpenPopups(prev => new Set(prev).add(pin.id));
+
+      // Improve mobile scrollability: stop events from reaching the map
+      // and ensure the popup scroll container has momentum scrolling.
+      try {
+        const container = document.getElementById(popupId);
+        const popupEl = container?.closest('.mapboxgl-popup');
+        if (popupEl) {
+          popupEl.style.webkitOverflowScrolling = 'touch';
+          popupEl.style.overscrollBehavior = 'contain';
+          popupEl.style.touchAction = 'pan-y';
+        }
+
+        if (container) {
+          // Make the modal box itself scrollable with momentum on iOS
+          container.style.maxHeight = '85vh';
+          container.style.overflowY = 'auto';
+          container.style.webkitOverflowScrolling = 'touch';
+          container.style.overscrollBehavior = 'contain';
+
+          const stop = (e) => e.stopPropagation();
+          // Use passive listeners so scrolling is not blocked on iOS
+          container.addEventListener('touchstart', stop, { passive: true });
+          container.addEventListener('touchmove', stop, { passive: true });
+          container.addEventListener('wheel', stop, { passive: true });
+          container.addEventListener('pointerdown', stop, { passive: true });
+        }
+
+        // Disable map interactions while popup is open to avoid hijacking gestures
+        if (map.current) {
+          map.current.scrollZoom?.disable();
+          map.current.boxZoom?.disable();
+          map.current.dragRotate?.disable();
+          map.current.dragPan?.disable();
+          map.current.keyboard?.disable();
+          map.current.doubleClickZoom?.disable();
+          map.current.touchZoomRotate?.disable();
+        }
+      } catch (err) {
+        console.warn('Failed to enhance popup scroll behavior:', err);
+      }
     });
     
     popup.on('close', () => {
@@ -996,6 +1051,21 @@ const TravelPins = () => {
         newSet.delete(pin.id);
         return newSet;
       });
+
+      // Re-enable map interactions after popup closes
+      try {
+        if (map.current) {
+          map.current.scrollZoom?.enable();
+          map.current.boxZoom?.enable();
+          map.current.dragRotate?.enable();
+          map.current.dragPan?.enable();
+          map.current.keyboard?.enable();
+          map.current.doubleClickZoom?.enable();
+          map.current.touchZoomRotate?.enable();
+        }
+      } catch (err) {
+        console.warn('Failed to restore map interactions:', err);
+      }
     });
     
     return popup;
@@ -1186,6 +1256,14 @@ const TravelPins = () => {
     <div className="w-full h-screen relative">
       {/* Map Container */}
       <div ref={mapContainer} className="w-full h-full" />
+
+      {/* Background overlay for display modal (popup) */}
+      {openPopups.size > 0 && !showForm && !showDeleteModal && !showEscModal && !showPhotoModal && (
+        <div
+          className="fixed inset-0 bg-black/40 backdrop-blur-sm z-[950]"
+          onClick={closeAllPopups}
+        />
+      )}
 
 
       {/* Enhanced Pin Creation/Edit Form */}

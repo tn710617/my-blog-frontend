@@ -10,29 +10,15 @@ export default function TravelPinsMobileSearchModal({ isOpen, onClose, onLocatio
   // Helper function to get translated text
   const t = (key) => intl.formatMessage({id: key});
 
-  // Handle modal animation and scroll lock
+  // Handle modal animation and scroll lock (same as edit modal)
   useEffect(() => {
     if (isOpen) {
       setIsAnimating(true);
-      // Save current scroll position
-      const scrollY = window.scrollY;
-      // Prevent body scroll and maintain position
-      document.body.style.cssText = `
-        overflow: hidden;
-        position: fixed;
-        top: -${scrollY}px;
-        left: 0;
-        right: 0;
-      `;
+      // Simple body scroll lock like edit modal
+      document.body.style.overflow = 'hidden';
     } else {
-      // Get the scroll position from body style
-      const scrollY = document.body.style.top;
       // Restore body scroll
-      document.body.style.cssText = '';
-      // Restore scroll position
-      if (scrollY) {
-        window.scrollTo(0, parseInt(scrollY || '0') * -1);
-      }
+      document.body.style.overflow = '';
       // Delay removing from DOM to allow exit animation
       const timer = setTimeout(() => setIsAnimating(false), 300);
       return () => clearTimeout(timer);
@@ -61,11 +47,6 @@ export default function TravelPinsMobileSearchModal({ isOpen, onClose, onLocatio
     }
   };
 
-  // Prevent scroll propagation within modal
-  const handleModalScroll = (e) => {
-    e.stopPropagation();
-  };
-
   // Handle location selection
   const handleLocationSelect = (location) => {
     onLocationSelect(location);
@@ -79,7 +60,7 @@ export default function TravelPinsMobileSearchModal({ isOpen, onClose, onLocatio
     <div
       ref={modalRef}
       onClick={handleBackdropClick}
-      className={`fixed inset-0 z-[60] transition-all duration-300 ${
+      className={`fixed inset-0 z-[60] transition-all duration-300 flex justify-center overflow-y-auto p-4 ${
         isOpen 
           ? 'bg-black/50 backdrop-blur-sm' 
           : 'bg-transparent backdrop-blur-none'
@@ -87,12 +68,12 @@ export default function TravelPinsMobileSearchModal({ isOpen, onClose, onLocatio
     >
       {/* Modal Content */}
       <div 
-        onScroll={handleModalScroll}
-        className={`absolute top-0 left-0 right-0 bg-white shadow-2xl transition-all duration-300 ease-out max-h-screen overflow-y-auto ${
+        className={`bg-white shadow-2xl transition-all duration-300 ease-out w-full max-w-md max-h-[85vh] my-4 self-start rounded-2xl flex flex-col overflow-visible ${
           isOpen 
-            ? 'transform translate-y-0' 
-            : 'transform -translate-y-full'
+            ? 'transform translate-y-0 scale-100' 
+            : 'transform -translate-y-full scale-95'
         }`}
+        style={{ WebkitOverflowScrolling: 'touch' }}
       >
         {/* Simple Header with Close Button */}
         <div className="flex items-center justify-between p-4 border-b border-gray-100">
@@ -113,13 +94,12 @@ export default function TravelPinsMobileSearchModal({ isOpen, onClose, onLocatio
           </button>
         </div>
 
-        {/* Search Bar */}
-        <div className="p-4">
+        {/* Search Bar Container with space for dropdown */}
+        <div className="p-4 flex-1 overflow-visible">
           <TravelPinsSearchBar 
             onLocationSelect={handleLocationSelect}
           />
         </div>
-
       </div>
     </div>
   );
