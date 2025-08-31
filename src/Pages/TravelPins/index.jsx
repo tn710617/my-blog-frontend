@@ -2,6 +2,8 @@ import React, { useEffect, useRef, useState, useCallback } from 'react';
 import mapboxgl from 'mapbox-gl';
 import 'mapbox-gl/dist/mapbox-gl.css';
 import ReactMarkdown from 'react-markdown';
+import { useIntl } from 'react-intl';
+import { useLocaleStore } from '../../stores';
 
 // Custom styles to override default Mapbox popup styling
 const customPopupStyles = `
@@ -95,6 +97,26 @@ const debounce = (func, wait) => {
 };
 
 const TravelPins = () => {
+  const intl = useIntl();
+  const locale = useLocaleStore((state) => state.locale);
+  
+  // Helper function to get translated text for use in HTML strings
+  const t = (key) => intl.formatMessage({id: key});
+  
+  // Helper function to format dates with current locale
+  const formatDate = (dateString) => {
+    if (!dateString) return '';
+    try {
+      return new Date(dateString).toLocaleDateString(locale, { 
+        year: 'numeric', 
+        month: 'long', 
+        day: 'numeric' 
+      });
+    } catch (error) {
+      console.warn('Date formatting error:', error);
+      return dateString; // Fallback to original string
+    }
+  };
   const mapContainer = useRef(null);
   const map = useRef(null);
   const [pins, setPins] = useState([]);
@@ -706,7 +728,7 @@ const TravelPins = () => {
         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
           <polyline points="20,6 9,17 4,12"></polyline>
         </svg>
-        <span class="text-sm font-medium">Copied!</span>
+        <span class="text-sm font-medium">${t('travel_pins.popup.copied')}</span>
       `;
       buttonElement.className = buttonElement.className.replace(
         'from-emerald-100 to-green-100 hover:from-emerald-200 hover:to-green-200 text-emerald-700 border-emerald-200 hover:border-emerald-300',
@@ -936,11 +958,7 @@ const TravelPins = () => {
               ${pin.visited_at ? `
                 <div class="mt-2 flex items-center gap-2 text-sm opacity-90">
                   <div class="w-1.5 h-1.5 bg-white/60 rounded-full"></div>
-                  <span>Visited ${new Date(pin.visited_at).toLocaleDateString('en-US', { 
-                    year: 'numeric', 
-                    month: 'long', 
-                    day: 'numeric' 
-                  })}</span>
+                  <span>${t('travel_pins.popup.visited')} ${formatDate(pin.visited_at)}</span>
                 </div>
               ` : ''}
             </div>
@@ -963,7 +981,7 @@ const TravelPins = () => {
                 <div class="w-6 h-6 bg-gradient-to-br from-amber-400 to-orange-500 rounded-lg flex items-center justify-center text-white text-sm">
                   📝
                 </div>
-                <h4 class="text-sm font-bold text-slate-700 uppercase tracking-wide">Travel Notes</h4>
+                <h4 class="text-sm font-bold text-slate-700 uppercase tracking-wide">${t('travel_pins.popup.travel_notes')}</h4>
               </div>
               <div class="bg-gradient-to-br from-amber-50 to-orange-50 border border-amber-200/50 rounded-xl p-4 text-sm leading-relaxed text-slate-700 shadow-inner">
                 ${renderMarkdownToHTML(pin.note)}
@@ -977,7 +995,7 @@ const TravelPins = () => {
                 <div class="w-6 h-6 bg-gradient-to-br from-pink-400 to-rose-500 rounded-lg flex items-center justify-center text-white text-sm">
                   📷
                 </div>
-                <h4 class="text-sm font-bold text-slate-700 uppercase tracking-wide">Photo</h4>
+                <h4 class="text-sm font-bold text-slate-700 uppercase tracking-wide">${t('travel_pins.popup.photo')}</h4>
               </div>
               <div class="bg-gradient-to-br from-pink-50 to-rose-50 border border-pink-200/50 rounded-xl p-2">
                 <div class="relative w-full" style="aspect-ratio: 16/10;">
@@ -991,7 +1009,7 @@ const TravelPins = () => {
                   <div style="display: none;" class="absolute inset-0 flex items-center justify-center text-slate-400 bg-slate-100 rounded-lg">
                     <div class="text-center">
                       <div class="text-2xl mb-2">📷</div>
-                      <div class="text-sm">Image not available</div>
+                      <div class="text-sm">${t('travel_pins.popup.image_not_available')}</div>
                     </div>
                   </div>
                 </div>
@@ -1005,7 +1023,7 @@ const TravelPins = () => {
                 <div class="w-6 h-6 bg-gradient-to-br from-purple-400 to-purple-500 rounded-lg flex items-center justify-center text-white text-sm">
                   📎
                 </div>
-                <h4 class="text-sm font-bold text-slate-700 uppercase tracking-wide">Attachments</h4>
+                <h4 class="text-sm font-bold text-slate-700 uppercase tracking-wide">${t('travel_pins.popup.attachments')}</h4>
               </div>
               <div class="bg-gradient-to-br from-purple-50 to-purple-50 border-2 border-dashed border-purple-200 rounded-xl p-4 text-center">
                 <div class="text-2xl mb-2">📸</div>
@@ -1026,7 +1044,7 @@ const TravelPins = () => {
                 <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
                 <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
               </svg>
-              <span class="text-sm font-medium">Copy Location</span>
+              <span class="text-sm font-medium">${t('travel_pins.popup.copy_location')}</span>
             </button>
           </div>
 
@@ -1042,7 +1060,7 @@ const TravelPins = () => {
                   <line x1="10" y1="11" x2="10" y2="17"></line>
                   <line x1="14" y1="11" x2="14" y2="17"></line>
                 </svg>
-                Delete
+                ${t('travel_pins.popup.delete_button')}
               </button>
               <button 
                 onclick="window.editTravelPin(${pin.id})"
@@ -1052,7 +1070,7 @@ const TravelPins = () => {
                   <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path>
                   <path d="m18.5 2.5 3 3L12 15l-4 1 1-4 9.5-9.5z"></path>
                 </svg>
-                Edit
+                ${t('travel_pins.popup.edit_button')}
               </button>
             </div>
           </div>
@@ -1289,7 +1307,7 @@ const TravelPins = () => {
                   setTimeout(() => setShowSuggestions(false), 200);
                 }
               }}
-              placeholder="Search countries... (Ctrl/Cmd + F)"
+              placeholder={t('travel_pins.search.placeholder')}
               className="w-full pl-10 pr-4 py-3 bg-white border border-gray-300 rounded-xl shadow-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
               style={{ fontSize: '16px' }}
             />
@@ -1314,7 +1332,7 @@ const TravelPins = () => {
               {searchSuggestions.length > 0 && (
                 <div>
                   <div className="px-4 py-2 text-xs font-semibold text-gray-500 uppercase tracking-wide border-b border-gray-100">
-                    Countries
+{t('travel_pins.search.countries')}
                   </div>
                   {searchSuggestions.map((suggestion, index) => (
                     <button
@@ -1346,12 +1364,12 @@ const TravelPins = () => {
               {searchHistory.length > 0 && searchSuggestions.length === 0 && (
                 <div>
                   <div className="px-4 py-2 text-xs font-semibold text-gray-500 uppercase tracking-wide border-b border-gray-100 flex justify-between items-center">
-                    Recent Searches
+{t('travel_pins.search.recent_searches')}
                     <button 
                       onClick={() => setSearchHistory([])}
                       className="text-blue-500 hover:text-blue-700 text-xs font-normal normal-case"
                     >
-                      Clear
+{t('travel_pins.search.clear')}
                     </button>
                   </div>
                   {searchHistory.map((item, index) => (
@@ -1401,14 +1419,14 @@ const TravelPins = () => {
               <div className="flex justify-between items-center relative z-10">
                 <div className="flex-1">
                   <h3 className="text-xl font-bold tracking-tight leading-tight m-0">
-                    {editingPin ? '✏️ Edit Travel Pin' : '📍 Add Travel Pin'}
+{editingPin ? t('travel_pins.form.edit_title') : t('travel_pins.form.add_title')}
                   </h3>
                 </div>
                 <div className="flex items-center gap-3 text-xs opacity-75">
                   {!hasChanges ? (
-                    <span>Press ESC to close</span>
+                    <span>{t('travel_pins.form.press_esc_to_close')}</span>
                   ) : (
-                    <span>⚠️ Unsaved changes</span>
+                    <span>{t('travel_pins.form.unsaved_changes')}</span>
                   )}
                   <button 
                     onClick={handleCloseForm}
@@ -1431,7 +1449,7 @@ const TravelPins = () => {
                   <div className="w-6 h-6 bg-gradient-to-br from-blue-400 to-blue-500 rounded-lg flex items-center justify-center text-white text-sm">
                     📝
                   </div>
-                  <h4 className="text-sm font-bold text-slate-700 uppercase tracking-wide">Title *</h4>
+                  <h4 className="text-sm font-bold text-slate-700 uppercase tracking-wide">{t('travel_pins.form.title_label')}</h4>
                 </div>
                 <input
                   type="text"
@@ -1440,7 +1458,7 @@ const TravelPins = () => {
                   onChange={(e) => handleInputChange('title', e.target.value)}
                   className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
                   style={{ fontSize: '16px' }}
-                  placeholder="Enter a title for this location"
+                  placeholder={t('travel_pins.form.title_placeholder')}
                 />
               </div>
 
@@ -1450,7 +1468,7 @@ const TravelPins = () => {
                   <div className="w-6 h-6 bg-gradient-to-br from-amber-400 to-orange-500 rounded-lg flex items-center justify-center text-white text-sm">
                     📖
                   </div>
-                  <h4 className="text-sm font-bold text-slate-700 uppercase tracking-wide">Travel Notes</h4>
+                  <h4 className="text-sm font-bold text-slate-700 uppercase tracking-wide">{t('travel_pins.form.travel_notes_label')}</h4>
                 </div>
                 <div className="bg-gradient-to-br from-amber-50 to-orange-50 border border-amber-200/50 rounded-xl p-4">
                   <textarea
@@ -1459,6 +1477,7 @@ const TravelPins = () => {
                     onChange={(e) => handleInputChange('note', e.target.value)}
                     className="w-full bg-transparent border-none resize-none focus:outline-none text-slate-700 placeholder:text-slate-500"
                     style={{ fontSize: '16px' }}
+                    placeholder={t('travel_pins.form.travel_notes_placeholder')}
                   />
                 </div>
               </div>
@@ -1469,15 +1488,34 @@ const TravelPins = () => {
                   <div className="w-6 h-6 bg-gradient-to-br from-green-400 to-emerald-500 rounded-lg flex items-center justify-center text-white text-sm">
                     📅
                   </div>
-                  <h4 className="text-sm font-bold text-slate-700 uppercase tracking-wide">Visit Date</h4>
+                  <h4 className="text-sm font-bold text-slate-700 uppercase tracking-wide">{t('travel_pins.form.visit_date_label')}</h4>
                 </div>
-                <input
-                  type="date"
-                  value={formData.visited_at}
-                  onChange={(e) => handleInputChange('visited_at', e.target.value)}
-                  className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-green-500"
-                  style={{ fontSize: '16px' }}
-                />
+                <div className="relative">
+                  {/* Hidden native date input for functionality */}
+                  <input
+                    type="date"
+                    value={formData.visited_at}
+                    onChange={(e) => handleInputChange('visited_at', e.target.value)}
+                    className="absolute opacity-0 pointer-events-none"
+                    style={{ fontSize: '16px' }}
+                    id="hidden-date-input"
+                  />
+                  {/* Custom display input that shows locale-formatted date */}
+                  <div className="relative">
+                    <input
+                      type="text"
+                      value={formData.visited_at ? formatDate(formData.visited_at) : ''}
+                      onClick={() => document.getElementById('hidden-date-input').showPicker?.() || document.getElementById('hidden-date-input').focus()}
+                      readOnly
+                      className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-green-500 cursor-pointer"
+                      style={{ fontSize: '16px' }}
+                      placeholder={t('travel_pins.form.visit_date_placeholder')}
+                    />
+                    <div className="absolute right-3 top-1/2 transform -translate-y-1/2 pointer-events-none text-gray-400">
+                      📅
+                    </div>
+                  </div>
+                </div>
               </div>
 
               {/* Photo URL Section */}
@@ -1486,7 +1524,7 @@ const TravelPins = () => {
                   <div className="w-6 h-6 bg-gradient-to-br from-pink-400 to-rose-500 rounded-lg flex items-center justify-center text-white text-sm">
                     📷
                   </div>
-                  <h4 className="text-sm font-bold text-slate-700 uppercase tracking-wide">Photo URL</h4>
+                  <h4 className="text-sm font-bold text-slate-700 uppercase tracking-wide">{t('travel_pins.form.photo_url_label')}</h4>
                 </div>
                 <div className="bg-gradient-to-br from-pink-50 to-rose-50 border border-pink-200/50 rounded-xl p-4">
                   <input
@@ -1495,11 +1533,11 @@ const TravelPins = () => {
                     onChange={(e) => handleInputChange('photo_url', e.target.value)}
                     className="w-full bg-transparent border-none focus:outline-none text-slate-700 placeholder:text-slate-500"
                     style={{ fontSize: '16px' }}
-                    placeholder="Enter photo URL (e.g., https://example.com/photo.jpg)"
+                    placeholder={t('travel_pins.form.photo_url_placeholder')}
                   />
                   {formData.photo_url && (
                     <div className="mt-3 border-t border-pink-200 pt-3">
-                      <div className="text-xs text-slate-500 mb-2">Preview:</div>
+                      <div className="text-xs text-slate-500 mb-2">{t('travel_pins.form.photo_preview')}</div>
                       <div className="relative w-full" style={{aspectRatio: '16/10'}}>
                         <img
                           src={formData.photo_url}
@@ -1513,7 +1551,7 @@ const TravelPins = () => {
                         <div style={{display: 'none'}} className="absolute inset-0 bg-slate-100 rounded-lg flex items-center justify-center text-slate-400">
                           <div className="text-center">
                             <div className="text-lg mb-1">📷</div>
-                            <div className="text-xs">Invalid URL</div>
+                            <div className="text-xs">{t('travel_pins.form.invalid_url')}</div>
                           </div>
                         </div>
                       </div>
@@ -1552,13 +1590,13 @@ const TravelPins = () => {
                   onClick={handleCloseForm}
                   className="flex-1 bg-gradient-to-r from-gray-100 to-gray-200 hover:from-gray-200 hover:to-gray-300 text-gray-700 font-medium py-3 px-4 rounded-xl transition-all duration-300 text-sm uppercase tracking-wide"
                 >
-                  Cancel
+                  {t('travel_pins.form.cancel_button')}
                 </button>
                 <button
                   type="submit"
                   className="flex-1 bg-gradient-to-r from-indigo-500 via-purple-500 to-blue-500 hover:from-indigo-600 hover:via-purple-600 hover:to-blue-600 text-white font-bold py-3 px-4 rounded-xl transition-all duration-300 shadow-lg hover:shadow-xl hover:-translate-y-0.5 text-sm uppercase tracking-wide"
                 >
-                  {editingPin ? 'Update Pin' : 'Save Pin'}
+{editingPin ? t('travel_pins.form.update_button') : t('travel_pins.form.save_button')}
                 </button>
               </div>
             </form>
@@ -1626,8 +1664,8 @@ const TravelPins = () => {
                   ⚠️
                 </div>
                 <div>
-                  <h3 className="text-xl font-bold tracking-tight leading-tight m-0">Delete Travel Pin</h3>
-                  <p className="text-sm opacity-90 mt-1">This action cannot be undone</p>
+                  <h3 className="text-xl font-bold tracking-tight leading-tight m-0">{t('travel_pins.delete_modal.title')}</h3>
+                  <p className="text-sm opacity-90 mt-1">{t('travel_pins.delete_modal.subtitle')}</p>
                 </div>
               </div>
             </div>
@@ -1642,7 +1680,7 @@ const TravelPins = () => {
                       📍
                     </div>
                     <div className="flex-1 min-w-0">
-                      <div className="text-sm font-bold text-slate-700 uppercase tracking-wide mb-2">Pin to Delete</div>
+                      <div className="text-sm font-bold text-slate-700 uppercase tracking-wide mb-2">{t('travel_pins.delete_modal.pin_to_delete')}</div>
                       <div className="text-lg font-semibold text-slate-900 break-words">
                         {pendingDeletePin?.title}
                       </div>
@@ -1653,11 +1691,7 @@ const TravelPins = () => {
                       )}
                       {pendingDeletePin?.visited_at && (
                         <div className="text-xs text-slate-500 mt-2">
-                          Visited {new Date(pendingDeletePin.visited_at).toLocaleDateString('en-US', { 
-                            year: 'numeric', 
-                            month: 'long', 
-                            day: 'numeric' 
-                          })}
+                          {t('travel_pins.popup.visited')} {formatDate(pendingDeletePin.visited_at)}
                         </div>
                       )}
                     </div>
@@ -1671,8 +1705,8 @@ const TravelPins = () => {
                       💡
                     </div>
                     <div className="text-sm text-slate-700">
-                      <div className="font-semibold mb-1">Are you absolutely sure?</div>
-                      <div>Once deleted, this travel pin and all its data will be permanently removed from your map.</div>
+                      <div className="font-semibold mb-1">{t('travel_pins.delete_modal.confirmation_title')}</div>
+                      <div>{t('travel_pins.delete_modal.confirmation_text')}</div>
                     </div>
                   </div>
                 </div>
@@ -1684,13 +1718,13 @@ const TravelPins = () => {
                   onClick={cancelDeletePin}
                   className="flex-1 bg-gradient-to-r from-gray-100 to-gray-200 hover:from-gray-200 hover:to-gray-300 text-gray-700 font-medium py-3 px-4 rounded-xl transition-all duration-300 text-sm uppercase tracking-wide"
                 >
-                  Cancel
+                  {t('travel_pins.delete_modal.cancel_button')}
                 </button>
                 <button
                   onClick={confirmDeletePin}
                   className="flex-1 bg-gradient-to-r from-red-500 to-red-600 hover:from-red-600 hover:to-red-700 text-white font-bold py-3 px-4 rounded-xl transition-all duration-300 shadow-lg hover:shadow-xl hover:-translate-y-0.5 text-sm uppercase tracking-wide"
                 >
-                  Delete Forever
+                  {t('travel_pins.delete_modal.delete_forever_button')}
                 </button>
               </div>
             </div>
