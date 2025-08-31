@@ -285,6 +285,13 @@ const TravelPins = () => {
       }
     };
 
+    window.deleteTravelPin = (pinId) => {
+      const pin = pins.find(p => p.id === pinId);
+      if (pin) {
+        handleDeletePin(pin);
+      }
+    };
+
     window.closeTravelPinPopup = (pinId) => {
       const pin = pins.find(p => p.id === pinId);
       if (pin && pin.marker) {
@@ -295,6 +302,7 @@ const TravelPins = () => {
 
     return () => {
       delete window.editTravelPin;
+      delete window.deleteTravelPin;
       delete window.closeTravelPinPopup;
     };
   }, [pins]);
@@ -461,6 +469,28 @@ const TravelPins = () => {
     setShowForm(true);
   };
 
+  const handleDeletePin = (pin) => {
+    const confirmDelete = window.confirm(
+      `Are you sure you want to delete the pin "${pin.title}"?\n\nThis action cannot be undone.`
+    );
+    
+    if (confirmDelete) {
+      console.log('Deleting pin:', pin.title);
+      // Remove marker from map
+      if (pin.marker) {
+        pin.marker.remove();
+      }
+      // Remove pin from state
+      setPins(prevPins => prevPins.filter(p => p.id !== pin.id));
+      // Remove from open popups tracking
+      setOpenPopups(prev => {
+        const newSet = new Set(prev);
+        newSet.delete(pin.id);
+        return newSet;
+      });
+    }
+  };
+
   const createEnhancedPopup = (pin) => {
     const popupId = `popup-${pin.id}`;
     
@@ -557,18 +587,30 @@ const TravelPins = () => {
           </div>
 
           <div class="pt-2 border-t border-slate-100">
-            <button 
-              onclick="window.editTravelPin(${pin.id})"
-              class="w-full bg-gradient-to-r from-indigo-500 via-purple-500 to-blue-500 hover:from-indigo-600 hover:via-purple-600 hover:to-blue-600 text-white font-bold py-3.5 px-6 rounded-xl transition-all duration-300 shadow-lg hover:shadow-xl hover:-translate-y-0.5 text-sm uppercase tracking-wide"
-            >
-              <span class="flex items-center justify-center gap-2">
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <div class="flex gap-2">
+              <button 
+                onclick="window.deleteTravelPin(${pin.id})"
+                class="flex-1 bg-gradient-to-r from-red-500 to-red-600 hover:from-red-600 hover:to-red-700 text-white font-medium py-2.5 px-3 rounded-lg transition-all duration-300 text-sm flex items-center justify-center gap-1.5"
+              >
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <polyline points="3,6 5,6 21,6"></polyline>
+                  <path d="m19,6v14a2,2 0 0,1 -2,2H7a2,2 0 0,1 -2,-2V6m3,0V4a2,2 0 0,1 2,-2h4a2,2 0 0,1 2,2v2"></path>
+                  <line x1="10" y1="11" x2="10" y2="17"></line>
+                  <line x1="14" y1="11" x2="14" y2="17"></line>
+                </svg>
+                Delete
+              </button>
+              <button 
+                onclick="window.editTravelPin(${pin.id})"
+                class="flex-1 bg-gradient-to-r from-indigo-500 via-purple-500 to-blue-500 hover:from-indigo-600 hover:via-purple-600 hover:to-blue-600 text-white font-medium py-2.5 px-3 rounded-lg transition-all duration-300 text-sm flex items-center justify-center gap-1.5"
+              >
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                   <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path>
                   <path d="m18.5 2.5 3 3L12 15l-4 1 1-4 9.5-9.5z"></path>
                 </svg>
-                Edit Travel Pin
-              </span>
-            </button>
+                Edit
+              </button>
+            </div>
           </div>
         </div>
       </div>
