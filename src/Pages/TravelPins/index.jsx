@@ -21,6 +21,24 @@ const customPopupStyles = `
   .travel-pin-popup .mapboxgl-popup-tip {
     border-top-color: rgb(99 102 241) !important;
   }
+  
+  /* Center popup in screen */
+  .travel-pin-popup-center {
+    position: fixed !important;
+    top: 50% !important;
+    left: 50% !important;
+    transform: translate(-50%, -50%) !important;
+    z-index: 1000 !important;
+  }
+  
+  .travel-pin-popup-center .mapboxgl-popup-content {
+    position: relative !important;
+    transform: none !important;
+  }
+  
+  .travel-pin-popup-center .mapboxgl-popup-tip {
+    display: none !important;
+  }
 `;
 
 // Utility function to convert markdown to HTML
@@ -60,6 +78,7 @@ const TravelPins = () => {
   const [hasChanges, setHasChanges] = useState(false);
   const [originalFormData, setOriginalFormData] = useState(null);
   const [openPopups, setOpenPopups] = useState(new Set());
+  const [isMobile, setIsMobile] = useState(window.innerWidth <= 768);
 
   // Inject custom popup styles
   useEffect(() => {
@@ -77,6 +96,18 @@ const TravelPins = () => {
         existingStyle.remove();
       }
     };
+  }, []);
+
+  // Mobile detection effect
+  useEffect(() => {
+    const handleResize = () => {
+      const newIsMobile = window.innerWidth <= 768;
+      setIsMobile(newIsMobile);
+      console.log('Screen size changed, isMobile:', newIsMobile);
+    };
+
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
   }, []);
 
   // Separate effect for zoom handling with debounce
@@ -325,6 +356,45 @@ const TravelPins = () => {
     return () => document.removeEventListener('keydown', handleEscapeForPopups);
   }, [showForm, pins, openPopups]);
 
+  // Mobile single popup policy enforcement
+  useEffect(() => {
+    if (isMobile && openPopups.size > 1) {
+      console.log('Mobile single popup policy: closing extra popups. Current open:', openPopups.size);
+      
+      // Keep only the most recently opened popup (last in the Set)
+      const popupArray = Array.from(openPopups);
+      const mostRecentPopupId = popupArray[popupArray.length - 1];
+      
+      pins.forEach(pin => {
+        if (pin.id !== mostRecentPopupId && pin.marker && pin.marker.getPopup().isOpen()) {
+          console.log('Mobile policy: closing popup for pin:', pin.title);
+          pin.marker.getPopup().remove();
+        }
+      });
+    }
+  }, [isMobile, openPopups, pins]);
+
+  // Close display popups when edit form opens
+  useEffect(() => {
+    if (showForm && openPopups.size > 0) {
+      console.log('Edit form opened, closing all display popups');
+      closeAllPopups();
+    }
+  }, [showForm]);
+
+  // Close edit form when display popup opens  
+  useEffect(() => {
+    if (!showForm && openPopups.size > 0) {
+      // Display popup just opened, nothing to do
+      return;
+    }
+    if (showForm && openPopups.size > 0) {
+      // Both are open, close edit form (display popup takes priority)
+      console.log('Display popup opened while edit form was open, closing edit form');
+      handleCloseForm();
+    }
+  }, [openPopups]);
+
   const handleCloseForm = () => {
     setShowForm(false);
     setEditingPin(null);
@@ -358,7 +428,22 @@ const TravelPins = () => {
     });
   };
 
+  const closeAllPopups = () => {
+    console.log('Closing all popups, current count:', openPopups.size);
+    pins.forEach(pin => {
+      if (pin.marker && pin.marker.getPopup().isOpen()) {
+        console.log('Closing popup for pin:', pin.title);
+        pin.marker.getPopup().remove();
+      }
+    });
+    setOpenPopups(new Set());
+  };
+
   const handleEditPin = (pin) => {
+    // Close all display popups when opening edit form
+    console.log('Opening edit form, closing all display popups');
+    closeAllPopups();
+    
     const originalData = {
       title: pin.title,
       note: pin.note || '',
@@ -378,20 +463,24 @@ const TravelPins = () => {
 
   const createEnhancedPopup = (pin) => {
     const popupId = `popup-${pin.id}`;
-    const popup = new mapboxgl.Popup({ 
-      offset: 25,
+    
+    // Fixed center positioning for all devices
+    const popupConfig = {
       closeButton: false,
       closeOnClick: false,
-      className: 'travel-pin-popup',
+      className: 'travel-pin-popup travel-pin-popup-center',
+      anchor: 'center',
+      offset: [0, 0],
       maxWidth: 'none'
-    }).setHTML(`
-      <div id="${popupId}" class="p-0 min-w-80 max-w-md bg-white rounded-2xl overflow-hidden shadow-2xl border border-slate-200/50">
-        <!-- Header with elegant gradient -->
-        <div class="bg-gradient-to-r from-indigo-600 via-purple-600 to-blue-600 text-white px-6 py-5 relative">
+    };
+    
+    const popup = new mapboxgl.Popup(popupConfig).setHTML(`
+      <div id="${popupId}" class="p-0 ${isMobile ? 'w-[85vw] max-w-sm' : 'min-w-80 max-w-md'} bg-white rounded-2xl overflow-hidden shadow-2xl border border-slate-200/50">
+        <div class="bg-gradient-to-r from-indigo-600 via-purple-600 to-blue-600 text-white ${isMobile ? 'px-4 py-4' : 'px-6 py-5'} relative">
           <div class="absolute inset-0 bg-gradient-to-br from-white/10 to-transparent"></div>
           <div class="flex justify-between items-start relative z-10">
             <div class="flex-1 pr-4">
-              <h3 class="m-0 text-xl font-bold tracking-tight leading-tight">${pin.title}</h3>
+              <h3 class="m-0 ${isMobile ? 'text-lg' : 'text-xl'} font-bold tracking-tight leading-tight">${pin.title}</h3>
               ${pin.visited_at ? `
                 <div class="mt-2 flex items-center gap-2 text-sm opacity-90">
                   <div class="w-1.5 h-1.5 bg-white/60 rounded-full"></div>
@@ -415,8 +504,7 @@ const TravelPins = () => {
           </div>
         </div>
 
-        <!-- Content with improved spacing and typography -->
-        <div class="p-6 space-y-5">
+        <div class="${isMobile ? 'p-4 space-y-4' : 'p-6 space-y-5'}">
           ${pin.note ? `
             <div class="space-y-3">
               <div class="flex items-center gap-2">
@@ -448,7 +536,6 @@ const TravelPins = () => {
             </div>
           ` : ''}
 
-          <!-- Enhanced Coordinates Section -->
           <div class="space-y-3">
             <div class="flex items-center gap-2">
               <div class="w-6 h-6 bg-gradient-to-br from-emerald-400 to-green-500 rounded-lg flex items-center justify-center text-white text-sm">
@@ -469,7 +556,6 @@ const TravelPins = () => {
             </div>
           </div>
 
-          <!-- Enhanced Edit Button -->
           <div class="pt-2 border-t border-slate-100">
             <button 
               onclick="window.editTravelPin(${pin.id})"
@@ -727,35 +813,6 @@ const TravelPins = () => {
         </div>
       )}
 
-      {/* Debug/Instructions Overlay */}
-      <div className="absolute top-4 left-4 bg-white bg-opacity-95 rounded-lg p-4 shadow-lg max-w-sm">
-        <h2 className="font-semibold text-lg mb-2">🗺️ Travel Pins</h2>
-        
-        {/* Debug Info */}
-        <div className="mb-3 p-2 bg-gray-100 rounded text-xs">
-          <div><strong>Token:</strong> {token.substring(0, 20)}...</div>
-          <div><strong>Map Loaded:</strong> {mapLoaded ? '✅ Yes' : '❌ No'}</div>
-          {mapError && <div className="text-red-600"><strong>Error:</strong> {mapError}</div>}
-        </div>
-        
-        <p className="text-sm text-gray-700 mb-2">
-          Click anywhere on the map to add a travel pin with your memories!
-        </p>
-        <ul className="text-xs text-gray-600 space-y-1">
-          <li>• Drag to move the map</li>
-          <li>• Scroll to zoom in/out</li>
-          <li>• <strong>Hover pins</strong> to see size animation</li>
-          <li>• <strong>Click pins</strong> to view saved details</li>
-          <li>• <strong>Click empty areas</strong> to add new pins</li>
-        </ul>
-        {pins.length > 0 && (
-          <div className="mt-3 pt-2 border-t border-gray-200">
-            <p className="text-sm font-medium text-gray-700">
-              {pins.length} pin{pins.length !== 1 ? 's' : ''} added
-            </p>
-          </div>
-        )}
-      </div>
     </div>
   );
 };
