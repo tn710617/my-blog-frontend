@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useEffect, useRef, useState, useCallback } from 'react';
 import mapboxgl from 'mapbox-gl';
 import 'mapbox-gl/dist/mapbox-gl.css';
 import ReactMarkdown from 'react-markdown';
@@ -59,6 +59,19 @@ const renderMarkdownToHTML = (markdown) => {
     .replace(/\n/g, '<br>');
 };
 
+// Debounce utility function
+const debounce = (func, wait) => {
+  let timeout;
+  return function executedFunction(...args) {
+    const later = () => {
+      clearTimeout(timeout);
+      func(...args);
+    };
+    clearTimeout(timeout);
+    timeout = setTimeout(later, wait);
+  };
+};
+
 const TravelPins = () => {
   const mapContainer = useRef(null);
   const map = useRef(null);
@@ -79,6 +92,14 @@ const TravelPins = () => {
   const [originalFormData, setOriginalFormData] = useState(null);
   const [openPopups, setOpenPopups] = useState(new Set());
   const [isMobile, setIsMobile] = useState(window.innerWidth <= 768);
+  const [searchQuery, setSearchQuery] = useState('');
+  const [searchSuggestions, setSearchSuggestions] = useState([]);
+  const [showSuggestions, setShowSuggestions] = useState(false);
+  const [isSearching, setIsSearching] = useState(false);
+  const [searchHistory, setSearchHistory] = useState([]);
+  const [selectedIndex, setSelectedIndex] = useState(-1);
+  const searchEscHandled = useRef(false);
+  const [isSearchFocused, setIsSearchFocused] = useState(false);
 
   // Inject custom popup styles
   useEffect(() => {
@@ -312,6 +333,9 @@ const TravelPins = () => {
     if (!showForm) return;
 
     const handleEscape = (e) => {
+      // Don't handle ESC if search box is focused
+      if (document.activeElement?.id === 'location-search-input') return;
+      
       console.log('Key pressed:', e.key, 'hasChanges:', hasChanges);
       if (e.key === 'Escape') {
         console.log('ESC pressed, hasChanges:', hasChanges);
@@ -345,6 +369,21 @@ const TravelPins = () => {
     if (showForm) return; // Don't handle ESC when form is open
 
     const handleEscapeForPopups = (e) => {
+      const activeElementId = document.activeElement?.id;
+      console.log('Global popup ESC handler - activeElement:', activeElementId, 'isSearchFocused:', isSearchFocused, 'searchEscHandled:', searchEscHandled.current);
+      
+      // Don't handle ESC if search already handled it
+      if (searchEscHandled.current) {
+        console.log('Search ESC already handled, skipping popup ESC handler');
+        return;
+      }
+      
+      // Don't handle ESC if search box is focused (using reliable state)
+      if (isSearchFocused) {
+        console.log('Search box is focused (via state), skipping popup ESC handler');
+        return;
+      }
+      
       if (e.key === 'Escape') {
         console.log('ESC pressed for popups, openPopups size:', openPopups.size);
         if (openPopups.size > 0) {
@@ -362,7 +401,7 @@ const TravelPins = () => {
 
     document.addEventListener('keydown', handleEscapeForPopups);
     return () => document.removeEventListener('keydown', handleEscapeForPopups);
-  }, [showForm, pins, openPopups]);
+  }, [showForm, pins, openPopups, isSearchFocused]);
 
   // Mobile single popup policy enforcement
   useEffect(() => {
@@ -402,6 +441,20 @@ const TravelPins = () => {
       handleCloseForm();
     }
   }, [openPopups]);
+
+  // Keyboard shortcuts for search
+  useEffect(() => {
+    const handleGlobalKeyDown = (e) => {
+      if ((e.ctrlKey || e.metaKey) && e.key === 'f') {
+        e.preventDefault();
+        document.getElementById('location-search-input')?.focus();
+        console.log('Search shortcut activated (Ctrl/Cmd + F)');
+      }
+    };
+
+    document.addEventListener('keydown', handleGlobalKeyDown);
+    return () => document.removeEventListener('keydown', handleGlobalKeyDown);
+  }, []);
 
   const handleCloseForm = () => {
     setShowForm(false);
@@ -489,6 +542,137 @@ const TravelPins = () => {
         return newSet;
       });
     }
+  };
+
+  // Debounced search function
+  const debouncedSearch = useCallback(
+    debounce(async (query) => {
+      if (query.length < 3) {
+        setSearchSuggestions([]);
+        setShowSuggestions(false);
+        return;
+      }
+
+      setIsSearching(true);
+      try {
+        const response = await fetch(
+          `https://api.mapbox.com/geocoding/v5/mapbox.places/${encodeURIComponent(query)}.json?` +
+          `access_token=${mapboxgl.accessToken}&` +
+          `types=country&` +
+          `limit=8&` +
+          `autocomplete=true`
+        );
+        
+        const data = await response.json();
+        setSearchSuggestions(data.features || []);
+        setShowSuggestions(true);
+        console.log('Search results:', data.features?.length || 0, 'results for:', query);
+        console.log('Setting showSuggestions to true');
+      } catch (error) {
+        console.error('Geocoding error:', error);
+        setSearchSuggestions([]);
+      } finally {
+        setIsSearching(false);
+      }
+    }, 300),
+    []
+  );
+
+  // Handle search input changes
+  const handleSearchChange = (e) => {
+    const value = e.target.value;
+    setSearchQuery(value);
+    setSelectedIndex(-1); // Reset selection when typing
+    debouncedSearch(value);
+  };
+
+  // Handle keyboard navigation
+  const handleKeyDown = (e) => {
+    console.log('Search input key pressed:', e.key, 'showSuggestions:', showSuggestions);
+    
+    if (e.key === 'Escape') {
+      console.log('ESC pressed in search input, closing suggestions');
+      e.preventDefault();
+      e.stopPropagation();
+      searchEscHandled.current = true;
+      setShowSuggestions(false);
+      setSelectedIndex(-1);
+      console.log('Set showSuggestions to false');
+      
+      // Reset the flag after a short delay
+      setTimeout(() => {
+        searchEscHandled.current = false;
+      }, 10);
+      return;
+    }
+
+    if (!showSuggestions) return;
+
+    const currentResults = searchSuggestions.length > 0 ? searchSuggestions : searchHistory;
+    const maxIndex = currentResults.length - 1;
+
+    switch (e.key) {
+      case 'ArrowDown':
+        e.preventDefault();
+        setSelectedIndex(prev => (prev < maxIndex ? prev + 1 : 0));
+        console.log('Arrow down, selectedIndex will be:', selectedIndex < maxIndex ? selectedIndex + 1 : 0);
+        break;
+      case 'ArrowUp':
+        e.preventDefault();
+        setSelectedIndex(prev => (prev > 0 ? prev - 1 : maxIndex));
+        console.log('Arrow up, selectedIndex will be:', selectedIndex > 0 ? selectedIndex - 1 : maxIndex);
+        break;
+      case 'Enter':
+        e.preventDefault();
+        if (selectedIndex >= 0 && selectedIndex < currentResults.length) {
+          const selected = currentResults[selectedIndex];
+          console.log('Enter pressed, selecting:', selected);
+          if (searchSuggestions.length > 0) {
+            // It's a search result
+            handleLocationSelect(selected);
+          } else {
+            // It's a history item
+            handleLocationSelect({
+              center: selected.coordinates,
+              place_name: selected.name,
+              properties: { accuracy: 'point' }
+            });
+          }
+        }
+        break;
+      default:
+        break;
+    }
+  };
+
+  // Navigate to selected location
+  const handleLocationSelect = (location) => {
+    const [lng, lat] = location.center;
+    
+    // Fly to location with smooth animation (country-level zoom)
+    map.current.flyTo({
+      center: [lng, lat],
+      zoom: 5, // Country-level zoom
+      duration: 2000
+    });
+
+    // Add to search history
+    const historyItem = {
+      id: Date.now(),
+      name: location.place_name,
+      coordinates: [lng, lat],
+      timestamp: new Date()
+    };
+    
+    setSearchHistory(prev => [historyItem, ...prev.slice(0, 4)]); // Keep last 5
+    
+    // Clear search
+    setSearchQuery('');
+    setSearchSuggestions([]);
+    setShowSuggestions(false);
+    setSelectedIndex(-1);
+    
+    console.log('Navigated to:', location.place_name);
   };
 
   const createEnhancedPopup = (pin) => {
@@ -724,6 +908,129 @@ const TravelPins = () => {
     <div className="w-full h-screen relative">
       {/* Map Container */}
       <div ref={mapContainer} className="w-full h-full" />
+
+      {/* Search Box Overlay */}
+      <div className="absolute top-4 left-1/2 transform -translate-x-1/2 w-96 max-w-[90vw] z-10">
+        <div className="relative">
+          {/* Search Input */}
+          <div className="relative">
+            <input
+              id="location-search-input"
+              type="text"
+              value={searchQuery}
+              onChange={handleSearchChange}
+              onKeyDown={handleKeyDown}
+              onFocus={() => {
+                console.log('Search input focused');
+                setIsSearchFocused(true);
+                setShowSuggestions(searchSuggestions.length > 0 || searchHistory.length > 0);
+              }}
+              onBlur={() => {
+                console.log('Search input blurred');
+                setIsSearchFocused(false);
+                // Only hide suggestions if not hidden by ESC already
+                if (showSuggestions) {
+                  // Delay hiding suggestions to allow for clicks on suggestions
+                  setTimeout(() => setShowSuggestions(false), 200);
+                }
+              }}
+              placeholder="Search countries... (Ctrl/Cmd + F)"
+              className="w-full pl-10 pr-4 py-3 bg-white border border-gray-300 rounded-xl shadow-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm"
+            />
+            
+            {/* Search Icon */}
+            <div className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400">
+              {isSearching ? (
+                <div className="animate-spin w-5 h-5 border-2 border-blue-500 border-t-transparent rounded-full"></div>
+              ) : (
+                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                </svg>
+              )}
+            </div>
+          </div>
+
+          {/* Suggestions Dropdown */}
+          {showSuggestions && (searchSuggestions.length > 0 || searchHistory.length > 0) && (
+            <div className="absolute top-full left-0 right-0 mt-2 bg-white border border-gray-200 rounded-xl shadow-lg z-50 max-h-80 overflow-y-auto">
+              
+              {/* Search Results */}
+              {searchSuggestions.length > 0 && (
+                <div>
+                  <div className="px-4 py-2 text-xs font-semibold text-gray-500 uppercase tracking-wide border-b border-gray-100">
+                    Countries
+                  </div>
+                  {searchSuggestions.map((suggestion, index) => (
+                    <button
+                      key={index}
+                      onClick={() => handleLocationSelect(suggestion)}
+                      className={`w-full px-4 py-3 text-left border-b border-gray-50 last:border-b-0 transition-colors ${
+                        index === selectedIndex ? 'bg-blue-50 border-blue-200' : 'hover:bg-gray-50'
+                      }`}
+                    >
+                      <div className="flex items-center space-x-3">
+                        <div className="w-8 h-8 bg-blue-100 rounded-lg flex items-center justify-center">
+                          📍
+                        </div>
+                        <div className="flex-1 min-w-0">
+                          <p className="text-sm font-medium text-gray-900 truncate">
+                            {suggestion.text}
+                          </p>
+                          <p className="text-xs text-gray-500 truncate">
+                            {suggestion.place_name}
+                          </p>
+                        </div>
+                      </div>
+                    </button>
+                  ))}
+                </div>
+              )}
+
+              {/* Search History */}
+              {searchHistory.length > 0 && searchSuggestions.length === 0 && (
+                <div>
+                  <div className="px-4 py-2 text-xs font-semibold text-gray-500 uppercase tracking-wide border-b border-gray-100 flex justify-between items-center">
+                    Recent Searches
+                    <button 
+                      onClick={() => setSearchHistory([])}
+                      className="text-blue-500 hover:text-blue-700 text-xs font-normal normal-case"
+                    >
+                      Clear
+                    </button>
+                  </div>
+                  {searchHistory.map((item, index) => (
+                    <button
+                      key={item.id}
+                      onClick={() => handleLocationSelect({
+                        center: item.coordinates,
+                        place_name: item.name,
+                        properties: { accuracy: 'point' }
+                      })}
+                      className={`w-full px-4 py-3 text-left border-b border-gray-50 last:border-b-0 transition-colors ${
+                        index === selectedIndex ? 'bg-blue-50 border-blue-200' : 'hover:bg-gray-50'
+                      }`}
+                    >
+                      <div className="flex items-center space-x-3">
+                        <div className="w-8 h-8 bg-gray-100 rounded-lg flex items-center justify-center">
+                          🕒
+                        </div>
+                        <div className="flex-1 min-w-0">
+                          <p className="text-sm font-medium text-gray-900 truncate">
+                            {item.name}
+                          </p>
+                          <p className="text-xs text-gray-500">
+                            {new Date(item.timestamp).toLocaleDateString()}
+                          </p>
+                        </div>
+                      </div>
+                    </button>
+                  ))}
+                </div>
+              )}
+            </div>
+          )}
+        </div>
+      </div>
 
       {/* Enhanced Pin Creation/Edit Form */}
       {showForm && (
