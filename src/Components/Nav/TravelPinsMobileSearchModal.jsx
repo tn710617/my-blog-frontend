@@ -10,15 +10,29 @@ export default function TravelPinsMobileSearchModal({ isOpen, onClose, onLocatio
   // Helper function to get translated text
   const t = (key) => intl.formatMessage({id: key});
 
-  // Handle modal animation
+  // Handle modal animation and scroll lock
   useEffect(() => {
     if (isOpen) {
       setIsAnimating(true);
-      // Prevent body scroll
-      document.body.style.overflow = 'hidden';
+      // Save current scroll position
+      const scrollY = window.scrollY;
+      // Prevent body scroll and maintain position
+      document.body.style.cssText = `
+        overflow: hidden;
+        position: fixed;
+        top: -${scrollY}px;
+        left: 0;
+        right: 0;
+      `;
     } else {
+      // Get the scroll position from body style
+      const scrollY = document.body.style.top;
       // Restore body scroll
-      document.body.style.overflow = 'unset';
+      document.body.style.cssText = '';
+      // Restore scroll position
+      if (scrollY) {
+        window.scrollTo(0, parseInt(scrollY || '0') * -1);
+      }
       // Delay removing from DOM to allow exit animation
       const timer = setTimeout(() => setIsAnimating(false), 300);
       return () => clearTimeout(timer);
@@ -47,6 +61,11 @@ export default function TravelPinsMobileSearchModal({ isOpen, onClose, onLocatio
     }
   };
 
+  // Prevent scroll propagation within modal
+  const handleModalScroll = (e) => {
+    e.stopPropagation();
+  };
+
   // Handle location selection
   const handleLocationSelect = (location) => {
     onLocationSelect(location);
@@ -68,7 +87,8 @@ export default function TravelPinsMobileSearchModal({ isOpen, onClose, onLocatio
     >
       {/* Modal Content */}
       <div 
-        className={`absolute top-0 left-0 right-0 bg-white shadow-2xl transition-all duration-300 ease-out ${
+        onScroll={handleModalScroll}
+        className={`absolute top-0 left-0 right-0 bg-white shadow-2xl transition-all duration-300 ease-out max-h-screen overflow-y-auto ${
           isOpen 
             ? 'transform translate-y-0' 
             : 'transform -translate-y-full'
