@@ -39,6 +39,22 @@ const customPopupStyles = `
   .travel-pin-popup-center .mapboxgl-popup-tip {
     display: none !important;
   }
+  
+  /* Modal animation */
+  .animate-scale-up {
+    animation: scaleUp 0.2s ease-out;
+  }
+  
+  @keyframes scaleUp {
+    0% {
+      transform: scale(0.95);
+      opacity: 0;
+    }
+    100% {
+      transform: scale(1);
+      opacity: 1;
+    }
+  }
 `;
 
 // Utility function to convert markdown to HTML
@@ -102,6 +118,10 @@ const TravelPins = () => {
   const [isSearchFocused, setIsSearchFocused] = useState(false);
   const [isLocating, setIsLocating] = useState(false);
   const [locationError, setLocationError] = useState(null);
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
+  const [showEscModal, setShowEscModal] = useState(false);
+  const [pendingDeletePin, setPendingDeletePin] = useState(null);
+  const [pendingEscAction, setPendingEscAction] = useState(null);
 
   // Inject custom popup styles
   useEffect(() => {
@@ -348,12 +368,8 @@ const TravelPins = () => {
         } else {
           // Has changes, show confirmation dialog
           console.log('Has changes, showing confirmation');
-          const confirmClose = window.confirm(
-            'You have unsaved changes. Are you sure you want to close?'
-          );
-          if (confirmClose) {
-            handleCloseForm();
-          }
+          setPendingEscAction(() => handleCloseForm);
+          setShowEscModal(true);
         }
       }
     };
@@ -366,9 +382,25 @@ const TravelPins = () => {
     };
   }, [showForm, hasChanges]);
 
+  // ESC key handler for delete modal
+  useEffect(() => {
+    if (!showDeleteModal) return;
+
+    const handleDeleteModalEscape = (e) => {
+      if (e.key === 'Escape') {
+        e.preventDefault();
+        e.stopPropagation();
+        cancelDeletePin();
+      }
+    };
+
+    document.addEventListener('keydown', handleDeleteModalEscape);
+    return () => document.removeEventListener('keydown', handleDeleteModalEscape);
+  }, [showDeleteModal]);
+
   // ESC key handler for closing display popups (when form is not open)
   useEffect(() => {
-    if (showForm) return; // Don't handle ESC when form is open
+    if (showForm || showDeleteModal || showEscModal) return; // Don't handle ESC when modals are open
 
     const handleEscapeForPopups = (e) => {
       const activeElementId = document.activeElement?.id;
@@ -525,25 +557,57 @@ const TravelPins = () => {
   };
 
   const handleDeletePin = (pin) => {
-    const confirmDelete = window.confirm(
-      `Are you sure you want to delete the pin "${pin.title}"?\n\nThis action cannot be undone.`
-    );
-    
-    if (confirmDelete) {
-      console.log('Deleting pin:', pin.title);
+    // Store the pin for potential popup restoration
+    setPendingDeletePin(pin);
+    // Close all popups when opening delete modal
+    closeAllPopups();
+    setShowDeleteModal(true);
+  };
+
+  const confirmDeletePin = () => {
+    if (pendingDeletePin) {
+      console.log('Deleting pin:', pendingDeletePin.title);
       // Remove marker from map
-      if (pin.marker) {
-        pin.marker.remove();
+      if (pendingDeletePin.marker) {
+        pendingDeletePin.marker.remove();
       }
       // Remove pin from state
-      setPins(prevPins => prevPins.filter(p => p.id !== pin.id));
+      setPins(prevPins => prevPins.filter(p => p.id !== pendingDeletePin.id));
       // Remove from open popups tracking
       setOpenPopups(prev => {
         const newSet = new Set(prev);
-        newSet.delete(pin.id);
+        newSet.delete(pendingDeletePin.id);
         return newSet;
       });
     }
+    setShowDeleteModal(false);
+    setPendingDeletePin(null);
+  };
+
+  const cancelDeletePin = () => {
+    setShowDeleteModal(false);
+    
+    // Restore the original popup after a brief delay
+    if (pendingDeletePin && pendingDeletePin.marker) {
+      setTimeout(() => {
+        pendingDeletePin.marker.togglePopup();
+      }, 200); // Small delay to ensure modal closes smoothly
+    }
+    
+    setPendingDeletePin(null);
+  };
+
+  const confirmEscAction = () => {
+    if (pendingEscAction) {
+      pendingEscAction();
+    }
+    setShowEscModal(false);
+    setPendingEscAction(null);
+  };
+
+  const cancelEscAction = () => {
+    setShowEscModal(false);
+    setPendingEscAction(null);
   };
 
   // Debounced search function
@@ -1356,6 +1420,163 @@ const TravelPins = () => {
                 <line x1="6" y1="6" x2="18" y2="18"></line>
               </svg>
             </button>
+          </div>
+        </div>
+      )}
+
+      {/* Delete Confirmation Modal */}
+      {showDeleteModal && (
+        <div className="fixed inset-0 bg-black bg-opacity-60 flex items-center justify-center z-[9999]">
+          <div className="bg-white rounded-2xl overflow-hidden shadow-2xl border border-slate-200/50 w-[420px] max-w-[90vw] animate-scale-up">
+            {/* Warning header with red gradient */}
+            <div className="bg-gradient-to-r from-red-600 via-red-500 to-red-600 text-white px-6 py-5 relative">
+              <div className="absolute inset-0 bg-gradient-to-br from-white/10 to-transparent"></div>
+              <div className="flex items-center gap-3 relative z-10">
+                <div className="w-10 h-10 bg-white/20 rounded-full flex items-center justify-center text-xl">
+                  ⚠️
+                </div>
+                <div>
+                  <h3 className="text-xl font-bold tracking-tight leading-tight m-0">Delete Travel Pin</h3>
+                  <p className="text-sm opacity-90 mt-1">This action cannot be undone</p>
+                </div>
+              </div>
+            </div>
+            
+            {/* Modal content */}
+            <div className="p-6 space-y-5">
+              {/* Pin info section */}
+              <div className="space-y-4">
+                <div className="bg-gradient-to-br from-red-50 to-rose-50 border border-red-200/50 rounded-xl p-4">
+                  <div className="flex items-start gap-3">
+                    <div className="w-8 h-8 bg-gradient-to-br from-red-400 to-red-500 rounded-lg flex items-center justify-center text-white text-sm flex-shrink-0 mt-0.5">
+                      📍
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <div className="text-sm font-bold text-slate-700 uppercase tracking-wide mb-2">Pin to Delete</div>
+                      <div className="text-lg font-semibold text-slate-900 break-words">
+                        {pendingDeletePin?.title}
+                      </div>
+                      {pendingDeletePin?.note && (
+                        <div className="text-sm text-slate-600 mt-2 line-clamp-2">
+                          {pendingDeletePin.note}
+                        </div>
+                      )}
+                      {pendingDeletePin?.visited_at && (
+                        <div className="text-xs text-slate-500 mt-2">
+                          Visited {new Date(pendingDeletePin.visited_at).toLocaleDateString('en-US', { 
+                            year: 'numeric', 
+                            month: 'long', 
+                            day: 'numeric' 
+                          })}
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                </div>
+                
+                {/* Warning message */}
+                <div className="bg-gradient-to-br from-amber-50 to-orange-50 border border-amber-200/50 rounded-xl p-4">
+                  <div className="flex items-start gap-3">
+                    <div className="w-6 h-6 bg-gradient-to-br from-amber-400 to-orange-500 rounded-lg flex items-center justify-center text-white text-sm flex-shrink-0">
+                      💡
+                    </div>
+                    <div className="text-sm text-slate-700">
+                      <div className="font-semibold mb-1">Are you absolutely sure?</div>
+                      <div>Once deleted, this travel pin and all its data will be permanently removed from your map.</div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              
+              {/* Action buttons */}
+              <div className="flex gap-3 pt-2">
+                <button
+                  onClick={cancelDeletePin}
+                  className="flex-1 bg-gradient-to-r from-gray-100 to-gray-200 hover:from-gray-200 hover:to-gray-300 text-gray-700 font-medium py-3 px-4 rounded-xl transition-all duration-300 text-sm uppercase tracking-wide"
+                >
+                  Cancel
+                </button>
+                <button
+                  onClick={confirmDeletePin}
+                  className="flex-1 bg-gradient-to-r from-red-500 to-red-600 hover:from-red-600 hover:to-red-700 text-white font-bold py-3 px-4 rounded-xl transition-all duration-300 shadow-lg hover:shadow-xl hover:-translate-y-0.5 text-sm uppercase tracking-wide"
+                >
+                  Delete Forever
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* ESC Key Confirmation Modal */}
+      {showEscModal && (
+        <div className="fixed inset-0 bg-black bg-opacity-60 flex items-center justify-center z-[9999]">
+          <div className="bg-white rounded-2xl overflow-hidden shadow-2xl border border-slate-200/50 w-[420px] max-w-[90vw] animate-scale-up">
+            {/* Warning header with amber gradient */}
+            <div className="bg-gradient-to-r from-amber-600 via-yellow-500 to-amber-600 text-white px-6 py-5 relative">
+              <div className="absolute inset-0 bg-gradient-to-br from-white/10 to-transparent"></div>
+              <div className="flex items-center gap-3 relative z-10">
+                <div className="w-10 h-10 bg-white/20 rounded-full flex items-center justify-center text-xl">
+                  💾
+                </div>
+                <div>
+                  <h3 className="text-xl font-bold tracking-tight leading-tight m-0">Unsaved Changes</h3>
+                  <p className="text-sm opacity-90 mt-1">You have unsaved changes</p>
+                </div>
+              </div>
+            </div>
+            
+            {/* Modal content */}
+            <div className="p-6 space-y-5">
+              {/* Warning content */}
+              <div className="space-y-4">
+                <div className="bg-gradient-to-br from-amber-50 to-yellow-50 border border-amber-200/50 rounded-xl p-4">
+                  <div className="flex items-start gap-3">
+                    <div className="w-8 h-8 bg-gradient-to-br from-amber-400 to-yellow-500 rounded-lg flex items-center justify-center text-white text-sm flex-shrink-0 mt-0.5">
+                      ✏️
+                    </div>
+                    <div className="flex-1">
+                      <div className="text-sm font-bold text-slate-700 uppercase tracking-wide mb-2">Current Form</div>
+                      <div className="text-lg font-semibold text-slate-900">
+                        {editingPin ? `Editing: ${editingPin.title}` : 'Creating New Pin'}
+                      </div>
+                      <div className="text-sm text-slate-600 mt-2">
+                        You have made changes that haven't been saved yet.
+                      </div>
+                    </div>
+                  </div>
+                </div>
+                
+                {/* Action explanation */}
+                <div className="bg-gradient-to-br from-blue-50 to-indigo-50 border border-blue-200/50 rounded-xl p-4">
+                  <div className="flex items-start gap-3">
+                    <div className="w-6 h-6 bg-gradient-to-br from-blue-400 to-indigo-500 rounded-lg flex items-center justify-center text-white text-sm flex-shrink-0">
+                      💡
+                    </div>
+                    <div className="text-sm text-slate-700">
+                      <div className="font-semibold mb-1">What would you like to do?</div>
+                      <div>You can go back to continue editing, or discard your changes and close the form.</div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              
+              {/* Action buttons */}
+              <div className="flex gap-3 pt-2">
+                <button
+                  onClick={cancelEscAction}
+                  className="flex-1 bg-gradient-to-r from-blue-500 to-indigo-500 hover:from-blue-600 hover:to-indigo-600 text-white font-bold py-3 px-4 rounded-xl transition-all duration-300 shadow-lg hover:shadow-xl hover:-translate-y-0.5 text-sm uppercase tracking-wide"
+                >
+                  Continue Editing
+                </button>
+                <button
+                  onClick={confirmEscAction}
+                  className="flex-1 bg-gradient-to-r from-gray-100 to-gray-200 hover:from-gray-200 hover:to-gray-300 text-gray-700 font-medium py-3 px-4 rounded-xl transition-all duration-300 text-sm uppercase tracking-wide"
+                >
+                  Discard Changes
+                </button>
+              </div>
+            </div>
           </div>
         </div>
       )}
