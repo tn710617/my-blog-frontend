@@ -76,7 +76,7 @@ export default function Nav() {
 
 
                     <div className={"flex gap-5 items-center"}>
-                        <div className="hidden lg:flex gap-5">
+                        <div className="hidden lg:flex gap-3">
                             <AboutButton/>
                             <TravelPinsButton/>
                         </div>
