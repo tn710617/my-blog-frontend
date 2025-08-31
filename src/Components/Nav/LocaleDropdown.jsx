@@ -59,48 +59,62 @@ const LocaleDropdown = () => {
             <button
                 type="button"
                 onClick={() => setIsOpen(!isOpen)}
-                className="flex justify-between w-full rounded-md border border-gray-300 shadow-sm px-4 py-2 bg-white text-sm font-medium text-gray-700 hover:bg-gray-50 focus:outline-none"
+                className="group flex items-center gap-2 px-4 py-2 rounded-xl bg-gradient-to-r from-amber-50 to-orange-100 hover:from-amber-100 hover:to-orange-200 border border-amber-200 hover:border-amber-300 transition-all duration-300 shadow-sm hover:shadow-md hover:-translate-y-0.5 focus:outline-none focus:ring-2 focus:ring-amber-300 focus:ring-opacity-50"
             >
-                  <span className="flex items-center">
-                    <img
-                        src={getDisplayLocale().image}
-                        alt={getDisplayLocale().label}
-                        className="w-5 h-5 mr-2"
-                    />
-                      {getDisplayLocale().label}
-                  </span>
-                <svg
-                    className="-mr-1 ml-2 h-5 w-5"
-                    xmlns="http://www.w3.org/2000/svg"
-                    viewBox="0 0 20 20"
-                    fill="currentColor"
-                    aria-hidden="true"
-                >
-                    <path
-                        fillRule="evenodd"
-                        d="M5.23 7.21a.75.75 0 011.06.02L10 10.915l3.71-3.685a.75.75 0 111.08 1.04l-4.25 4.222a.75.75 0 01-1.08 0l-4.25-4.222a.75.75 0 01.02-1.06z"
-                        clipRule="evenodd"
-                    />
-                </svg>
+                <div className="flex items-center gap-2">
+                    <div className="w-5 h-5 rounded-full overflow-hidden border border-amber-300 shadow-sm">
+                        <img
+                            src={getDisplayLocale().image}
+                            alt={getDisplayLocale().label}
+                            className="w-full h-full object-cover"
+                        />
+                    </div>
+                    <span className="text-sm font-medium text-amber-700 group-hover:text-amber-800 transition-colors duration-300">
+                        {getDisplayLocale().label}
+                    </span>
+                </div>
+                <div className="text-amber-600 group-hover:text-amber-700 transition-all duration-300">
+                    <svg 
+                        className={`w-4 h-4 transition-transform duration-200 ${isOpen ? 'rotate-180' : ''}`}
+                        fill="none" 
+                        stroke="currentColor" 
+                        viewBox="0 0 24 24"
+                    >
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7" />
+                    </svg>
+                </div>
             </button>
 
             {isOpen && (
                 <div
-                    className="origin-top-right absolute right-0 mt-10 w-24 rounded-md shadow-lg bg-white ring-1 ring-black ring-opacity-5 focus:outline-none"
+                    className="origin-top-right absolute right-0 mt-2 w-32 rounded-xl shadow-lg bg-white border border-amber-200 focus:outline-none overflow-hidden z-50"
                 >
-                    <div className="py-1">
+                    <div className="py-2">
                         {displayLocales.map((displayLocale) => (
                             <button
                                 key={displayLocale.value}
                                 onClick={() => handleLocaleChange(displayLocale)}
-                                className="flex items-center w-full px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 focus:outline-none"
+                                className={`flex items-center w-full px-4 py-3 text-sm transition-all duration-200 focus:outline-none ${
+                                    displayLocale.value === locale
+                                        ? 'bg-gradient-to-r from-amber-100 to-orange-200 text-amber-800 font-medium'
+                                        : 'text-gray-700 hover:bg-gradient-to-r hover:from-amber-50 hover:to-orange-100 hover:text-amber-700'
+                                }`}
                             >
-                                <img
-                                    src={displayLocale.image}
-                                    alt={displayLocale.label}
-                                    className="w-5 h-5 mr-2"
-                                />
-                                {displayLocale.label}
+                                <div className="w-5 h-5 rounded-full overflow-hidden border border-amber-300 shadow-sm mr-3">
+                                    <img
+                                        src={displayLocale.image}
+                                        alt={displayLocale.label}
+                                        className="w-full h-full object-cover"
+                                    />
+                                </div>
+                                <span className="font-medium">{displayLocale.label}</span>
+                                {displayLocale.value === locale && (
+                                    <div className="ml-auto text-amber-600">
+                                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                                            <polyline points="20,6 9,17 4,12"></polyline>
+                                        </svg>
+                                    </div>
+                                )}
                             </button>
                         ))}
                     </div>
