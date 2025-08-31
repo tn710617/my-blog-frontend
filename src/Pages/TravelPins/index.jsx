@@ -850,38 +850,132 @@ const TravelPins = () => {
     // Create new pin
     const newPin = pinData;
 
-    // Add marker to map - proper approach without transform conflicts
+    // Add marker to map - Thumbtack design
     const el = document.createElement('div');
     el.className = 'travel-pin-marker';
+    
+    // Create thumbtack with alternating colors
+    const colors = ['red', 'green', 'orange'];
+    const selectedColor = colors[pins.length % colors.length];
+    
+    const colorSchemes = {
+      red: {
+        main: '#ef4444',
+        dark: '#dc2626',
+        light: '#f87171'
+      },
+      green: {
+        main: '#10b981',
+        dark: '#059669',
+        light: '#34d399'
+      },
+      orange: {
+        main: '#f97316',
+        dark: '#ea580c',
+        light: '#fb923c'
+      }
+    };
+    
+    const scheme = colorSchemes[selectedColor];
+    
+    el.innerHTML = `
+      <div class="pushpin-container" style="position: relative; width: 100%; height: 100%;">
+        <!-- Pin Head (top dome part) -->
+        <div class="pin-head" style="
+          width: 18px;
+          height: 18px;
+          background: radial-gradient(circle at 35% 30%, ${scheme.light}, ${scheme.main} 50%, ${scheme.dark} 90%);
+          border: 1.5px solid rgba(255,255,255,0.8);
+          border-radius: 50%;
+          position: absolute;
+          top: 0;
+          left: 50%;
+          transform: translateX(-50%);
+          box-shadow: 
+            0 3px 8px rgba(0,0,0,0.25),
+            inset 0 1px 3px rgba(255,255,255,0.4),
+            inset 0 -1px 2px rgba(0,0,0,0.2);
+        ">
+          <!-- Glossy highlight -->
+          <div style="
+            position: absolute;
+            top: 2px;
+            left: 5px;
+            width: 5px;
+            height: 5px;
+            background: rgba(255,255,255,0.8);
+            border-radius: 50%;
+            filter: blur(0.5px);
+          "></div>
+        </div>
+        
+        <!-- Pin Base (wider middle section) -->
+        <div class="pin-base" style="
+          width: 12px;
+          height: 4px;
+          background: linear-gradient(to bottom, #888, #555);
+          position: absolute;
+          top: 16px;
+          left: 50%;
+          transform: translateX(-50%);
+          border-radius: 6px 6px 2px 2px;
+          box-shadow: 0 2px 4px rgba(0,0,0,0.3);
+        "></div>
+        
+        <!-- Pin Shaft (thin needle) -->
+        <div class="pin-shaft" style="
+          width: 2px;
+          height: 10px;
+          background: linear-gradient(to right, #999 0%, #666 40%, #444 60%, #666 100%);
+          position: absolute;
+          top: 19px;
+          left: 50%;
+          transform: translateX(-50%);
+          border-radius: 0 0 1px 1px;
+          box-shadow: 
+            1px 0 2px rgba(0,0,0,0.4),
+            -1px 0 1px rgba(255,255,255,0.2);
+        "></div>
+        
+        <!-- Shadow beneath the pin -->
+        <div class="pin-shadow" style="
+          width: 20px;
+          height: 6px;
+          background: radial-gradient(ellipse, rgba(0,0,0,0.3) 0%, transparent 70%);
+          position: absolute;
+          top: 28px;
+          left: 50%;
+          transform: translateX(-50%);
+          border-radius: 50%;
+        "></div>
+      </div>
+    `;
+    
     el.style.cssText = `
-      background-color: #ef4444;
-      width: 16px;
-      height: 16px;
-      border: 2px solid white;
-      border-radius: 50%;
+      width: 24px;
+      height: 32px;
       cursor: pointer;
-      box-shadow: 0 2px 4px rgba(0,0,0,0.3);
-      transition: background-color 0.2s ease, box-shadow 0.2s ease, width 0.2s ease, height 0.2s ease;
       position: relative;
+      transition: width 0.2s ease, height 0.2s ease, filter 0.2s ease, margin 0.2s ease;
     `;
 
     // Add hover effects without using transform (which conflicts with Mapbox positioning)
     el.addEventListener('mouseenter', () => {
-      el.style.backgroundColor = '#dc2626';
-      el.style.boxShadow = '0 4px 12px rgba(0,0,0,0.5)';
-      el.style.width = '20px';
-      el.style.height = '20px';
+      el.style.filter = 'brightness(1.15) drop-shadow(0 4px 8px rgba(0,0,0,0.4))';
+      el.style.width = '28px';
+      el.style.height = '36px';
       el.style.marginTop = '-2px';
       el.style.marginLeft = '-2px';
+      el.style.zIndex = '1000';
     });
 
     el.addEventListener('mouseleave', () => {
-      el.style.backgroundColor = '#ef4444';
-      el.style.boxShadow = '0 2px 4px rgba(0,0,0,0.3)';
-      el.style.width = '16px';
-      el.style.height = '16px';
+      el.style.filter = 'brightness(1)';
+      el.style.width = '24px';
+      el.style.height = '32px';
       el.style.marginTop = '0px';
       el.style.marginLeft = '0px';
+      el.style.zIndex = 'auto';
     });
 
     const popup = createEnhancedPopup(newPin);
