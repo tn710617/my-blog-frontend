@@ -100,6 +100,8 @@ const TravelPins = () => {
   const [selectedIndex, setSelectedIndex] = useState(-1);
   const searchEscHandled = useRef(false);
   const [isSearchFocused, setIsSearchFocused] = useState(false);
+  const [isLocating, setIsLocating] = useState(false);
+  const [locationError, setLocationError] = useState(null);
 
   // Inject custom popup styles
   useEffect(() => {
@@ -673,6 +675,60 @@ const TravelPins = () => {
     setSelectedIndex(-1);
     
     console.log('Navigated to:', location.place_name);
+  };
+
+  // Handle GPS location request
+  const handleGetCurrentLocation = () => {
+    if (!navigator.geolocation) {
+      setLocationError('Geolocation is not supported by this browser');
+      return;
+    }
+
+    setIsLocating(true);
+    setLocationError(null);
+
+    const options = {
+      enableHighAccuracy: true,
+      timeout: 10000,
+      maximumAge: 300000 // 5 minutes cache
+    };
+
+    navigator.geolocation.getCurrentPosition(
+      (position) => {
+        const { latitude, longitude } = position.coords;
+        console.log('Current location:', { latitude, longitude });
+
+        // Fly to current location with smooth animation
+        map.current.flyTo({
+          center: [longitude, latitude],
+          zoom: 14, // City-level zoom for current location
+          duration: 2500
+        });
+
+        setIsLocating(false);
+        setLocationError(null);
+      },
+      (error) => {
+        console.error('Geolocation error:', error);
+        setIsLocating(false);
+        
+        switch (error.code) {
+          case error.PERMISSION_DENIED:
+            setLocationError('Location access denied. Please enable location permissions.');
+            break;
+          case error.POSITION_UNAVAILABLE:
+            setLocationError('Location information unavailable.');
+            break;
+          case error.TIMEOUT:
+            setLocationError('Location request timed out. Please try again.');
+            break;
+          default:
+            setLocationError('Unable to retrieve your location.');
+            break;
+        }
+      },
+      options
+    );
   };
 
   const createEnhancedPopup = (pin) => {
@@ -1252,6 +1308,54 @@ const TravelPins = () => {
                 </button>
               </div>
             </form>
+          </div>
+        </div>
+      )}
+
+      {/* GPS Location Button */}
+      <button
+        onClick={handleGetCurrentLocation}
+        disabled={isLocating}
+        className={`fixed bottom-6 right-6 w-14 h-14 rounded-full shadow-lg transition-all duration-300 z-40 ${
+          isLocating 
+            ? 'bg-gray-400 cursor-not-allowed' 
+            : 'bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 hover:shadow-xl hover:-translate-y-1'
+        }`}
+        title={isLocating ? 'Getting location...' : 'Get current location'}
+      >
+        {isLocating ? (
+          <div className="flex items-center justify-center">
+            <div className="animate-spin w-6 h-6 border-2 border-white border-t-transparent rounded-full"></div>
+          </div>
+        ) : (
+          <div className="flex items-center justify-center text-white">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+              <circle cx="12" cy="12" r="3"></circle>
+              <path d="M12 1v6m0 6v6"></path>
+              <path d="M21 12h-6m-6 0H3"></path>
+            </svg>
+          </div>
+        )}
+      </button>
+
+      {/* Location Error Toast */}
+      {locationError && (
+        <div className="fixed bottom-24 right-6 bg-red-500 text-white px-4 py-3 rounded-lg shadow-lg z-50 max-w-xs">
+          <div className="flex items-start gap-2">
+            <div className="text-red-200">⚠️</div>
+            <div className="flex-1">
+              <div className="font-medium text-sm">Location Error</div>
+              <div className="text-xs text-red-100 mt-1">{locationError}</div>
+            </div>
+            <button 
+              onClick={() => setLocationError(null)}
+              className="text-red-200 hover:text-white ml-2"
+            >
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                <line x1="18" y1="6" x2="6" y2="18"></line>
+                <line x1="6" y1="6" x2="18" y2="18"></line>
+              </svg>
+            </button>
           </div>
         </div>
       )}
