@@ -17,6 +17,8 @@ import LoginButton from "./LoginButton";
 import AboutButton from "./AboutButton";
 import TravelPinsButton from "./TravelPinsButton";
 import LocaleDropdown from "./LocaleDropdown";
+import TravelPinsSearchBar from "./TravelPinsSearchBar";
+import TravelPinsMobileSearchModal from "./TravelPinsMobileSearchModal";
 import useScrollDirection from "../../hooks/useScrollDirection";
 
 export default function Nav() {
@@ -24,6 +26,7 @@ export default function Nav() {
     const [darkMode, setDarkMode] = useState(false)
     const [showSearchBoxComponent, setShowSearchBoxComponent] = useState(false)
     const [showSearchResultDropdown, setShowSearchResultDropdown] = useState(false)
+    const [showMobileSearchModal, setShowMobileSearchModal] = useState(false)
 
     const location = useLocation()
     const scrollDirection = useScrollDirection()
@@ -75,6 +78,37 @@ export default function Nav() {
 
 
                     <div className={"flex gap-5 items-center"}>
+                        {/* Travel Pins Search Bar - only show on travel pins page */}
+                        {isOnTravelPinsPage && (
+                            <>
+                                {/* Desktop Search Bar */}
+                                <div className="hidden md:block w-80">
+                                    <TravelPinsSearchBar 
+                                        onLocationSelect={(location) => {
+                                            // Dispatch custom event to communicate with TravelPins page
+                                            window.dispatchEvent(new CustomEvent('travelPinsLocationSelect', {
+                                                detail: location
+                                            }));
+                                        }}
+                                    />
+                                </div>
+                                {/* Mobile Search Icon */}
+                                <button 
+                                    onClick={() => {
+                                        setShowMobileSearchModal(true);
+                                    }}
+                                    className="md:hidden group flex items-center gap-2 px-3 py-2 rounded-full bg-gradient-to-r from-blue-50 to-indigo-100 hover:from-blue-100 hover:to-indigo-200 border border-blue-200 hover:border-blue-300 transition-all duration-300 shadow-sm hover:shadow-md"
+                                >
+                                    <div className="text-blue-600 group-hover:text-blue-700 transition-colors duration-300">
+                                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
+                                            <circle cx="11" cy="11" r="8"></circle>
+                                            <path d="m21 21-4.35-4.35"></path>
+                                        </svg>
+                                    </div>
+                                </button>
+                            </>
+                        )}
+                        
                         <div className="hidden xl:flex gap-3">
                             <AboutButton/>
                             <TravelPinsButton/>
@@ -126,6 +160,20 @@ export default function Nav() {
                                 setShowSearchBoxComponent={setShowSearchBoxComponent}
                                 showSearchResultDropdown={showSearchResultDropdown}
                                 setShowSearchResultDropdown={setShowSearchResultDropdown}/>
+            
+            {/* Travel Pins Mobile Search Modal */}
+            {isOnTravelPinsPage && (
+                <TravelPinsMobileSearchModal 
+                    isOpen={showMobileSearchModal}
+                    onClose={() => setShowMobileSearchModal(false)}
+                    onLocationSelect={(location) => {
+                        // Dispatch custom event to communicate with TravelPins page
+                        window.dispatchEvent(new CustomEvent('travelPinsLocationSelect', {
+                            detail: location
+                        }));
+                    }}
+                />
+            )}
         </>
     )
 }

@@ -1,12 +1,14 @@
 import React from "react";
 import {useIntl} from "react-intl";
 import {usePaginationStore, useCategoryStore, usePostTagsStore} from "../../stores";
-import {useNavigate} from "react-router";
+import {useNavigate, useLocation} from "react-router";
 import CategoryIcon from "../CategoryIcon";
 
 export default function EnhancedMobileNav({categories, onNavigate, showCategories = true}) {
     const intl = useIntl();
     const navigate = useNavigate();
+    const location = useLocation();
+    const isOnTravelPinsPage = location.pathname === '/travel-pins';
     const categoryId = useCategoryStore((state) => state.categoryId);
     const setCategoryId = useCategoryStore((state) => state.setCategoryId);
     const setCurrentPage = usePaginationStore((state) => state.setCurrentPage);
