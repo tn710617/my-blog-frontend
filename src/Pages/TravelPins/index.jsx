@@ -275,7 +275,8 @@ const TravelPins = () => {
         container: mapContainer.current,
         style: 'mapbox://styles/mapbox/streets-v12',
         center: [0, 0],
-        zoom: 2
+        zoom: 2,
+        cooperativeGestures: true
       });
 
       console.log('Map instance created');
