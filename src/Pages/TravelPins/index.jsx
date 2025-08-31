@@ -973,17 +973,19 @@ const TravelPins = () => {
                 <h4 class="text-sm font-bold text-slate-700 uppercase tracking-wide">Photo</h4>
               </div>
               <div class="bg-gradient-to-br from-pink-50 to-rose-50 border border-pink-200/50 rounded-xl p-2">
-                <img
-                  src="${pin.photo_url}"
-                  alt="${pin.title}"
-                  onclick="window.openTravelPinPhoto('${pin.photo_url}', '${pin.title}')"
-                  class="w-full h-48 object-cover rounded-lg cursor-pointer hover:opacity-90 transition-opacity duration-200"
-                  onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';"
-                />
-                <div style="display: none;" class="flex items-center justify-center h-48 text-slate-400">
-                  <div class="text-center">
-                    <div class="text-2xl mb-2">📷</div>
-                    <div class="text-sm">Image not available</div>
+                <div class="relative w-full" style="aspect-ratio: 16/10;">
+                  <img
+                    src="${pin.photo_url}"
+                    alt="${pin.title}"
+                    onclick="window.openTravelPinPhoto('${pin.photo_url}', '${pin.title}')"
+                    class="absolute inset-0 w-full h-full object-cover rounded-lg cursor-pointer hover:opacity-90 transition-opacity duration-200"
+                    onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';"
+                  />
+                  <div style="display: none;" class="absolute inset-0 flex items-center justify-center text-slate-400 bg-slate-100 rounded-lg">
+                    <div class="text-center">
+                      <div class="text-2xl mb-2">📷</div>
+                      <div class="text-sm">Image not available</div>
+                    </div>
                   </div>
                 </div>
               </div>
@@ -1483,19 +1485,21 @@ const TravelPins = () => {
                   {formData.photo_url && (
                     <div className="mt-3 border-t border-pink-200 pt-3">
                       <div className="text-xs text-slate-500 mb-2">Preview:</div>
-                      <img
-                        src={formData.photo_url}
-                        alt="Preview"
-                        className="w-full h-32 object-cover rounded-lg"
-                        onError={(e) => {
-                          e.target.style.display = 'none';
-                          e.target.nextElementSibling.style.display = 'flex';
-                        }}
-                      />
-                      <div style={{display: 'none'}} className="w-full h-32 bg-slate-100 rounded-lg flex items-center justify-center text-slate-400">
-                        <div className="text-center">
-                          <div className="text-lg mb-1">📷</div>
-                          <div className="text-xs">Invalid URL</div>
+                      <div className="relative w-full" style={{aspectRatio: '16/10'}}>
+                        <img
+                          src={formData.photo_url}
+                          alt="Preview"
+                          className="absolute inset-0 w-full h-full object-cover rounded-lg"
+                          onError={(e) => {
+                            e.target.style.display = 'none';
+                            e.target.nextElementSibling.style.display = 'flex';
+                          }}
+                        />
+                        <div style={{display: 'none'}} className="absolute inset-0 bg-slate-100 rounded-lg flex items-center justify-center text-slate-400">
+                          <div className="text-center">
+                            <div className="text-lg mb-1">📷</div>
+                            <div className="text-xs">Invalid URL</div>
+                          </div>
                         </div>
                       </div>
                     </div>
@@ -1754,25 +1758,29 @@ const TravelPins = () => {
 
       {/* Photo Modal/Lightbox */}
       {showPhotoModal && (
-        <div className="fixed inset-0 bg-black bg-opacity-90 flex items-center justify-center z-[9999]">
-          <div className="relative max-w-[95vw] max-h-[95vh]">
+        <div className="fixed inset-0 bg-black bg-opacity-90 flex items-center justify-center z-[9999] p-4">
+          <div className="relative w-full h-full flex items-center justify-center">
             <img
               src={photoModalData.url}
               alt={photoModalData.title}
-              className="max-w-full max-h-full object-contain rounded-lg"
+              className="max-w-full max-h-full object-contain rounded-lg shadow-2xl"
+              style={{
+                maxWidth: 'calc(100vw - 2rem)',
+                maxHeight: 'calc(100vh - 2rem)'
+              }}
             />
             <button
               onClick={closePhotoModal}
-              className="absolute top-4 right-4 w-10 h-10 bg-black bg-opacity-50 hover:bg-opacity-70 rounded-full flex items-center justify-center text-white transition-colors duration-200"
+              className="absolute top-4 right-4 w-12 h-12 bg-black bg-opacity-50 hover:bg-opacity-70 rounded-full flex items-center justify-center text-white transition-colors duration-200 backdrop-blur-sm border border-white/20"
             >
-              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                 <line x1="18" y1="6" x2="6" y2="18"></line>
                 <line x1="6" y1="6" x2="18" y2="18"></line>
               </svg>
             </button>
             <div className="absolute bottom-4 left-4 right-4 text-center">
-              <div className="bg-black bg-opacity-50 text-white px-4 py-2 rounded-lg inline-block">
-                {photoModalData.title}
+              <div className="bg-black bg-opacity-70 text-white px-6 py-3 rounded-xl inline-block backdrop-blur-sm border border-white/20 max-w-md">
+                <div className="font-medium">{photoModalData.title}</div>
               </div>
             </div>
           </div>
