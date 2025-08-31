@@ -5,11 +5,12 @@ import {AiOutlineClose} from "react-icons/ai";
 import {BsFillMoonStarsFill} from "react-icons/bs";
 import {useEffect, useState} from "react";
 import {BsFillSunFill} from "react-icons/bs";
-import {Link} from "react-router";
+import {Link, useLocation} from "react-router";
 import {useCategories} from "../../APIs/categories";
 import Categories from "./Categories";
 import SearchBoxComponent from "./SearchBoxComponent";
 import MobileCategories from "./MobileCategories";
+import EnhancedMobileNav from "./EnhancedMobileNav";
 import {useLoginWithMetaMask, useLogout} from "../../APIs/auth";
 import {useAuthStore} from "../../stores";
 import LogoutButton from "./LogoutButton";
@@ -25,8 +26,12 @@ export default function Nav() {
     const [showSearchBoxComponent, setShowSearchBoxComponent] = useState(false)
     const [showSearchResultDropdown, setShowSearchResultDropdown] = useState(false)
 
+    const location = useLocation()
     const scrollDirection = useScrollDirection()
     const indexCategories = useCategories()
+    
+    // Check if current page is travel-pins
+    const isOnTravelPinsPage = location.pathname === '/travel-pins'
 
     const handleSearchBoxButtonClick = () => {
         setShowSearchBoxComponent(!showSearchBoxComponent)
@@ -65,23 +70,27 @@ export default function Nav() {
                         <Link to={"/"} className={"after:absolute after:inset-0"}/>
                     </div>
                     {
-                        indexCategories.isSuccess &&
+                        indexCategories.isSuccess && !isOnTravelPinsPage &&
                         <Categories categories={indexCategories.data}/>
                     }
 
 
                     <div className={"flex gap-5 items-center"}>
-                        <AboutButton/>
-                        <TravelPinsButton/>
+                        <div className="hidden lg:flex gap-5">
+                            <AboutButton/>
+                            <TravelPinsButton/>
+                        </div>
                         <LocaleDropdown/>
                         <button className={"cursor-pointer hidden"} onClick={() => setDarkMode(!darkMode)}>
                             {darkMode ? <BsFillSunFill className={"text-xl hover:text-yellow-400"}/> :
                                 <BsFillMoonStarsFill className={"text-lg hover:text-purple-600"}/>}
                         </button>
-                        <button className={"cursor-pointer"}
-                                onClick={handleSearchBoxButtonClick}>
-                            <FcSearch className={"text-4xl p-2 rounded hover:bg-gray-200"}/>
-                        </button>
+                        {!isOnTravelPinsPage && (
+                            <button className={"cursor-pointer"}
+                                    onClick={handleSearchBoxButtonClick}>
+                                <FcSearch className={"text-4xl p-2 rounded hover:bg-gray-200"}/>
+                            </button>
+                        )}
                         {
                             isLoggedIn ?
                                 <LogoutButton onClick={async () => await logout.mutateAsync()}
@@ -93,10 +102,14 @@ export default function Nav() {
                     </div>
                 </nav>
                 <div
-                    className={`px-3 pb-3 lg:hidden gap-4 text-lg text-gray-400 ${showMobileNavBar ? 'block' : 'hidden'}`}>
+                    className={`lg:hidden ${showMobileNavBar ? 'block' : 'hidden'}`}>
                     {
                         indexCategories.isSuccess &&
-                        <MobileCategories categories={indexCategories.data}/>
+                        <EnhancedMobileNav 
+                            categories={indexCategories.data}
+                            onNavigate={() => setShowMobileNavBar(false)}
+                            showCategories={!isOnTravelPinsPage}
+                        />
                     }
                 </div>
             </div>
