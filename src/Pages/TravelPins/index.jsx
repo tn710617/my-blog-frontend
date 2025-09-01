@@ -1219,12 +1219,13 @@ const TravelPins = () => {
     `;
 
     // Add hover effects without using transform (which conflicts with Mapbox positioning)
+    // With 'bottom' anchor, we need to adjust margins differently to keep the tip in the same position
     el.addEventListener('mouseenter', () => {
       el.style.filter = 'brightness(1.15) drop-shadow(0 4px 8px rgba(0,0,0,0.4))';
       el.style.width = '28px';
       el.style.height = '36px';
-      el.style.marginTop = '-2px';
-      el.style.marginLeft = '-2px';
+      el.style.marginLeft = '-2px'; // Center the wider pin
+      el.style.marginBottom = '-4px'; // Keep the bottom tip anchored
       el.style.zIndex = '1000';
     });
 
@@ -1232,8 +1233,8 @@ const TravelPins = () => {
       el.style.filter = 'brightness(1)';
       el.style.width = '24px';
       el.style.height = '32px';
-      el.style.marginTop = '0px';
       el.style.marginLeft = '0px';
+      el.style.marginBottom = '0px';
       el.style.zIndex = 'auto';
     });
 
@@ -1247,7 +1248,7 @@ const TravelPins = () => {
 
     const marker = new mapboxgl.Marker({
       element: el,
-      anchor: 'center' // This prevents position jumping
+      anchor: 'bottom' // Pin tip should anchor to the coordinates
     })
       .setLngLat(formData.coordinates)
       .setPopup(popup)
