@@ -135,5 +135,8 @@
   "travel_pins.unsaved_modal.current_form": "目前表單",
   "travel_pins.unsaved_modal.question": "您想要執行什麼動作？",
   "travel_pins.unsaved_modal.save_button": "儲存變更",
-  "travel_pins.unsaved_modal.discard_button": "捨棄變更"
+  "travel_pins.unsaved_modal.discard_button": "捨棄變更",
+  "mapbox.scroll_zoom_blocker.ctrl_message": "按住 Ctrl + 滾輪縮放地圖",
+  "mapbox.scroll_zoom_blocker.cmd_message": "按住 ⌘ + 滾輪縮放地圖",
+  "mapbox.touch_pan_blocker.message": "使用兩指移動地圖"
 }

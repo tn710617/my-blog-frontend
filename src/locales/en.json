@@ -134,5 +134,8 @@
   "travel_pins.unsaved_modal.current_form": "Current Form",
   "travel_pins.unsaved_modal.question": "What would you like to do?",
   "travel_pins.unsaved_modal.save_button": "Save Changes",
-  "travel_pins.unsaved_modal.discard_button": "Discard Changes"
+  "travel_pins.unsaved_modal.discard_button": "Discard Changes",
+  "mapbox.scroll_zoom_blocker.ctrl_message": "Use ctrl + scroll to zoom the map",
+  "mapbox.scroll_zoom_blocker.cmd_message": "Use ⌘ + scroll to zoom the map",
+  "mapbox.touch_pan_blocker.message": "Use two fingers to move the map"
 }

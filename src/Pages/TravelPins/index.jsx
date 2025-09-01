@@ -293,7 +293,12 @@ const TravelPins = () => {
         style: 'mapbox://styles/mapbox/streets-v12',
         center: [0, 0],
         zoom: 2,
-        cooperativeGestures: true
+        cooperativeGestures: true,
+        locale: {
+          'ScrollZoomBlocker.CtrlMessage': t('mapbox.scroll_zoom_blocker.ctrl_message'),
+          'ScrollZoomBlocker.CmdMessage': t('mapbox.scroll_zoom_blocker.cmd_message'),
+          'TouchPanBlocker.Message': t('mapbox.touch_pan_blocker.message')
+        }
       });
 
       console.log('Map instance created');
