@@ -1165,36 +1165,36 @@ const TravelPins = () => {
         if (container) {
           // 以當下最新的 auth 狀態，立即刷新按鈕可見性
           applyAuthButtonsVisibility(container);
-          // Attach scoped handlers to reduce reliance on window.* globals
+          // Delegate click handling to the container to avoid timing issues
           try {
-            const deleteBtn = container.querySelector('button[onclick^="window.deleteTravelPin"]');
-            if (deleteBtn) {
-              deleteBtn.addEventListener('click', (e) => {
-                e.stopPropagation();
-                handleDeletePin(pin);
-              }, { once: true });
-            }
-            const editBtn = container.querySelector('button[onclick^="window.editTravelPin"]');
-            if (editBtn) {
-              editBtn.addEventListener('click', (e) => {
-                e.stopPropagation();
-                handleEditPin(pin);
-              }, { once: true });
-            }
-            const copyBtn = container.querySelector(`#copy-btn-${pin.id}`);
-            if (copyBtn) {
-              copyBtn.addEventListener('click', (e) => {
-                e.stopPropagation();
-                handleCopyCoordinates(pin.coordinates, pin.id);
-              });
-            }
-            const photoImg = container.querySelector('img[onclick^="window.openTravelPinPhoto"]');
-            if (photoImg && pin.photo_url) {
-              photoImg.addEventListener('click', (e) => {
-                e.stopPropagation();
-                openPhotoModal(pin.photo_url, pin.title);
-              }, { once: true });
-            }
+            const onContainerClick = (e) => {
+              const actionEl = e.target.closest('[data-action]');
+              if (!actionEl || !container.contains(actionEl)) return;
+              e.stopPropagation();
+              const action = actionEl.getAttribute('data-action');
+              switch (action) {
+                case 'delete':
+                  handleDeletePin(pin);
+                  break;
+                case 'edit':
+                  handleEditPin(pin);
+                  break;
+                case 'copy':
+                  handleCopyCoordinates(pin.coordinates, pin.id);
+                  break;
+                case 'open-photo':
+                  if (pin.photo_url) openPhotoModal(pin.photo_url, pin.title);
+                  break;
+                case 'close':
+                  try { popup.remove(); } catch {}
+                  break;
+                default:
+                  break;
+              }
+            };
+            // Save handler reference for cleanup
+            container.__tp_onClick = onContainerClick;
+            container.addEventListener('click', onContainerClick);
           } catch {}
         }
         // 再下一輪事件執行一次，避免瀏覽器延後繪製
@@ -1239,6 +1239,14 @@ const TravelPins = () => {
         newSet.delete(pin.id);
         return newSet;
       });
+      // Cleanup delegated handler if present
+      try {
+        const container = document.getElementById(popupId);
+        if (container && container.__tp_onClick) {
+          container.removeEventListener('click', container.__tp_onClick);
+          delete container.__tp_onClick;
+        }
+      } catch {}
 
       // Re-enable map interactions after popup closes
       try {

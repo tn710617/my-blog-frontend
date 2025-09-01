@@ -15,7 +15,7 @@ export function buildPopupHTML(pin, ctx) {
               ` : ''}
             </div>
             <button 
-              onclick="window.closeTravelPinPopup(${pin.id})"
+              data-action="close"
               class="flex-shrink-0 w-8 h-8 flex items-center justify-center hover:bg-white/20 rounded-full transition-colors duration-200 text-white/80 hover:text-white"
             >
               <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
@@ -54,7 +54,7 @@ export function buildPopupHTML(pin, ctx) {
                   <img
                     src="${pin.photo_url}"
                     alt="${pin.title}"
-                    onclick="window.openTravelPinPhoto('${pin.photo_url}', '${pin.title}')"
+                    data-action="open-photo"
                     class="absolute inset-0 w-full h-full object-cover rounded-lg cursor-pointer hover:opacity-90 transition-opacity duration-200"
                     onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';"
                   />
@@ -88,7 +88,7 @@ export function buildPopupHTML(pin, ctx) {
 
           <div class="flex justify-center">
             <button
-              onclick="window.copyTravelPinCoordinates('${pin.coordinates[0]}', '${pin.coordinates[1]}', ${pin.id})"
+              data-action="copy"
               id="copy-btn-${pin.id}"
               class="flex items-center gap-2 px-4 py-2 rounded-xl transition-all duration-300 bg-gradient-to-r from-emerald-100 to-green-100 hover:from-emerald-200 hover:to-green-200 text-emerald-700 border border-emerald-200 hover:border-emerald-300 shadow-sm hover:shadow-md hover:-translate-y-0.5"
             >
@@ -103,7 +103,7 @@ export function buildPopupHTML(pin, ctx) {
           <div class="pt-2 border-t border-slate-100 auth-buttons-container ${isLoggedIn ? 'auth-buttons-visible' : 'auth-buttons-hidden'}">
             <div class="flex gap-2">
               <button 
-                onclick="window.deleteTravelPin(${pin.id})"
+                data-action="delete"
                 class="flex-1 bg-gradient-to-r from-red-500 to-red-600 hover:from-red-600 hover:to-red-700 text-white font-medium py-2.5 px-3 rounded-lg transition-all duration-300 text-sm flex items-center justify-center gap-1.5"
               >
                 <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
@@ -115,7 +115,7 @@ export function buildPopupHTML(pin, ctx) {
                 ${t('travel_pins.popup.delete_button')}
               </button>
               <button 
-                onclick="window.editTravelPin(${pin.id})"
+                data-action="edit"
                 class="flex-1 bg-gradient-to-r from-indigo-500 via-purple-500 to-blue-500 hover:from-indigo-600 hover:via-purple-600 hover:to-blue-600 text-white font-medium py-2.5 px-3 rounded-lg transition-all duration-300 text-sm flex items-center justify-center gap-1.5"
               >
                 <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
@@ -130,4 +130,3 @@ export function buildPopupHTML(pin, ctx) {
       </div>
   `;
 }
-
