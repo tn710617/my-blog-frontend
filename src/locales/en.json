@@ -1,6 +1,7 @@
 {
   "login_modal.title": "Oops! You are not the owner",
   "login_modal.button_text": "Please chant the spell",
+  "login_modal.switch_account": "Use different account",
   "store_post.title": "Write an Article",
   "store_post.reset_button": "Reset",
   "store_post.save_button": "Save",

@@ -1,8 +1,8 @@
 import {useMutation, useQuery} from "@tanstack/react-query";
 import {ethers} from "ethers";
 import {useLocation} from "react-router";
-import {isBrowser, isMobile} from "react-device-detect";
-import {getMetamaskDAppDeepLink} from "../helpers";
+import {isBrowser} from "react-device-detect";
+import {getEthersProvider} from "../wallet/getProvider";
 import {useAuthStore} from "../stores";
 import getAxios from "./axios";
 import useAxios from "./useAxios";
@@ -60,18 +60,10 @@ export function useLoginWithMetaMask() {
     const axios = useAxios()
     return useMutation({
         mutationFn: async () => {
-            if (typeof window.ethereum === 'undefined') {
-                if (isMobile) {
-                    window.location.replace(getMetamaskDAppDeepLink(location))
-                }
-
-                throw new Error('MetaMask is not installed.')
-            }
-
-            const provider = new ethers.BrowserProvider(window.ethereum)
-
-            await provider.send("eth_requestAccounts", []);
-
+            // Use injected provider on desktop, WalletConnect on mobile/no-injected
+            const provider = await getEthersProvider()
+            // Always request accounts to trigger connect/select prompts
+            await provider.send("eth_requestAccounts", [])
             const signer = await provider.getSigner()
 
             const address = await signer.getAddress()
@@ -99,11 +91,10 @@ export function useLoginWithMetaMask() {
                 window.updateTravelPinAuthButtons(true)
             }
         }, onError: (error, variables, context) => {
-            if (error.message === 'MetaMask is not installed.') {
-                toast(intl.formatMessage({id: 'toast.login.metaMaskNotInstalled'}))
+            if (error?.message?.includes('Missing VITE_WC_PROJECT_ID')) {
+                toast.error('WalletConnect Project ID is missing.')
                 return;
             }
-
             toast.error(intl.formatMessage({id: 'toast.login.unauthenticated'}))
         }
     })

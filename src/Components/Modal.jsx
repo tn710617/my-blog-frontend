@@ -12,7 +12,10 @@ export default function Modal({
                                   handleGoBackButtonClick,
                                   isLoading = false,
                                   onHide,
-                                  type = "info"
+                                  type = "info",
+                                  secondaryButtonText,
+                                  onSecondaryClick,
+                                  isSecondaryLoading = false
                               }) {
 
     const Mark = () => {
@@ -61,6 +64,18 @@ export default function Modal({
             </button>
         )
     }
+    const SecondaryButton = () => {
+        if (!secondaryButtonText) return null;
+        return (
+            <button
+                type="button"
+                className="mt-3 inline-flex w-full justify-center rounded-md px-3 py-2 text-sm font-semibold text-gray-700 bg-gray-100 shadow-sm hover:bg-gray-200 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2"
+                onClick={onSecondaryClick}
+            >
+                {isSecondaryLoading ? <Spinner/> : secondaryButtonText}
+            </button>
+        )
+    }
 
     return (
         <Transition show={open}>
@@ -90,8 +105,9 @@ export default function Modal({
                                         </div>
                                     </div>
                                 </div>
-                                <div className="mt-5 sm:mt-6">
+                                <div className="mt-5 sm:mt-6 space-y-2">
                                     <MainButton/>
+                                    <SecondaryButton/>
                                 </div>
                             </DialogPanel>
                         </TransitionChild>

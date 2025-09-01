@@ -1,6 +1,7 @@
 {
   "login_modal.title": "哎呀, 您並非擁有者",
   "login_modal.button_text": "請詠唱擁有者的咒語",
+  "login_modal.switch_account": "使用其他帳戶",
   "store_post.title": "新增文章",
   "store_post.reset_button": "重置",
   "store_post.save_button": "儲存",
