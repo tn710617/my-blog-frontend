@@ -211,30 +211,63 @@ const TravelPins = () => {
     return () => window.removeEventListener('resize', handleResize);
   }, []);
 
-  // Effect to create markers when pins data changes
+  // Effect to create/update/remove markers when pins change (diff by id)
   useEffect(() => {
-    if (!map.current || !pins.length) return;
-    
-    // Clear existing markers and any stale open popup tracking
-    markersRef.current.forEach(marker => marker.remove());
-    markersRef.current = [];
-    markersByIdRef.current = new Map();
-    setOpenPopups(new Set());
-    
-    // Create markers for each pin
-    pins.forEach((pin, index) => {
-      const marker = createMarkerForPin(pin, index);
-      markersRef.current.push(marker);
-      try {
-        markersByIdRef.current.set(pin.id, marker);
-      } catch {}
+    if (!map.current) return;
+
+    const mapReady = mapLoaded;
+    if (!mapReady) return;
+
+    const markersById = markersByIdRef.current;
+
+    const newIds = new Set(pins.map(p => p.id));
+    const oldIds = new Set(markersByIdRef.current ? Array.from(markersById.keys()) : []);
+
+    // Remove markers that no longer exist
+    oldIds.forEach(id => {
+      if (!newIds.has(id)) {
+        const marker = markersById.get(id);
+        if (marker) {
+          marker.remove();
+          // remove from markersRef list
+          markersRef.current = markersRef.current.filter(m => m !== marker);
+        }
+        markersById.delete(id);
+        // Also ensure it's removed from open popups set
+        setOpenPopups(prev => {
+          const s = new Set(prev);
+          s.delete(id);
+          return s;
+        });
+      }
     });
-    
+
+    // Add or update markers for current pins
+    pins.forEach((pin, index) => {
+      const existing = markersById.get(pin.id);
+      if (!existing) {
+        const marker = createMarkerForPin(pin, index);
+        markersById.set(pin.id, marker);
+        markersRef.current.push(marker);
+      } else {
+        try {
+          // Update coordinates and popup content; preserve open state
+          const wasOpen = existing.getPopup()?.isOpen?.() || false;
+          existing.setLngLat(pin.coordinates);
+          const updatedPopup = createEnhancedPopup(pin);
+          existing.setPopup(updatedPopup);
+          if (wasOpen) {
+            // Re-open after small tick to ensure DOM updates
+            setTimeout(() => {
+              try { existing.togglePopup(); } catch {}
+            }, 0);
+          }
+        } catch {}
+      }
+    });
+
     return () => {
-      // Cleanup markers when component unmounts or pins change
-      markersRef.current.forEach(marker => marker.remove());
-      markersRef.current = [];
-      markersByIdRef.current = new Map();
+      // No-op here; global cleanup on unmount elsewhere
     };
   }, [pins, mapLoaded]);
 
@@ -1390,7 +1423,7 @@ const TravelPins = () => {
 
 
       {/* Enhanced Pin Creation/Edit Form */}
-      {showForm && (
+      {false && showForm && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex justify-center z-50 p-4 overflow-y-auto">
           <div 
             className="bg-white rounded-2xl overflow-hidden shadow-2xl border border-slate-200/50 w-[450px] max-w-[90vw] my-4 self-start"
@@ -1585,6 +1618,19 @@ const TravelPins = () => {
             </form>
           </div>
         </div>
+      )}
+
+      {/* Refactored Pin Creation/Edit Form */}
+      {showForm && (
+        <PinForm
+          editing={!!editingPin}
+          t={t}
+          formData={formData}
+          setField={handleInputChange}
+          formatDate={formatDate}
+          onCancel={handleCloseForm}
+          onSubmit={handleSavePin}
+        />
       )}
 
       {/* GPS Location Button */}
