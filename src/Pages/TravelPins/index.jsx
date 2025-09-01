@@ -173,7 +173,6 @@ const TravelPins = () => {
     const handleResize = () => {
       const newIsMobile = window.innerWidth <= 768;
       setIsMobile(newIsMobile);
-      console.log('Screen size changed, isMobile:', newIsMobile);
     };
 
     window.addEventListener('resize', handleResize);
@@ -189,8 +188,6 @@ const TravelPins = () => {
     let zoomTimeout = null;
     
     const closeAllPopups = () => {
-      console.log('Significant zoom detected - closing all popups');
-      console.log('Current pins count:', pins.length);
       
       let closedCount = 0;
       
@@ -199,7 +196,6 @@ const TravelPins = () => {
         if (pin.marker && pin.marker.getPopup()) {
           const popup = pin.marker.getPopup();
           if (popup.isOpen()) {
-            console.log(`Closing popup for pin ${index}:`, pin.title);
             popup.remove();
             closedCount++;
           }
@@ -209,7 +205,6 @@ const TravelPins = () => {
       // Method 2: Fallback - close any remaining popups via DOM
       const remainingPopups = document.querySelectorAll('.mapboxgl-popup');
       if (remainingPopups.length > 0) {
-        console.log(`Found ${remainingPopups.length} remaining popups, closing via DOM`);
         remainingPopups.forEach(popup => {
           if (popup.parentNode) {
             popup.parentNode.removeChild(popup);
@@ -217,14 +212,12 @@ const TravelPins = () => {
         });
       }
       
-      console.log(`Closed ${closedCount} popups via pins state`);
       hasClosedPopups = true;
     };
 
     const handleZoomStart = () => {
       zoomStartLevel = map.current.getZoom();
       hasClosedPopups = false;
-      console.log('Zoom started at level:', zoomStartLevel.toFixed(2));
       
       // Clear any existing timeout
       if (zoomTimeout) {
@@ -239,7 +232,6 @@ const TravelPins = () => {
         const currentZoomLevel = map.current.getZoom();
         const zoomDifference = Math.abs(currentZoomLevel - zoomStartLevel);
         
-        console.log('Zoom difference:', zoomDifference.toFixed(3));
         
         // Close popups if zoom difference is >= 0.1 (significant zoom change)
         if (zoomDifference >= 0.1) {
@@ -253,7 +245,6 @@ const TravelPins = () => {
       zoomTimeout = setTimeout(() => {
         zoomStartLevel = null;
         hasClosedPopups = false;
-        console.log('Zoom ended - resetting tracking');
       }, 100);
     };
 
@@ -277,15 +268,12 @@ const TravelPins = () => {
   useEffect(() => {
     // Debug token
     const mapboxToken = import.meta.env.VITE_MAPBOX_TOKEN || 'pk.eyJ1IjoidG43MTA2MTciLCJhIjoiY21leWM3anFmMHRnOTJxb2llcjJ6dnZpeSJ9.oHx0C295B4I2X21tPKsaMA';
-    console.log('Environment token:', import.meta.env.VITE_MAPBOX_TOKEN);
-    console.log('Using token:', mapboxToken);
     setToken(mapboxToken);
     
     mapboxgl.accessToken = mapboxToken;
 
     if (map.current) return; // Initialize map only once
 
-    console.log('Initializing map with container:', mapContainer.current);
 
     try {
       map.current = new mapboxgl.Map({
@@ -301,10 +289,8 @@ const TravelPins = () => {
         }
       });
 
-      console.log('Map instance created');
 
       map.current.on('load', () => {
-        console.log('Map loaded successfully');
         setMapLoaded(true);
       });
 
@@ -322,7 +308,6 @@ const TravelPins = () => {
           return;
         }
         
-        console.log('Map clicked at:', e.lngLat);
         const coordinates = [e.lngLat.lng, e.lngLat.lat];
         const newFormData = {
           title: '',
@@ -332,11 +317,9 @@ const TravelPins = () => {
           photos: [],
           coordinates
         };
-        console.log('New pin creation with formData:', newFormData);
         setFormData(newFormData);
         setOriginalFormData(newFormData);
         setHasChanges(false);
-        console.log('Setting hasChanges to false for new pin');
         setShowForm(true);
       });
 
@@ -357,7 +340,6 @@ const TravelPins = () => {
   useEffect(() => {
     const handleLocationFromNavbar = (event) => {
       const location = event.detail;
-      console.log('Location selected from navbar:', location.place_name);
       
       // Navigate to the location on the map
       if (map.current && location.center) {
@@ -435,26 +417,20 @@ const TravelPins = () => {
       // Don't handle ESC if search box is focused
       if (document.activeElement?.id === 'location-search-input') return;
       
-      console.log('Key pressed:', e.key, 'hasChanges:', hasChanges);
       if (e.key === 'Escape') {
-        console.log('ESC pressed, hasChanges:', hasChanges);
         if (!hasChanges) {
           // No changes made, close immediately
-          console.log('No changes, closing form');
           handleCloseForm();
         } else {
           // Has changes, show confirmation dialog
-          console.log('Has changes, showing confirmation');
           setPendingEscAction(() => handleCloseForm);
           setShowEscModal(true);
         }
       }
     };
 
-    console.log('Adding ESC event listener, showForm:', showForm, 'hasChanges:', hasChanges);
     document.addEventListener('keydown', handleEscape);
     return () => {
-      console.log('Removing ESC event listener');
       document.removeEventListener('keydown', handleEscape);
     };
   }, [showForm, hasChanges]);
@@ -523,12 +499,10 @@ const TravelPins = () => {
     const handleEscapeForPopups = (e) => {
       
       if (e.key === 'Escape') {
-        console.log('ESC pressed for popups, openPopups size:', openPopups.size);
         if (openPopups.size > 0) {
           // Close all open popups
           pins.forEach(pin => {
             if (pin.marker && pin.marker.getPopup().isOpen()) {
-              console.log('Closing popup for pin:', pin.title);
               pin.marker.getPopup().remove();
             }
           });
@@ -544,15 +518,13 @@ const TravelPins = () => {
   // Mobile single popup policy enforcement
   useEffect(() => {
     if (isMobile && openPopups.size > 1) {
-      console.log('Mobile single popup policy: closing extra popups. Current open:', openPopups.size);
-      
+
       // Keep only the most recently opened popup (last in the Set)
       const popupArray = Array.from(openPopups);
       const mostRecentPopupId = popupArray[popupArray.length - 1];
       
       pins.forEach(pin => {
         if (pin.id !== mostRecentPopupId && pin.marker && pin.marker.getPopup().isOpen()) {
-          console.log('Mobile policy: closing popup for pin:', pin.title);
           pin.marker.getPopup().remove();
         }
       });
@@ -562,7 +534,6 @@ const TravelPins = () => {
   // Close display popups when edit form opens
   useEffect(() => {
     if (showForm && openPopups.size > 0) {
-      console.log('Edit form opened, closing all display popups');
       closeAllPopups();
     }
   }, [showForm]);
@@ -575,7 +546,6 @@ const TravelPins = () => {
     }
     if (showForm && openPopups.size > 0) {
       // Both are open, close edit form (display popup takes priority)
-      console.log('Display popup opened while edit form was open, closing edit form');
       handleCloseForm();
     }
   }, [openPopups]);
@@ -616,10 +586,8 @@ const TravelPins = () => {
   };
 
   const closeAllPopups = () => {
-    console.log('Closing all popups, current count:', openPopups.size);
     pins.forEach(pin => {
       if (pin.marker && pin.marker.getPopup().isOpen()) {
-        console.log('Closing popup for pin:', pin.title);
         pin.marker.getPopup().remove();
       }
     });
@@ -628,7 +596,6 @@ const TravelPins = () => {
 
   const handleEditPin = (pin) => {
     // Close all display popups when opening edit form
-    console.log('Opening edit form, closing all display popups');
     closeAllPopups();
     
     const originalData = {
@@ -640,12 +607,10 @@ const TravelPins = () => {
       coordinates: pin.coordinates
     };
     
-    console.log('handleEditPin called with originalData:', originalData);
     setEditingPin(pin);
     setFormData(originalData);
     setOriginalFormData(originalData);
     setHasChanges(false);
-    console.log('Setting hasChanges to false');
     setShowForm(true);
   };
 
@@ -659,7 +624,6 @@ const TravelPins = () => {
 
   const confirmDeletePin = () => {
     if (pendingDeletePin) {
-      console.log('Deleting pin:', pendingDeletePin.title);
       // Remove marker from map
       if (pendingDeletePin.marker) {
         pendingDeletePin.marker.remove();
@@ -791,10 +755,7 @@ const TravelPins = () => {
         const data = await response.json();
         setSearchSuggestions(data.features || []);
         setShowSuggestions(true);
-        console.log('Search results:', data.features?.length || 0, 'results for:', query);
-        console.log('Setting showSuggestions to true');
       } catch (error) {
-        console.error('Geocoding error:', error);
         setSearchSuggestions([]);
       } finally {
         setIsSearching(false);
@@ -825,7 +786,6 @@ const TravelPins = () => {
     navigator.geolocation.getCurrentPosition(
       (position) => {
         const { latitude, longitude } = position.coords;
-        console.log('Current location:', { latitude, longitude });
 
         // Fly to current location with smooth animation
         map.current.flyTo({
@@ -1005,7 +965,6 @@ const TravelPins = () => {
     
     // Add event listeners to track popup state
     popup.on('open', () => {
-      console.log('Popup opened for pin:', pin.title);
       setOpenPopups(prev => new Set(prev).add(pin.id));
 
       // Improve mobile scrollability: stop events from reaching the map
@@ -1050,7 +1009,6 @@ const TravelPins = () => {
     });
     
     popup.on('close', () => {
-      console.log('Popup closed for pin:', pin.title);
       setOpenPopups(prev => {
         const newSet = new Set(prev);
         newSet.delete(pin.id);
