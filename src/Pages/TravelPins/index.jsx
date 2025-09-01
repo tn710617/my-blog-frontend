@@ -3,10 +3,18 @@ import mapboxgl from 'mapbox-gl';
 import 'mapbox-gl/dist/mapbox-gl.css';
 import ReactMarkdown from 'react-markdown';
 import { useIntl } from 'react-intl';
-import { useLocaleStore } from '../../stores';
+import { useLocaleStore, useAuthStore, useLoginModalStore } from '../../stores';
+import { useTravelPins, useCreateTravelPin, useUpdateTravelPin, useDeleteTravelPin } from '../../APIs/travel-pins';
 
 // Custom styles to override default Mapbox popup styling
 const customPopupStyles = `
+  /* Auth buttons visibility classes */
+  .auth-buttons-visible {
+    display: block !important;
+  }
+  .auth-buttons-hidden {
+    display: none !important;
+  }
   .travel-pin-popup .mapboxgl-popup-content {
     padding: 0 !important;
     border-radius: 0 !important;
@@ -101,6 +109,20 @@ const debounce = (func, wait) => {
 const TravelPins = () => {
   const intl = useIntl();
   const locale = useLocaleStore((state) => state.locale);
+  const isLoggedIn = useAuthStore((state) => state.isLoggedIn);
+  const setShowLoginModal = useLoginModalStore((state) => state.setShowLoginModal);
+  
+  // 保存最新 auth 狀態，避免事件閉包拿到舊值
+  const authRef = useRef(isLoggedIn);
+  
+  // 把 auth 狀態套用到某個 popup 容器
+  const applyAuthButtonsVisibility = useCallback((rootEl, isAuth = authRef.current) => {
+    if (!rootEl) return;
+    const buttons = rootEl.querySelector('.auth-buttons-container');
+    if (!buttons) return;
+    buttons.classList.remove('auth-buttons-visible', 'auth-buttons-hidden');
+    buttons.classList.add(isAuth ? 'auth-buttons-visible' : 'auth-buttons-hidden');
+  }, []);
   
   // Helper function to get translated text for use in HTML strings
   const t = (key) => intl.formatMessage({id: key});
@@ -119,9 +141,17 @@ const TravelPins = () => {
       return dateString; // Fallback to original string
     }
   };
+  
+  // API hooks
+  const { data: pins = [], isLoading: pinsLoading, error: pinsError } = useTravelPins();
+  const createPinMutation = useCreateTravelPin();
+  const updatePinMutation = useUpdateTravelPin();
+  const deletePinMutation = useDeleteTravelPin();
+  
   const mapContainer = useRef(null);
   const map = useRef(null);
-  const [pins, setPins] = useState([]);
+  const markersRef = useRef([]);
+  const markersByIdRef = useRef(new Map());
   const [showForm, setShowForm] = useState(false);
   const [editingPin, setEditingPin] = useState(null);
   const [mapLoaded, setMapLoaded] = useState(false);
@@ -179,29 +209,80 @@ const TravelPins = () => {
     return () => window.removeEventListener('resize', handleResize);
   }, []);
 
+  // Effect to create markers when pins data changes
+  useEffect(() => {
+    if (!map.current || !pins.length) return;
+    
+    // Clear existing markers and any stale open popup tracking
+    markersRef.current.forEach(marker => marker.remove());
+    markersRef.current = [];
+    markersByIdRef.current = new Map();
+    setOpenPopups(new Set());
+    
+    // Create markers for each pin
+    pins.forEach((pin, index) => {
+      const marker = createMarkerForPin(pin, index);
+      markersRef.current.push(marker);
+      try {
+        markersByIdRef.current.set(pin.id, marker);
+      } catch {}
+    });
+    
+    return () => {
+      // Cleanup markers when component unmounts or pins change
+      markersRef.current.forEach(marker => marker.remove());
+      markersRef.current = [];
+      markersByIdRef.current = new Map();
+    };
+  }, [pins, mapLoaded]);
+
+  // Auth 改變時，立刻同步 ref，並更新所有已開啟的 popups
+  useEffect(() => {
+    authRef.current = isLoggedIn;
+
+    // 更新目前畫面上所有已開啟的 popup
+    const openPopupEls = document.querySelectorAll('[id^="popup-"]');
+    openPopupEls.forEach(el => applyAuthButtonsVisibility(el, isLoggedIn));
+
+    // 兼容你現有的 global 方法（若別處有呼叫）
+    if (typeof window.updateTravelPinAuthButtons === 'function') {
+      window.updateTravelPinAuthButtons(isLoggedIn);
+    }
+
+    // 再延遲一次，避免剛渲染的 DOM 尚未到位
+    const t = setTimeout(() => {
+      const delayedEls = document.querySelectorAll('[id^="popup-"]');
+      delayedEls.forEach(el => applyAuthButtonsVisibility(el, isLoggedIn));
+      if (typeof window.updateTravelPinAuthButtons === 'function') {
+        window.updateTravelPinAuthButtons(isLoggedIn);
+      }
+    }, 100);
+
+    return () => clearTimeout(t);
+  }, [isLoggedIn, applyAuthButtonsVisibility]);
+
   // Separate effect for zoom handling with debounce
   useEffect(() => {
     if (!map.current) return;
-    
+
     let zoomStartLevel = null;
     let hasClosedPopups = false;
     let zoomTimeout = null;
-    
+
     const closeAllPopups = () => {
-      
       let closedCount = 0;
-      
-      // Method 1: Close popups using pins state
-      pins.forEach((pin, index) => {
-        if (pin.marker && pin.marker.getPopup()) {
-          const popup = pin.marker.getPopup();
+
+      // Method 1: Close popups using markers
+      markersRef.current.forEach(marker => {
+        if (marker.getPopup()) {
+          const popup = marker.getPopup();
           if (popup.isOpen()) {
             popup.remove();
             closedCount++;
           }
         }
       });
-      
+
       // Method 2: Fallback - close any remaining popups via DOM
       const remainingPopups = document.querySelectorAll('.mapboxgl-popup');
       if (remainingPopups.length > 0) {
@@ -211,14 +292,14 @@ const TravelPins = () => {
           }
         });
       }
-      
+
       hasClosedPopups = true;
     };
 
     const handleZoomStart = () => {
       zoomStartLevel = map.current.getZoom();
       hasClosedPopups = false;
-      
+
       // Clear any existing timeout
       if (zoomTimeout) {
         clearTimeout(zoomTimeout);
@@ -231,8 +312,7 @@ const TravelPins = () => {
       if (!hasClosedPopups && zoomStartLevel !== null) {
         const currentZoomLevel = map.current.getZoom();
         const zoomDifference = Math.abs(currentZoomLevel - zoomStartLevel);
-        
-        
+
         // Close popups if zoom difference is >= 0.1 (significant zoom change)
         if (zoomDifference >= 0.1) {
           closeAllPopups();
@@ -263,7 +343,7 @@ const TravelPins = () => {
         clearTimeout(zoomTimeout);
       }
     };
-  }, [pins]); // Depend on pins so we can access current markers
+  }, [pins.length, mapLoaded]);
 
   useEffect(() => {
     // Debug token
@@ -305,6 +385,13 @@ const TravelPins = () => {
         const target = e.originalEvent.target;
         if (target && target.classList.contains('travel-pin-marker')) {
           // Don't open form if clicking on a pin - let the popup handle it
+          return;
+        }
+        
+        // Check latest auth status via ref to avoid stale closure
+        if (!authRef.current) {
+          // Show login modal for unauthenticated users
+          setShowLoginModal(true);
           return;
         }
         
@@ -370,6 +457,11 @@ const TravelPins = () => {
 
   // Global functions for popup interactions
   useEffect(() => {
+    window.updateTravelPinAuthButtons = (isAuthenticated) => {
+      const all = document.querySelectorAll('[id^="popup-"]');
+      all.forEach(el => applyAuthButtonsVisibility(el, isAuthenticated));
+    };
+
     window.editTravelPin = (pinId) => {
       const pin = pins.find(p => p.id === pinId);
       if (pin) {
@@ -385,10 +477,15 @@ const TravelPins = () => {
     };
 
     window.closeTravelPinPopup = (pinId) => {
+      // Find the marker and close its popup
       const pin = pins.find(p => p.id === pinId);
-      if (pin && pin.marker) {
-        pin.marker.getPopup().remove();
-        // State tracking is handled by popup 'close' event listener
+      if (pin) {
+        // Find the corresponding marker
+        markersRef.current.forEach(marker => {
+          if (marker.getPopup().isOpen()) {
+            marker.getPopup().remove();
+          }
+        });
       }
     };
 
@@ -401,13 +498,14 @@ const TravelPins = () => {
     };
 
     return () => {
+      delete window.updateTravelPinAuthButtons;
       delete window.editTravelPin;
       delete window.deleteTravelPin;
       delete window.closeTravelPinPopup;
       delete window.openTravelPinPhoto;
       delete window.copyTravelPinCoordinates;
     };
-  }, [pins]);
+  }, [pins, applyAuthButtonsVisibility]);
 
   // ESC key handler for form modal
   useEffect(() => {
@@ -497,13 +595,12 @@ const TravelPins = () => {
     if (showForm || showDeleteModal || showEscModal || showPhotoModal) return; // Don't handle ESC when modals are open
 
     const handleEscapeForPopups = (e) => {
-      
       if (e.key === 'Escape') {
         if (openPopups.size > 0) {
           // Close all open popups
-          pins.forEach(pin => {
-            if (pin.marker && pin.marker.getPopup().isOpen()) {
-              pin.marker.getPopup().remove();
+          markersRef.current.forEach(marker => {
+            if (marker.getPopup() && marker.getPopup().isOpen()) {
+              marker.getPopup().remove();
             }
           });
           setOpenPopups(new Set());
@@ -523,9 +620,11 @@ const TravelPins = () => {
       const popupArray = Array.from(openPopups);
       const mostRecentPopupId = popupArray[popupArray.length - 1];
       
-      pins.forEach(pin => {
-        if (pin.id !== mostRecentPopupId && pin.marker && pin.marker.getPopup().isOpen()) {
-          pin.marker.getPopup().remove();
+      // Close all but the most recent popup
+      markersRef.current.forEach((marker, index) => {
+        const pin = pins[index];
+        if (pin && pin.id !== mostRecentPopupId && marker.getPopup() && marker.getPopup().isOpen()) {
+          marker.getPopup().remove();
         }
       });
     }
@@ -586,15 +685,22 @@ const TravelPins = () => {
   };
 
   const closeAllPopups = () => {
-    pins.forEach(pin => {
-      if (pin.marker && pin.marker.getPopup().isOpen()) {
-        pin.marker.getPopup().remove();
+    markersRef.current.forEach(marker => {
+      if (marker.getPopup() && marker.getPopup().isOpen()) {
+        marker.getPopup().remove();
       }
     });
     setOpenPopups(new Set());
   };
 
   const handleEditPin = (pin) => {
+    // Check if user is logged in
+    if (!isLoggedIn) {
+      // Show login modal for unauthenticated users
+      setShowLoginModal(true);
+      return;
+    }
+    
     // Close all display popups when opening edit form
     closeAllPopups();
     
@@ -615,6 +721,13 @@ const TravelPins = () => {
   };
 
   const handleDeletePin = (pin) => {
+    // Check if user is logged in
+    if (!isLoggedIn) {
+      // Show login modal for unauthenticated users
+      setShowLoginModal(true);
+      return;
+    }
+    
     // Store the pin for potential popup restoration
     setPendingDeletePin(pin);
     // Close all popups when opening delete modal
@@ -622,20 +735,22 @@ const TravelPins = () => {
     setShowDeleteModal(true);
   };
 
-  const confirmDeletePin = () => {
+  const confirmDeletePin = async () => {
     if (pendingDeletePin) {
-      // Remove marker from map
-      if (pendingDeletePin.marker) {
-        pendingDeletePin.marker.remove();
+      try {
+        await deletePinMutation.mutateAsync(pendingDeletePin.id);
+        // Remove from open popups tracking
+        setOpenPopups(prev => {
+          const newSet = new Set(prev);
+          newSet.delete(pendingDeletePin.id);
+          return newSet;
+        });
+        // Remove marker mapping if present
+        try { markersByIdRef.current.delete(pendingDeletePin.id); } catch {}
+      } catch (error) {
+        console.error('Failed to delete pin:', error);
+        // Error handling is done in the mutation
       }
-      // Remove pin from state
-      setPins(prevPins => prevPins.filter(p => p.id !== pendingDeletePin.id));
-      // Remove from open popups tracking
-      setOpenPopups(prev => {
-        const newSet = new Set(prev);
-        newSet.delete(pendingDeletePin.id);
-        return newSet;
-      });
     }
     setShowDeleteModal(false);
     setPendingDeletePin(null);
@@ -643,14 +758,23 @@ const TravelPins = () => {
 
   const cancelDeletePin = () => {
     setShowDeleteModal(false);
-    
+
     // Restore the original popup after a brief delay
-    if (pendingDeletePin && pendingDeletePin.marker) {
-      setTimeout(() => {
-        pendingDeletePin.marker.togglePopup();
-      }, 200); // Small delay to ensure modal closes smoothly
+    if (pendingDeletePin) {
+      const marker = markersByIdRef.current.get(pendingDeletePin.id);
+      if (marker && marker.getPopup()) {
+        setTimeout(() => {
+          try {
+            // Ensure all other popups remain closed, then open this one
+            closeAllPopups();
+            marker.togglePopup();
+          } catch (e) {
+            console.warn('Failed to restore popup for pin', pendingDeletePin.id, e);
+          }
+        }, 200); // Small delay to ensure modal closes smoothly
+      }
     }
-    
+
     setPendingDeletePin(null);
   };
 
@@ -820,6 +944,154 @@ const TravelPins = () => {
     );
   };
 
+  const createMarkerForPin = (pin, index) => {
+    // Create marker element with thumbtack design
+    const el = document.createElement('div');
+    el.className = 'travel-pin-marker';
+    
+    // Create thumbtack with alternating colors
+    const colors = ['red', 'green', 'orange'];
+    const selectedColor = colors[index % colors.length];
+    
+    const colorSchemes = {
+      red: {
+        main: '#ef4444',
+        dark: '#dc2626',
+        light: '#f87171'
+      },
+      green: {
+        main: '#10b981',
+        dark: '#059669',
+        light: '#34d399'
+      },
+      orange: {
+        main: '#f97316',
+        dark: '#ea580c',
+        light: '#fb923c'
+      }
+    };
+    
+    const scheme = colorSchemes[selectedColor];
+    
+    el.innerHTML = `
+      <div class="pushpin-container" style="position: relative; width: 100%; height: 100%;">
+        <!-- Pin Head (top dome part) -->
+        <div class="pin-head" style="
+          width: 18px;
+          height: 18px;
+          background: radial-gradient(circle at 35% 30%, ${scheme.light}, ${scheme.main} 50%, ${scheme.dark} 90%);
+          border: 1.5px solid rgba(255,255,255,0.8);
+          border-radius: 50%;
+          position: absolute;
+          top: 0;
+          left: 50%;
+          transform: translateX(-50%);
+          box-shadow: 
+            0 3px 8px rgba(0,0,0,0.25),
+            inset 0 1px 3px rgba(255,255,255,0.4),
+            inset 0 -1px 2px rgba(0,0,0,0.2);
+        ">
+          <!-- Glossy highlight -->
+          <div style="
+            position: absolute;
+            top: 2px;
+            left: 5px;
+            width: 5px;
+            height: 5px;
+            background: rgba(255,255,255,0.8);
+            border-radius: 50%;
+            filter: blur(0.5px);
+          "></div>
+        </div>
+        
+        <!-- Pin Base (wider middle section) -->
+        <div class="pin-base" style="
+          width: 12px;
+          height: 4px;
+          background: linear-gradient(to bottom, #888, #555);
+          position: absolute;
+          top: 16px;
+          left: 50%;
+          transform: translateX(-50%);
+          border-radius: 6px 6px 2px 2px;
+          box-shadow: 0 2px 4px rgba(0,0,0,0.3);
+        "></div>
+        
+        <!-- Pin Shaft (thin needle) -->
+        <div class="pin-shaft" style="
+          width: 2px;
+          height: 10px;
+          background: linear-gradient(to right, #999 0%, #666 40%, #444 60%, #666 100%);
+          position: absolute;
+          top: 19px;
+          left: 50%;
+          transform: translateX(-50%);
+          border-radius: 0 0 1px 1px;
+          box-shadow: 
+            1px 0 2px rgba(0,0,0,0.4),
+            -1px 0 1px rgba(255,255,255,0.2);
+        "></div>
+        
+        <!-- Shadow beneath the pin -->
+        <div class="pin-shadow" style="
+          width: 20px;
+          height: 6px;
+          background: radial-gradient(ellipse, rgba(0,0,0,0.3) 0%, transparent 70%);
+          position: absolute;
+          top: 28px;
+          left: 50%;
+          transform: translateX(-50%);
+          border-radius: 50%;
+        "></div>
+      </div>
+    `;
+    
+    el.style.cssText = `
+      width: 24px;
+      height: 32px;
+      cursor: pointer;
+      position: relative;
+      transition: width 0.2s ease, height 0.2s ease, filter 0.2s ease, margin 0.2s ease;
+    `;
+
+    // Add hover effects without using transform (which conflicts with Mapbox positioning)
+    el.addEventListener('mouseenter', () => {
+      el.style.filter = 'brightness(1.15) drop-shadow(0 4px 8px rgba(0,0,0,0.4))';
+      el.style.width = '28px';
+      el.style.height = '36px';
+      el.style.marginLeft = '-2px'; // Center the wider pin
+      el.style.marginBottom = '-4px'; // Keep the bottom tip anchored
+      el.style.zIndex = '1000';
+    });
+
+    el.addEventListener('mouseleave', () => {
+      el.style.filter = 'brightness(1)';
+      el.style.width = '24px';
+      el.style.height = '32px';
+      el.style.marginLeft = '0px';
+      el.style.marginBottom = '0px';
+      el.style.zIndex = 'auto';
+    });
+
+    const popup = createEnhancedPopup(pin);
+
+    // Add click event to show popup
+    el.addEventListener('click', (e) => {
+      e.stopPropagation(); // Prevent map click event
+      marker.togglePopup(); // Show the popup
+    });
+
+    const marker = new mapboxgl.Marker({
+      element: el,
+      anchor: 'bottom' // Pin tip should anchor to the coordinates
+    })
+      .setLngLat(pin.coordinates)
+      .setPopup(popup)
+      .addTo(map.current);
+
+    return marker;
+  };
+
   const createEnhancedPopup = (pin) => {
     const popupId = `popup-${pin.id}`;
     
@@ -933,7 +1205,7 @@ const TravelPins = () => {
             </button>
           </div>
 
-          <div class="pt-2 border-t border-slate-100">
+          <div class="pt-2 border-t border-slate-100 auth-buttons-container ${isLoggedIn ? 'auth-buttons-visible' : 'auth-buttons-hidden'}">
             <div class="flex gap-2">
               <button 
                 onclick="window.deleteTravelPin(${pin.id})"
@@ -971,6 +1243,17 @@ const TravelPins = () => {
       // and ensure the popup scroll container has momentum scrolling.
       try {
         const container = document.getElementById(popupId);
+        
+        if (container) {
+          // 以當下最新的 auth 狀態，立即刷新按鈕可見性
+          applyAuthButtonsVisibility(container);
+        }
+        // 再下一輪事件執行一次，避免瀏覽器延後繪製
+        setTimeout(() => {
+          const el = document.getElementById(popupId);
+          if (el) applyAuthButtonsVisibility(el);
+        }, 0);
+        
         const popupEl = container?.closest('.mapboxgl-popup');
         if (popupEl) {
           popupEl.style.webkitOverflowScrolling = 'touch';
@@ -984,13 +1267,6 @@ const TravelPins = () => {
           container.style.overflowY = 'auto';
           container.style.webkitOverflowScrolling = 'touch';
           container.style.overscrollBehavior = 'contain';
-
-          const stop = (e) => e.stopPropagation();
-          // Use passive listeners so scrolling is not blocked on iOS
-          container.addEventListener('touchstart', stop, { passive: true });
-          container.addEventListener('touchmove', stop, { passive: true });
-          container.addEventListener('wheel', stop, { passive: true });
-          container.addEventListener('pointerdown', stop, { passive: true });
         }
 
         // Disable map interactions while popup is open to avoid hijacking gestures
@@ -1034,12 +1310,18 @@ const TravelPins = () => {
     return popup;
   };
 
-  const handleSavePin = (e) => {
+  const handleSavePin = async (e) => {
     e.preventDefault();
     if (!formData.title.trim() || !formData.coordinates) return;
+    
+    // Check if user is logged in for create/edit operations
+    if (!isLoggedIn) {
+      // Show login modal for unauthenticated users
+      setShowLoginModal(true);
+      return;
+    }
 
     const pinData = {
-      id: editingPin ? editingPin.id : Date.now(),
       title: formData.title,
       note: formData.note,
       visited_at: formData.visited_at,
@@ -1048,178 +1330,53 @@ const TravelPins = () => {
       coordinates: formData.coordinates
     };
 
-    if (editingPin) {
-      // Update existing pin
-      setPins(prevPins => prevPins.map(pin => 
-        pin.id === editingPin.id ? { ...pin, ...pinData, marker: pin.marker } : pin
-      ));
-      
-      // Update the existing marker's popup
-      const existingPin = pins.find(p => p.id === editingPin.id);
-      if (existingPin && existingPin.marker) {
-        existingPin.marker.setPopup(createEnhancedPopup(pinData));
+    try {
+      if (editingPin) {
+        // Update existing pin
+        await updatePinMutation.mutateAsync({ 
+          id: editingPin.id, 
+          pinData 
+        });
+      } else {
+        // Create new pin
+        await createPinMutation.mutateAsync(pinData);
       }
       
       handleCloseForm();
-      return;
+    } catch (error) {
+      console.error('Failed to save pin:', error);
+      // Error handling is done in the mutation
     }
-
-    // Create new pin
-    const newPin = pinData;
-
-    // Add marker to map - Thumbtack design
-    const el = document.createElement('div');
-    el.className = 'travel-pin-marker';
-    
-    // Create thumbtack with alternating colors
-    const colors = ['red', 'green', 'orange'];
-    const selectedColor = colors[pins.length % colors.length];
-    
-    const colorSchemes = {
-      red: {
-        main: '#ef4444',
-        dark: '#dc2626',
-        light: '#f87171'
-      },
-      green: {
-        main: '#10b981',
-        dark: '#059669',
-        light: '#34d399'
-      },
-      orange: {
-        main: '#f97316',
-        dark: '#ea580c',
-        light: '#fb923c'
-      }
-    };
-    
-    const scheme = colorSchemes[selectedColor];
-    
-    el.innerHTML = `
-      <div class="pushpin-container" style="position: relative; width: 100%; height: 100%;">
-        <!-- Pin Head (top dome part) -->
-        <div class="pin-head" style="
-          width: 18px;
-          height: 18px;
-          background: radial-gradient(circle at 35% 30%, ${scheme.light}, ${scheme.main} 50%, ${scheme.dark} 90%);
-          border: 1.5px solid rgba(255,255,255,0.8);
-          border-radius: 50%;
-          position: absolute;
-          top: 0;
-          left: 50%;
-          transform: translateX(-50%);
-          box-shadow: 
-            0 3px 8px rgba(0,0,0,0.25),
-            inset 0 1px 3px rgba(255,255,255,0.4),
-            inset 0 -1px 2px rgba(0,0,0,0.2);
-        ">
-          <!-- Glossy highlight -->
-          <div style="
-            position: absolute;
-            top: 2px;
-            left: 5px;
-            width: 5px;
-            height: 5px;
-            background: rgba(255,255,255,0.8);
-            border-radius: 50%;
-            filter: blur(0.5px);
-          "></div>
-        </div>
-        
-        <!-- Pin Base (wider middle section) -->
-        <div class="pin-base" style="
-          width: 12px;
-          height: 4px;
-          background: linear-gradient(to bottom, #888, #555);
-          position: absolute;
-          top: 16px;
-          left: 50%;
-          transform: translateX(-50%);
-          border-radius: 6px 6px 2px 2px;
-          box-shadow: 0 2px 4px rgba(0,0,0,0.3);
-        "></div>
-        
-        <!-- Pin Shaft (thin needle) -->
-        <div class="pin-shaft" style="
-          width: 2px;
-          height: 10px;
-          background: linear-gradient(to right, #999 0%, #666 40%, #444 60%, #666 100%);
-          position: absolute;
-          top: 19px;
-          left: 50%;
-          transform: translateX(-50%);
-          border-radius: 0 0 1px 1px;
-          box-shadow: 
-            1px 0 2px rgba(0,0,0,0.4),
-            -1px 0 1px rgba(255,255,255,0.2);
-        "></div>
-        
-        <!-- Shadow beneath the pin -->
-        <div class="pin-shadow" style="
-          width: 20px;
-          height: 6px;
-          background: radial-gradient(ellipse, rgba(0,0,0,0.3) 0%, transparent 70%);
-          position: absolute;
-          top: 28px;
-          left: 50%;
-          transform: translateX(-50%);
-          border-radius: 50%;
-        "></div>
-      </div>
-    `;
-    
-    el.style.cssText = `
-      width: 24px;
-      height: 32px;
-      cursor: pointer;
-      position: relative;
-      transition: width 0.2s ease, height 0.2s ease, filter 0.2s ease, margin 0.2s ease;
-    `;
-
-    // Add hover effects without using transform (which conflicts with Mapbox positioning)
-    // With 'bottom' anchor, we need to adjust margins differently to keep the tip in the same position
-    el.addEventListener('mouseenter', () => {
-      el.style.filter = 'brightness(1.15) drop-shadow(0 4px 8px rgba(0,0,0,0.4))';
-      el.style.width = '28px';
-      el.style.height = '36px';
-      el.style.marginLeft = '-2px'; // Center the wider pin
-      el.style.marginBottom = '-4px'; // Keep the bottom tip anchored
-      el.style.zIndex = '1000';
-    });
-
-    el.addEventListener('mouseleave', () => {
-      el.style.filter = 'brightness(1)';
-      el.style.width = '24px';
-      el.style.height = '32px';
-      el.style.marginLeft = '0px';
-      el.style.marginBottom = '0px';
-      el.style.zIndex = 'auto';
-    });
-
-    const popup = createEnhancedPopup(newPin);
-
-    // Add click event to show popup
-    el.addEventListener('click', (e) => {
-      e.stopPropagation(); // Prevent map click event
-      marker.togglePopup(); // Show the popup
-    });
-
-    const marker = new mapboxgl.Marker({
-      element: el,
-      anchor: 'bottom' // Pin tip should anchor to the coordinates
-    })
-      .setLngLat(formData.coordinates)
-      .setPopup(popup)
-      .addTo(map.current);
-
-    setPins(prev => [...prev, { ...newPin, marker }]);
-    handleCloseForm();
   };
 
   return (
     <div className="w-full h-screen relative">
       {/* Map Container */}
       <div ref={mapContainer} className="w-full h-full" />
+
+      {/* Loading indicator */}
+      {pinsLoading && (
+        <div className="absolute top-4 left-4 bg-white/90 backdrop-blur-sm rounded-lg px-4 py-2 shadow-lg z-10">
+          <div className="flex items-center gap-2 text-slate-700">
+            <div className="animate-spin w-4 h-4 border-2 border-blue-500 border-t-transparent rounded-full"></div>
+            <span className="text-sm font-medium">Loading pins...</span>
+          </div>
+        </div>
+      )}
+      
+      {/* Error indicator */}
+      {pinsError && (
+        <div className="absolute top-4 left-4 bg-red-50 border border-red-200 rounded-lg px-4 py-2 shadow-lg z-10">
+          <div className="flex items-center gap-2 text-red-700">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+              <circle cx="12" cy="12" r="10"></circle>
+              <line x1="15" y1="9" x2="9" y2="15"></line>
+              <line x1="9" y1="9" x2="15" y2="15"></line>
+            </svg>
+            <span className="text-sm font-medium">Failed to load pins</span>
+          </div>
+        </div>
+      )}
 
       {/* Background overlay for display modal (popup) */}
       {openPopups.size > 0 && !showForm && !showDeleteModal && !showEscModal && !showPhotoModal && (

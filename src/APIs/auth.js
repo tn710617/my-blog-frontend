@@ -43,6 +43,10 @@ export function useLogout() {
         onSuccess: (data, variables, context) => {
             // Set auth state to false (Zustand will persist to localStorage automatically)
             setIsLoggedIn(false)
+            // Immediately update travel pin popup buttons if function exists
+            if (typeof window.updateTravelPinAuthButtons === 'function') {
+                window.updateTravelPinAuthButtons(false)
+            }
         }
     })
 }
@@ -90,6 +94,10 @@ export function useLoginWithMetaMask() {
         }, onSuccess: (data, variables, context) => {
             // Set auth state to true (Zustand will persist to localStorage automatically)
             setIsLoggedIn(true)
+            // Immediately update travel pin popup buttons if function exists
+            if (typeof window.updateTravelPinAuthButtons === 'function') {
+                window.updateTravelPinAuthButtons(true)
+            }
         }, onError: (error, variables, context) => {
             if (error.message === 'MetaMask is not installed.') {
                 toast(intl.formatMessage({id: 'toast.login.metaMaskNotInstalled'}))

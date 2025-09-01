@@ -704,6 +704,11 @@ docker-compose exec app yarn test --coverage --watchAll=false
 - **Build Sparingly**: Only build when testing production behavior
 - **Console Debugging**: Check browser console for zoom/popup debug info
 - **Docker Logs**: Use `docker-compose logs` for container-level issues
+- **🔄 Always Restart Containers**: After fixing errors, import issues, or before running tests, always restart Docker containers with `docker-compose restart` to ensure clean state and proper module resolution
+  - **Import/Module Errors**: Restart containers immediately after fixing import paths or adding new dependencies
+  - **Before Testing**: Restart containers before running test suites to avoid cached module issues
+  - **After Code Changes**: Restart if hot reload isn't working or if you see unexpected module resolution errors
+  - **Environment Variable Changes**: Always restart after modifying .env files or environment configuration
 
 ---
 
