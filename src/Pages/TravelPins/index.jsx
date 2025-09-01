@@ -1335,7 +1335,7 @@ const TravelPins = () => {
                     rows={4}
                     value={formData.note}
                     onChange={(e) => handleInputChange('note', e.target.value)}
-                    className="w-full bg-transparent border-none resize-none focus:outline-none text-slate-700 placeholder:text-slate-500"
+                    className="w-full bg-transparent border-none resize-none focus:outline-none text-slate-700 placeholder:text-slate-400"
                     style={{ fontSize: '16px' }}
                     placeholder={t('travel_pins.form.travel_notes_placeholder')}
                   />
@@ -1391,7 +1391,7 @@ const TravelPins = () => {
                     type="url"
                     value={formData.photo_url || ''}
                     onChange={(e) => handleInputChange('photo_url', e.target.value)}
-                    className="w-full bg-transparent border-none focus:outline-none text-slate-700 placeholder:text-slate-500"
+                    className="w-full bg-transparent border-none focus:outline-none text-slate-700 placeholder:text-slate-400"
                     style={{ fontSize: '16px' }}
                     placeholder={t('travel_pins.form.photo_url_placeholder')}
                   />

@@ -277,20 +277,27 @@ const handleZoom = () => {
 - Mobile modal management with single popup enforcement
 - Action buttons with delete/edit functionality
 - Responsive popup positioning and debug cleanup
-
-### 7. Mobile Navigation Enhancement Implementation Guide
-
-**Completed Features:**
 - Enhanced mobile navigation with hierarchical sections
 - NavItem component with icons and counts
-- Responsive CSS with smooth transitions and proper accessibility
 
-### 8. Location Search & Navigation Implementation Guide
+### 7. Location Search & Navigation Implementation Guide
 
 **Completed Features:**
 - Mapbox Geocoding API integration with autocomplete search
 - Search history with keyboard shortcuts and smooth navigation
 - Loading states and responsive design with proper accessibility
+
+### 8. Mobile Search Modal Enhancement
+
+**Recently Completed Features:**
+- Dedicated mobile search modal with proper modal architecture
+- Removed redundant search box from mobile navigation bar
+- Fixed keyboard shortcut (Cmd/Ctrl+F) for desktop search focus
+- Corrected desktop search box rounded corner styling
+- Implemented proper modal scrolling behavior for mobile
+- Fixed search dropdown visibility issues with z-index management
+- Optimized modal height (max-h-[85vh]) for search results visibility
+- Enhanced modal structure with flex layout and overflow handling
 
 ### 9. Photo Integration & UX Enhancement Implementation Guide
 
@@ -529,6 +536,7 @@ src/
 - Smart popup closing with zoom debounce and enhanced form UX
 - Markdown rendering support and premium popup design
 - Location search, GPS navigation, and mobile navigation enhancements
+- Mobile search modal improvements with proper UX/UI
 
 ### Navigation Enhancement 📱
 **Mobile Navbar Dropdown Improvements - COMPLETE ✅**
@@ -537,7 +545,22 @@ src/
 **Modern Navigation Button Redesign - COMPLETE ✅** 
 - Redesigned all navigation buttons with modern design patterns and consistent theming
 
-### Next Phase Enhancement (Pending) 📸
+### Next Phase Enhancement (Pending) 🔧
+**UI/UX Improvements & Bug Fixes**
+- [x] ~~Make placeholder text lighter for better UI contrast and readability~~ ✅ **COMPLETED**
+- [ ] Make photo input box placeholder text smaller for full visibility
+  - Ensure placeholder text fits within input field boundaries
+  - Improve readability and prevent text truncation
+- [ ] Adapt multi-locale feature to Mapbox gesture warning text (scroll with one finger to rotate)
+  - Desktop warning message differs from mobile warning message
+  - Implement locale-specific warning text for both contexts
+- [ ] Remove 'cmd / ctrl + F' placeholder text from mobile search box (irrelevant for mobile users)
+- [ ] Fix pin accuracy/positioning issue when zooming in/out
+  - Investigate if pin style changes caused positioning distortion
+  - Research Mapbox pin positioning best practices online
+  - Review current pin marker implementation for potential fixes
+  - Ensure pins maintain accurate coordinates across all zoom levels
+
 **Pin Display & Photo Integration Improvements**
 - [ ] Replace coordinate display section with copy location button
 - [ ] Add external photo link input field in edit modal
@@ -546,6 +569,8 @@ src/
 - [ ] Enhance photo viewing experience with modal overlay
 
 **Technical Requirements:**
+- Research pin positioning issues with Mapbox GL JS markers
+- Investigate anchor point and offset configurations for pin accuracy
 - Update pin data structure to include `photo_url` field
 - Implement copy-to-clipboard functionality for coordinates
 - Create responsive photo display with aspect ratio preservation
@@ -607,6 +632,9 @@ src/
 37. **Test Maintenance**: CSS selector updates require corresponding test updates for proper coverage
 38. **Accessibility Standards**: ARIA attributes and keyboard navigation are essential for inclusive design
 39. **Breakpoint Consistency**: Using consistent breakpoints (xl:flex) across components maintains design integrity
+40. **Modal Architecture**: Dedicated modal components with proper structure improve mobile UX over embedded navigation
+41. **Search UX Optimization**: Removing redundant UI elements and focusing on core functionality enhances user experience
+42. **Overflow Management**: Complex modals require careful overflow and z-index management for dropdown visibility
 
 ## 📝 Development Commands
 

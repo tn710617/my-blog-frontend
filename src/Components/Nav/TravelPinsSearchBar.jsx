@@ -182,7 +182,7 @@ export default function TravelPinsSearchBar({ onLocationSelect }) {
             onFocus={handleFocus}
             onBlur={handleBlur}
             placeholder={t('travel_pins.search.placeholder')}
-            className="flex-1 px-2 py-3 bg-transparent border-none outline-none text-gray-800 placeholder-gray-400 text-sm font-medium"
+            className="flex-1 px-2 py-3 bg-transparent border-none outline-none text-gray-800 placeholder-gray-300 text-sm font-medium"
             style={{ fontSize: '16px' }}
           />
 
