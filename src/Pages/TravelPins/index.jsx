@@ -4,6 +4,7 @@ import 'mapbox-gl/dist/mapbox-gl.css';
 import { useIntl } from 'react-intl';
 import { useLocaleStore, useAuthStore, useLoginModalStore } from '../../stores';
 import { useTravelPins, useCreateTravelPin, useUpdateTravelPin, useDeleteTravelPin } from '../../APIs/travel-pins';
+import useBodyScrollLock from '../../hooks/useBodyScrollLock';
 import { buildPopupHTML } from './popupHtml';
 import PinForm from './components/PinForm';
 import DeleteConfirmationModal from './components/DeleteConfirmationModal';
@@ -493,55 +494,9 @@ const TravelPins = () => {
 
   // Global functions for popup interactions
   useEffect(() => {
-    window.updateTravelPinAuthButtons = (isAuthenticated) => {
-      const all = document.querySelectorAll('[id^="popup-"]');
-      all.forEach(el => applyAuthButtonsVisibility(el, isAuthenticated));
-    };
-
-    window.editTravelPin = (pinId) => {
-      const pin = pins.find(p => p.id === pinId);
-      if (pin) {
-        handleEditPin(pin);
-      }
-    };
-
-    window.deleteTravelPin = (pinId) => {
-      const pin = pins.find(p => p.id === pinId);
-      if (pin) {
-        handleDeletePin(pin);
-      }
-    };
-
-    window.closeTravelPinPopup = (pinId) => {
-      // Find the marker and close its popup
-      const pin = pins.find(p => p.id === pinId);
-      if (pin) {
-        // Find the corresponding marker
-        markersRef.current.forEach(marker => {
-          if (marker.getPopup().isOpen()) {
-            marker.getPopup().remove();
-          }
-        });
-      }
-    };
-
-    window.openTravelPinPhoto = (photoUrl, photoTitle) => {
-      openPhotoModal(photoUrl, photoTitle);
-    };
-
-    window.copyTravelPinCoordinates = (lng, lat, pinId) => {
-      handleCopyCoordinates([parseFloat(lng), parseFloat(lat)], pinId);
-    };
-
-    return () => {
-      delete window.updateTravelPinAuthButtons;
-      delete window.editTravelPin;
-      delete window.deleteTravelPin;
-      delete window.closeTravelPinPopup;
-      delete window.openTravelPinPhoto;
-      delete window.copyTravelPinCoordinates;
-    };
-  }, [pins, applyAuthButtonsVisibility]);
+    // No-op: globals removed; compatibility hook retained for future needs
+    return () => {};
+  }, []);
 
   // ESC key handler for form modal
   useEffect(() => {
@@ -601,30 +556,10 @@ const TravelPins = () => {
     return () => document.removeEventListener('keydown', handlePhotoModalEscape);
   }, [showPhotoModal]);
 
-  // Body overflow control for photo modal
-  useEffect(() => {
-    if (showPhotoModal) {
-      document.body.style.overflow = 'hidden';
-    } else {
-      document.body.style.overflow = 'unset';
-    }
-    return () => {
-      document.body.style.overflow = 'unset';
-    };
-  }, [showPhotoModal]);
-
-  // Body overflow control for display popups
-  useEffect(() => {
-    const anyBlockingLayer = openPopups.size > 0 && !showForm && !showDeleteModal && !showEscModal && !showPhotoModal;
-    if (anyBlockingLayer) {
-      document.body.style.overflow = 'hidden';
-    } else {
-      document.body.style.overflow = 'unset';
-    }
-    return () => {
-      document.body.style.overflow = 'unset';
-    };
-  }, [openPopups, showForm, showDeleteModal, showEscModal, showPhotoModal]);
+  // Body overflow control via hook
+  useBodyScrollLock(
+    showPhotoModal || (openPopups.size > 0 && !showForm && !showDeleteModal && !showEscModal && !showPhotoModal)
+  );
 
   // ESC key handler for closing display popups (when form is not open)
   useEffect(() => {
