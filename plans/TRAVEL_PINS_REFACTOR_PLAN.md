@@ -91,7 +91,7 @@ src/
 
 ### TODOs (Mark as completed as we proceed)
 
-- [ ] Extract palettes + footprint icon to `utils/`
+- [x] Extract palettes + footprint icon to `utils/`
 - [ ] Add `useProximityColors` and wire it
 - [ ] Extract popup events wiring to `utils/`
 - [ ] Extract marker factory + popups into a hook
@@ -127,3 +127,11 @@ src/
 - Consider migrating to Mapbox symbol layers for massive datasets (with clustering).
 - Add unit tests for palette assignment and popup event wiring.
 - Add e2e smoke test for add/edit/delete flows.
+
+## Process & Guidelines
+
+- On completing any step, immediately update this checklist and mark the item as completed.
+- Keep exactly one step in progress at a time for clarity.
+- Make small, verifiable commits/patches per step; avoid unrelated changes.
+- Preserve functional parity after each step; validate before moving on.
+- Update this plan if scope or ordering needs to change, explaining rationale.
