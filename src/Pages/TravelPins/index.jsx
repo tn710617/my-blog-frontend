@@ -15,6 +15,7 @@ import { renderMarkdownToHTML } from './utils/markdownUtils';
 import { debounce } from './utils/debounceUtil';
 import { customPopupStyles } from './utils/popupStyles';
 import { assignColorsByScreen, recolorMarkers, createColorAssignmentRef } from './utils/colorManager';
+import { useFormState } from './hooks/useFormState';
 
 
 const TravelPins = () => {
@@ -68,16 +69,18 @@ const TravelPins = () => {
   const [mapLoaded, setMapLoaded] = useState(false);
   const [mapError, setMapError] = useState(null);
   const [token, setToken] = useState('');
-  const [formData, setFormData] = useState({
-    title: '',
-    note: '',
-    visited_at: '',
-    photo_url: '',
-    photos: [],
-    coordinates: null
-  });
-  const [hasChanges, setHasChanges] = useState(false);
-  const [originalFormData, setOriginalFormData] = useState(null);
+  // Form state management
+  const {
+    formData,
+    hasChanges,
+    originalFormData,
+    handleInputChange,
+    initializeForm,
+    resetForm,
+    createNewForm,
+    isFormValid,
+    getFormDataForSubmission
+  } = useFormState();
   const [openPopups, setOpenPopups] = useState(new Set());
   const [isMobile, setIsMobile] = useState(window.innerWidth <= 768);
   const [searchHistory, setSearchHistory] = useState([]);
@@ -380,17 +383,7 @@ const TravelPins = () => {
         
         const coordinates = [e.lngLat.lng, e.lngLat.lat];
         
-        const newFormData = {
-          title: '',
-          note: '',
-          visited_at: '',
-          photo_url: '',
-          photos: [],
-          coordinates
-        };
-        setFormData(newFormData);
-        setOriginalFormData(newFormData);
-        setHasChanges(false);
+        createNewForm(coordinates);
         setShowForm(true);
       });
 
@@ -582,36 +575,9 @@ const TravelPins = () => {
   const handleCloseForm = () => {
     setShowForm(false);
     setEditingPin(null);
-    setHasChanges(false);
-    setOriginalFormData(null);
-    setFormData({
-      title: '',
-      note: '',
-      visited_at: '',
-      photo_url: '',
-      photos: [],
-      coordinates: null
-    });
+    resetForm();
   };
 
-  const handleInputChange = (field, value) => {
-    setFormData(prev => {
-      const updatedData = { ...prev, [field]: value };
-      
-      // Check if any field has changed from original (using updated data)
-      if (originalFormData) {
-        const changed = Object.keys(updatedData).some(key => {
-          if (key === 'photos' || key === 'coordinates') return false; // Skip comparison for complex objects
-          const originalValue = originalFormData[key] || '';
-          const currentValue = updatedData[key] || '';
-          return originalValue !== currentValue;
-        });
-        setHasChanges(changed);
-      }
-      
-      return updatedData;
-    });
-  };
 
   const closeAllPopups = () => {
     markersRef.current.forEach(marker => {
@@ -643,9 +609,7 @@ const TravelPins = () => {
     };
     
     setEditingPin(pin);
-    setFormData(originalData);
-    setOriginalFormData(originalData);
-    setHasChanges(false);
+    initializeForm(originalData);
     setShowForm(true);
   };
 
@@ -1120,7 +1084,7 @@ const TravelPins = () => {
 
   const handleSavePin = async (e) => {
     e.preventDefault();
-    if (!formData.title.trim() || !formData.coordinates) return;
+    if (!isFormValid()) return;
     
     // Check if user is logged in for create/edit operations
     if (!isLoggedIn) {
@@ -1129,14 +1093,7 @@ const TravelPins = () => {
       return;
     }
 
-    const pinData = {
-      title: formData.title,
-      note: formData.note,
-      visited_at: formData.visited_at,
-      photo_url: formData.photo_url,
-      photos: formData.photos,
-      coordinates: formData.coordinates
-    };
+    const pinData = getFormDataForSubmission();
 
     try {
       if (editingPin) {
