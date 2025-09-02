@@ -986,7 +986,7 @@ const TravelPins = () => {
       </div>
     `;
     
-    // Simple emoji footprint with better colors
+    // Simple emoji footprint with CSS color control
     const emojiFootprint = `
       <div class="footprint-container" style="
         position: absolute; 
@@ -1000,7 +1000,12 @@ const TravelPins = () => {
         font-size: 20px;
         text-shadow: 0 2px 4px rgba(0,0,0,0.3);
         transition: all 0.2s ease;
-        filter: hue-rotate(${index * 120}deg) saturate(1.2);
+        filter: 
+          sepia(1) 
+          saturate(3) 
+          hue-rotate(${index * 25 + 10}deg) 
+          brightness(2.5) 
+          contrast(1.2);
       ">
         👣
       </div>
@@ -1024,13 +1029,19 @@ const TravelPins = () => {
     // Use exact same CSS as accurate debug crosshair
     el.style.cssText = 'position: absolute; pointer-events: auto; cursor: pointer; z-index: 100;';
 
-    // Simple hover effects
+    // Simple hover effects with proper color filters
     const container = el.querySelector('.footprint-container');
     
     el.addEventListener('mouseenter', () => {
       if (container) {
         container.style.transform = 'scale(1.2)';
-        container.style.filter = `hue-rotate(${index * 120}deg) saturate(1.5) brightness(1.2)`;
+        container.style.filter = `
+          sepia(1) 
+          saturate(3.5) 
+          hue-rotate(${index * 25 + 10}deg) 
+          brightness(2.8) 
+          contrast(1.2)
+        `;
       }
       el.style.zIndex = '1000';
     });
@@ -1038,7 +1049,13 @@ const TravelPins = () => {
     el.addEventListener('mouseleave', () => {
       if (container) {
         container.style.transform = 'scale(1)';
-        container.style.filter = `hue-rotate(${index * 120}deg) saturate(1.2)`;
+        container.style.filter = `
+          sepia(1) 
+          saturate(3) 
+          hue-rotate(${index * 25 + 10}deg) 
+          brightness(2.5) 
+          contrast(1.2)
+        `;
       }
       el.style.zIndex = '100';
     });
