@@ -97,7 +97,7 @@ describe('PhotoLightbox', () => {
   });
 
   it('should handle missing data gracefully', () => {
-    const props = { ...defaultProps, data: { url: '', title: '' } };
+    const props = { ...defaultProps, data: { url: null, title: '' } };
     
     // Should render without crashing when data has empty values
     expect(() => render(<PhotoLightbox {...props} />)).not.toThrow();

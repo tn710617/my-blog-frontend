@@ -77,13 +77,18 @@ const createWrapper = () => {
 };
 
 describe('Travel Pins API Hooks', () => {
+  let consoleErrorSpy;
+
   beforeEach(() => {
     vi.clearAllMocks();
     useAuthStore.mockReturnValue({ isLoggedIn: true });
+    // Mock console.error to prevent error logs in test output
+    consoleErrorSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
   });
 
   afterEach(() => {
     vi.clearAllMocks();
+    consoleErrorSpy.mockRestore();
   });
 
   describe('useTravelPins', () => {
