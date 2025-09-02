@@ -10,6 +10,27 @@ import PinForm from './components/PinForm';
 import DeleteConfirmationModal from './components/DeleteConfirmationModal';
 import PhotoLightbox from './components/PhotoLightbox';
 
+// Global skin tone palette (stable identity)
+const SKIN_SCHEMES = [
+  { main: '#f1c27d', light: '#f6d2a2', dark: '#c68642', glow: '#eec08d' }, // light
+  { main: '#e0ac69', light: '#edc08c', dark: '#a1662f', glow: '#e0ac69' }, // medium
+  { main: '#d1a075', light: '#e1b892', dark: '#8d5524', glow: '#d1a075' }, // tan
+  { main: '#a47148', light: '#bc8a60', dark: '#5a3d1c', glow: '#a47148' }, // deep tan
+  { main: '#f4a261', light: '#f7b184', dark: '#e76f51', glow: '#f4a261' }, // rosy tan
+  { main: '#c8a47e', light: '#dbbc9b', dark: '#9a6e3a', glow: '#c8a47e' }, // olive tan
+];
+
+// High-contrast palette for visually close markers
+const CONTRAST_SCHEMES = [
+  { main: '#2563eb', light: '#60a5fa', dark: '#1e40af', glow: '#2563eb' }, // blue
+  { main: '#ef4444', light: '#f87171', dark: '#991b1b', glow: '#ef4444' }, // red
+  { main: '#10b981', light: '#6ee7b7', dark: '#065f46', glow: '#10b981' }, // emerald
+  { main: '#f59e0b', light: '#fbbf24', dark: '#b45309', glow: '#f59e0b' }, // amber
+  { main: '#8b5cf6', light: '#a78bfa', dark: '#6d28d9', glow: '#8b5cf6' }, // violet
+  { main: '#06b6d4', light: '#67e8f9', dark: '#0e7490', glow: '#06b6d4' }, // cyan
+  { main: '#f43f5e', light: '#fda4af', dark: '#9f1239', glow: '#f43f5e' }, // rose
+];
+
 // Custom styles to override default Mapbox popup styling
 const customPopupStyles = `
   /* Auth buttons visibility classes */
@@ -184,6 +205,75 @@ const TravelPins = () => {
   const [photoModalData, setPhotoModalData] = useState({ url: '', title: '' });
   const [coordsCopied, setCoordsCopied] = useState(false);
   // Marker style: fixed to footprint
+  
+  // Assigned color index per pin id
+  const assignedColorsRef = useRef(new Map());
+
+  // Skin tone palette is defined globally as SKIN_SCHEMES
+
+  // Assign distinct colors based on screen-space proximity (zoom-aware, DOM-only updates)
+  const assignColorsByScreen = useCallback((allPins) => {
+    if (!map.current) return;
+    const thresholdPx = 28; // consider markers within ~28px as "very close"
+    const points = allPins.map(p => ({ id: p.id, coords: p.coordinates, pxy: map.current.project({ lng: p.coordinates[0], lat: p.coordinates[1] }) }));
+    const sorted = [...points].sort((a, b) => String(a.id).localeCompare(String(b.id)));
+    const byId = new Map();
+    for (let i = 0; i < sorted.length; i++) {
+      const cur = sorted[i];
+      const neighborColors = new Set();
+      let hasNeighbor = false;
+      for (let j = 0; j < i; j++) {
+        const prev = sorted[j];
+        const dx = cur.pxy.x - prev.pxy.x;
+        const dy = cur.pxy.y - prev.pxy.y;
+        const dist2 = dx * dx + dy * dy;
+        if (dist2 <= thresholdPx * thresholdPx) {
+          hasNeighbor = true;
+          const prevAssign = byId.get(prev.id);
+          if (prevAssign && prevAssign.palette === 'contrast') {
+            neighborColors.add(prevAssign.idx);
+          }
+        }
+      }
+      if (!hasNeighbor) {
+        // default skin tone index 1 (medium)
+        byId.set(cur.id, { palette: 'skin', idx: 1 });
+      } else {
+        // choose first available contrast color index
+        let chosen = 0;
+        for (let k = 0; k < CONTRAST_SCHEMES.length; k++) {
+          if (!neighborColors.has(k)) { chosen = k; break; }
+        }
+        byId.set(cur.id, { palette: 'contrast', idx: chosen });
+      }
+    }
+    assignedColorsRef.current = byId;
+  }, []);
+
+  // Recolor existing markers in-place without touching React state
+  const recolorMarkers = useCallback(() => {
+    if (!map.current) return;
+    try {
+      assignColorsByScreen(pins);
+      pins.forEach((pin) => {
+        const marker = markersByIdRef.current.get(pin.id);
+        if (!marker) return;
+        const el = marker.getElement?.();
+        if (!el) return;
+        const assignment = assignedColorsRef.current.get(pin.id) || { palette: 'skin', idx: 1 };
+        const curIdx = Number(el.dataset.colorIdx ?? -1);
+        const curPalette = el.dataset.palette || '';
+        const newPalette = assignment.palette;
+        const idx = assignment.idx;
+        if (idx === curIdx && curPalette === newPalette) return;
+        el.dataset.colorIdx = String(idx);
+        el.dataset.palette = newPalette;
+        const schemeList = newPalette === 'contrast' ? CONTRAST_SCHEMES : SKIN_SCHEMES;
+        const scheme = schemeList[idx] || schemeList[0];
+        el.innerHTML = buildFootprintHTML(scheme);
+      });
+    } catch {}
+  }, [pins, assignColorsByScreen]);
 
   // Inject custom popup styles
   useEffect(() => {
@@ -221,6 +311,9 @@ const TravelPins = () => {
     const mapReady = mapLoaded;
     if (!mapReady) return;
 
+    // Compute screen-space color assignments up front
+    try { assignColorsByScreen(pins); } catch {}
+
     const markersById = markersByIdRef.current;
 
     const newIds = new Set(pins.map(p => p.id));
@@ -255,17 +348,24 @@ const TravelPins = () => {
       } else {
         try {
           // Update coordinates and popup content; preserve open state
-          const wasOpen = existing.getPopup()?.isOpen?.() || false;
+          const prevPopup = existing.getPopup?.();
+          const wasOpen = prevPopup?.isOpen?.() || false;
           existing.setLngLat(pin.coordinates);
           const updatedPopup = createEnhancedPopup(pin);
           existing.setPopup(updatedPopup);
           // Refresh marker element HTML (ensures current footprint style)
           const el = existing.getElement();
           if (el) {
-            const scheme = { main: '#e0ac69', dark: '#c68642', light: '#f1c27d', glow: '#e0ac69' };
+            const assignment = assignedColorsRef.current.get(pin.id) || { palette: 'skin', idx: 1 };
+            const idx = assignment.idx;
+            const palette = assignment.palette;
+            el.dataset.colorIdx = String(idx);
+            el.dataset.palette = palette;
+            const schemeList = palette === 'contrast' ? CONTRAST_SCHEMES : SKIN_SCHEMES;
+            const scheme = schemeList[idx] || schemeList[0];
             try { el.innerHTML = buildFootprintHTML(scheme); } catch {}
           }
-          if (wasOpen) {
+          if (wasOpen && prevPopup !== updatedPopup) {
             // Re-open after small tick to ensure DOM updates
             setTimeout(() => {
               try { existing.togglePopup(); } catch {}
@@ -278,7 +378,7 @@ const TravelPins = () => {
     return () => {
       // No-op here; global cleanup on unmount elsewhere
     };
-  }, [pins, mapLoaded]);
+  }, [pins, mapLoaded, assignColorsByScreen]);
 
   // Auth 改變時，立刻同步 ref，並更新所有已開啟的 popups
   useEffect(() => {
@@ -391,7 +491,7 @@ const TravelPins = () => {
 
   useEffect(() => {
     // Debug token
-    const mapboxToken = import.meta.env.VITE_MAPBOX_TOKEN || 'pk.eyJ1IjoidG43MTA2MTciLCJhIjoiY21leWM3anFmMHRnOTJxb2llcjJ6dnZpeSJ9.oHx0C295B4I2X21tPKsaMA';
+    const mapboxToken = import.meta.env.VITE_MAPBOX_TOKEN;
     setToken(mapboxToken);
     
     mapboxgl.accessToken = mapboxToken;
@@ -416,12 +516,20 @@ const TravelPins = () => {
 
       map.current.on('load', () => {
         setMapLoaded(true);
+        // Initial recolor once map is ready
+        try { recolorMarkers(); } catch {}
       });
 
       map.current.on('error', (e) => {
         console.error('Map error:', e);
         setMapError(e.error?.message || 'Map failed to load');
       });
+
+      // Update colors on zoom/move end (screen-space proximity)
+      const onMoveEnd = () => { try { recolorMarkers(); } catch {} };
+      const onZoomEnd = () => { try { recolorMarkers(); } catch {} };
+      map.current.on('moveend', onMoveEnd);
+      map.current.on('zoomend', onZoomEnd);
 
       // Add click handler - only for empty areas (not pins)
       map.current.on('click', (e) => {
@@ -441,10 +549,6 @@ const TravelPins = () => {
         
         const coordinates = [e.lngLat.lng, e.lngLat.lat];
         
-        // Debug: Log click coordinates for accuracy testing
-        console.log('🎯 Click coordinates:', coordinates);
-        console.log('🎯 Click pixel position:', e.point);
-        console.log('🎯 Zoom level:', map.current.getZoom());
         const newFormData = {
           title: '',
           note: '',
@@ -466,6 +570,10 @@ const TravelPins = () => {
 
     return () => {
       if (map.current) {
+        try {
+          map.current.off('moveend', onMoveEnd);
+          map.current.off('zoomend', onZoomEnd);
+        } catch {}
         map.current.remove();
         map.current = null;
       }
@@ -957,7 +1065,7 @@ const TravelPins = () => {
               <feDropShadow dx="0" dy="1" stdDeviation="1.2" flood-color="rgba(0,0,0,0.35)"/>
             </filter>
           </defs>
-          <g fill="${scheme.light}" stroke="white" stroke-width="2" filter="url(#shadow2)">
+          <g fill="${scheme.main}" stroke="white" stroke-width="2" filter="url(#shadow2)">
             <path d="M163.459,126.139c-1.72-28.186-46.4-49.719-70.769-40.617c-0.219,0.082-0.411,0.186-0.597,0.293
               c-28.324-0.719-68.175,19.519-55.087,53.387c9.106,23.562,48.151,26.031,69.125,26.032
               C129.208,165.235,165.215,154.896,163.459,126.139z M106.192,150.854c1.618,0.01,3.24-0.021,4.865-0.078
@@ -990,17 +1098,19 @@ const TravelPins = () => {
   };
 
   const createMarkerForPin = (pin, index) => {
-    // Debug: Log marker creation coordinates after backend fix
-    console.log(`📌 Creating marker ${index} at coordinates:`, pin.coordinates);
-    console.log(`📌 Final marker coordinates precision: lng=${String(pin.coordinates[0]).length} digits, lat=${String(pin.coordinates[1]).length} digits`);
-    
     // Create marker element
     const el = document.createElement('div');
     el.className = 'travel-pin-marker';
     
-    // Skin-tone color scheme (uniform across markers)
-    const scheme = { main: '#e0ac69', dark: '#c68642', light: '#f1c27d', glow: '#e0ac69' };
-    
+    // Choose assigned palette for this pin
+    const assignment = assignedColorsRef.current.get(pin.id) || { palette: 'skin', idx: 1 };
+    const idx = assignment.idx;
+    const palette = assignment.palette;
+    const schemeList = palette === 'contrast' ? CONTRAST_SCHEMES : SKIN_SCHEMES;
+    const scheme = schemeList[idx] || schemeList[0];
+    el.dataset.colorIdx = String(idx);
+    el.dataset.palette = palette;
+
     // Inject the chosen style HTML
     setMarkerInnerHTML(el, scheme);
     

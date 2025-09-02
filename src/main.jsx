@@ -35,7 +35,9 @@ root.render(
                 <SetLocale>
                     <App/>
                 </SetLocale>
-                <ReactQueryDevtools initialIsOpen={false}/>
+                {import.meta.env.DEV && ((import.meta.env.VITE_ENABLE_RQ_DEVTOOLS ?? 'true') !== 'false') ? (
+                    <ReactQueryDevtools initialIsOpen={false} />
+                ) : null}
             </BrowserRouter>
         </QueryClientProvider>
     </React.StrictMode>
