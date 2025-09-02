@@ -268,3 +268,49 @@ Created `src/Pages/TravelPins/__tests__/index.test.jsx` with basic ESC key testi
 - **Infrastructure Tests**: 2 passing tests
 - **ESC Key Detection**: ✅ Confirmed working
 - **Modal Integration**: ✅ Architecture verified, handlers exist and function correctly in production
+
+## TODO — Additional Page-Level Tests
+
+These targeted tests will close remaining gaps in Travel Pins page coverage. Suggested locations: `src/Pages/TravelPins/__tests__/`.
+
+- Popup actions: verify delegated actions from popup container
+  - Copy: calls `navigator.clipboard.writeText`; fallback to `execCommand('copy')`; button shows temporary success UI and reverts (fake timers).
+  - Open photo: opens `PhotoLightbox` with correct data; ESC (capture) closes it and prevents propagation.
+  - Edit: opens form prefilled; change a field, press ESC → shows Unsaved dialog; confirm discards; keep editing preserves form.
+  - Delete: opens `DeleteConfirmationModal`; confirm/cancel paths work; cancel restores popup (marker.togglePopup flow).
+  - Close button (`data-action="close"`): removes popup and re-enables map interactions.
+
+- ESC behaviors: complete page-level key handling
+  - Delete modal ESC closes modal.
+  - Photo modal ESC uses capture=true and does not trigger other handlers.
+  - Display popups ESC closes all when no modals are open; skip when search input focused.
+
+- Map mechanics and policies
+  - Zoom delta ≥ 0.1 (zoomstart/zoom/zoomend) closes open popups.
+  - Mobile single-popup policy: when `isMobile=true` and multiple popups opened, only the most recent remains.
+  - Marker click does not open form (click class check); map background click opens form.
+  - Custom popup styles style tag injected on mount and removed on unmount.
+
+- Marker coloring
+  - `assignColorsByScreen`: close neighbors use contrast palette; isolated pins use skin palette; stable assignment across runs.
+  - `recolorMarkers`: updates marker element `dataset` and inner HTML via `buildFootprintHTML` only when assignment changes.
+
+- Navbar integration
+  - Dispatch `travelPinsLocationSelect` event → calls `flyTo` with provided `center` and updates `searchHistory` (size ≤ 5, dedup by name).
+  - When search input focused (`#location-search-input`), ESC handlers are ignored.
+
+- Geolocation flows
+  - Success path: calls `flyTo` with expected center/zoom; loading indicator state toggles; error cleared.
+  - Error variants: PERMISSION_DENIED, POSITION_UNAVAILABLE, TIMEOUT map to correct messages.
+  - Button disabled state while locating (re-enabled after callback).
+
+- Clipboard and feedback
+  - When `clipboard.writeText` rejects, fallback path uses hidden textarea + `execCommand('copy')` and still shows success UI.
+
+- Body scroll lock
+  - `useBodyScrollLock` is invoked when photo modal is open or when display popup overlay is active, and released when closed.
+
+Suggested filenames:
+- `src/Pages/TravelPins/__tests__/popup.interactions.test.jsx`
+- `src/Pages/TravelPins/__tests__/esc.behaviors.test.jsx`
+- `src/Pages/TravelPins/__tests__/map.behavior.test.jsx`
