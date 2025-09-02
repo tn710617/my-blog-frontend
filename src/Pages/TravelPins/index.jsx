@@ -11,106 +11,10 @@ import DeleteConfirmationModal from './components/DeleteConfirmationModal';
 import PhotoLightbox from './components/PhotoLightbox';
 import { SKIN_SCHEMES, CONTRAST_SCHEMES } from './utils/palettes';
 import { buildFootprintHTML } from './utils/footprintIcon';
+import { renderMarkdownToHTML } from './utils/markdownUtils';
+import { debounce } from './utils/debounceUtil';
+import { customPopupStyles } from './utils/popupStyles';
 
-// Custom styles to override default Mapbox popup styling
-const customPopupStyles = `
-  /* Auth buttons visibility classes */
-  .auth-buttons-visible {
-    display: block !important;
-  }
-  .auth-buttons-hidden {
-    display: none !important;
-  }
-  .travel-pin-popup .mapboxgl-popup-content {
-    padding: 0 !important;
-    border-radius: 0 !important;
-    box-shadow: none !important;
-    background: transparent !important;
-    max-width: none !important;
-    width: auto !important;
-  }
-  
-  .travel-pin-popup .mapboxgl-popup-close-button {
-    display: none !important;
-  }
-  
-  .travel-pin-popup .mapboxgl-popup-tip {
-    border-top-color: rgb(99 102 241) !important;
-  }
-  
-  /* Center popup in screen */
-  .travel-pin-popup-center {
-    position: fixed !important;
-    top: 50% !important;
-    left: 50% !important;
-    transform: translate(-50%, -50%) !important;
-    z-index: 1000 !important;
-    max-height: 90vh !important;
-    max-width: 90vw !important;
-    overflow-y: auto !important;
-    -webkit-overflow-scrolling: touch !important;
-    overscroll-behavior: contain !important;
-    touch-action: pan-y !important;
-  }
-  
-  .travel-pin-popup-center .mapboxgl-popup-content {
-    position: relative !important;
-    transform: none !important;
-    max-height: none !important;
-    overflow: visible !important;
-  }
-  
-  .travel-pin-popup-center .mapboxgl-popup-tip {
-    display: none !important;
-  }
-  
-  /* Modal animation */
-  .animate-scale-up {
-    animation: scaleUp 0.2s ease-out;
-  }
-  
-  @keyframes scaleUp {
-    0% {
-      transform: scale(0.95);
-      opacity: 0;
-    }
-    100% {
-      transform: scale(1);
-      opacity: 1;
-    }
-  }
-`;
-
-// Utility function to convert markdown to HTML
-const renderMarkdownToHTML = (markdown) => {
-  if (!markdown) return '';
-  
-  // Basic markdown to HTML conversion for popup display
-  return markdown
-    // Bold text
-    .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
-    // Italic text
-    .replace(/\*(.*?)\*/g, '<em>$1</em>')
-    // Code blocks
-    .replace(/`(.*?)`/g, '<code class="bg-gray-100 px-1 py-0.5 rounded text-sm font-mono">$1</code>')
-    // Links
-    .replace(/\[([^\]]+)\]\(([^)]+)\)/g, '<a href="$2" target="_blank" rel="noopener" class="text-blue-600 hover:text-blue-800 underline">$1</a>')
-    // Line breaks
-    .replace(/\n/g, '<br>');
-};
-
-// Debounce utility function
-const debounce = (func, wait) => {
-  let timeout;
-  return function executedFunction(...args) {
-    const later = () => {
-      clearTimeout(timeout);
-      func(...args);
-    };
-    clearTimeout(timeout);
-    timeout = setTimeout(later, wait);
-  };
-};
 
 const TravelPins = () => {
   const intl = useIntl();

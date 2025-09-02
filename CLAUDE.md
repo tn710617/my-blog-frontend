@@ -101,7 +101,7 @@ Environment files (.env.local, .env.production) are not tracked in git - ensure 
 - **CONTAINER RESTART REQUIREMENT**: Always restart containers after code modifications
   - **WHY**: File changes may not reflect immediately in container
   - **HOW**: `docker-compose restart` or `docker-compose down && docker-compose up -d`
-  - **WHEN**: After creating/modifying files, after significant code changes
+  - **WHEN**: After creating/modifying files, after significant code changes, **ESPECIALLY before running tests**
 - **BENEFIT**: Matches deployment environment, consistent results
 
 ### 📋 Version Control and Testing Workflow
@@ -111,10 +111,20 @@ Environment files (.env.local, .env.production) are not tracked in git - ensure 
 - **TEST EACH STEP**: Verify functionality works before moving to the next step
 - **VERIFY ALL TESTS PASS**: Always run full test suite and ensure all tests pass before making any commit
   - **WHY**: Prevents introducing broken functionality into version control
-  - **HOW**: `docker-compose exec app yarn test --run` before each commit
+  - **HOW**: `docker-compose restart && docker-compose exec app yarn test --run` before each commit
   - **WHEN**: Before every commit, after completing any step or increment
+  - **CRITICAL**: Always restart container before running tests to ensure code changes are reflected
 - **DOCUMENT PROGRESS**: Use TodoWrite tool to track progress and completion status
 - **ROLLBACK READY**: Each commit should be a working state we can return to
+
+### 🧪 Testing Workflow Requirements
+**Essential testing practices:**
+- **CONTAINER RESTART BEFORE TESTS**: Always run `docker-compose restart` before running any tests
+  - **WHY**: Code changes may not be reflected in the container without restart
+  - **CRITICAL**: This is the most common cause of test failures after code modifications
+- **TEST COMMAND SEQUENCE**: `docker-compose restart && docker-compose exec app yarn test --run`
+- **WATCH MODE**: For development, use `docker-compose exec app yarn test --watchAll` (no restart needed during development)
+- **COVERAGE**: `docker-compose exec app yarn test --coverage --watchAll=false`
 
 ### 🚨 Error Handling and Research
 **When encountering persistent errors after several attempts:**
