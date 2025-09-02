@@ -14,6 +14,7 @@ import { buildFootprintHTML } from './utils/footprintIcon';
 import { renderMarkdownToHTML } from './utils/markdownUtils';
 import { debounce } from './utils/debounceUtil';
 import { customPopupStyles } from './utils/popupStyles';
+import { assignColorsByScreen, recolorMarkers, createColorAssignmentRef } from './utils/colorManager';
 
 
 const TravelPins = () => {
@@ -92,73 +93,18 @@ const TravelPins = () => {
   // Marker style: fixed to footprint
   
   // Assigned color index per pin id
-  const assignedColorsRef = useRef(new Map());
+  const assignedColorsRef = useRef(createColorAssignmentRef());
 
   // Skin tone palette is defined globally as SKIN_SCHEMES
 
-  // Assign distinct colors based on screen-space proximity (zoom-aware, DOM-only updates)
-  const assignColorsByScreen = useCallback((allPins) => {
-    if (!map.current) return;
-    const thresholdPx = 28; // consider markers within ~28px as "very close"
-    const points = allPins.map(p => ({ id: p.id, coords: p.coordinates, pxy: map.current.project({ lng: p.coordinates[0], lat: p.coordinates[1] }) }));
-    const sorted = [...points].sort((a, b) => String(a.id).localeCompare(String(b.id)));
-    const byId = new Map();
-    for (let i = 0; i < sorted.length; i++) {
-      const cur = sorted[i];
-      const neighborColors = new Set();
-      let hasNeighbor = false;
-      for (let j = 0; j < i; j++) {
-        const prev = sorted[j];
-        const dx = cur.pxy.x - prev.pxy.x;
-        const dy = cur.pxy.y - prev.pxy.y;
-        const dist2 = dx * dx + dy * dy;
-        if (dist2 <= thresholdPx * thresholdPx) {
-          hasNeighbor = true;
-          const prevAssign = byId.get(prev.id);
-          if (prevAssign && prevAssign.palette === 'contrast') {
-            neighborColors.add(prevAssign.idx);
-          }
-        }
-      }
-      if (!hasNeighbor) {
-        // default skin tone index 1 (medium)
-        byId.set(cur.id, { palette: 'skin', idx: 1 });
-      } else {
-        // choose first available contrast color index
-        let chosen = 0;
-        for (let k = 0; k < CONTRAST_SCHEMES.length; k++) {
-          if (!neighborColors.has(k)) { chosen = k; break; }
-        }
-        byId.set(cur.id, { palette: 'contrast', idx: chosen });
-      }
-    }
-    assignedColorsRef.current = byId;
+  // Color management functions - moved to utils/colorManager.js
+  const handleAssignColorsByScreen = useCallback((allPins) => {
+    assignColorsByScreen(allPins, map.current, assignedColorsRef.current);
   }, []);
 
-  // Recolor existing markers in-place without touching React state
-  const recolorMarkers = useCallback(() => {
-    if (!map.current) return;
-    try {
-      assignColorsByScreen(pins);
-      pins.forEach((pin) => {
-        const marker = markersByIdRef.current.get(pin.id);
-        if (!marker) return;
-        const el = marker.getElement?.();
-        if (!el) return;
-        const assignment = assignedColorsRef.current.get(pin.id) || { palette: 'skin', idx: 1 };
-        const curIdx = Number(el.dataset.colorIdx ?? -1);
-        const curPalette = el.dataset.palette || '';
-        const newPalette = assignment.palette;
-        const idx = assignment.idx;
-        if (idx === curIdx && curPalette === newPalette) return;
-        el.dataset.colorIdx = String(idx);
-        el.dataset.palette = newPalette;
-        const schemeList = newPalette === 'contrast' ? CONTRAST_SCHEMES : SKIN_SCHEMES;
-        const scheme = schemeList[idx] || schemeList[0];
-        el.innerHTML = buildFootprintHTML(scheme);
-      });
-    } catch {}
-  }, [pins, assignColorsByScreen]);
+  const handleRecolorMarkers = useCallback(() => {
+    recolorMarkers(pins, map.current, markersByIdRef.current, assignedColorsRef.current);
+  }, [pins]);
 
   // Inject custom popup styles
   useEffect(() => {
@@ -197,7 +143,7 @@ const TravelPins = () => {
     if (!mapReady) return;
 
     // Compute screen-space color assignments up front
-    try { assignColorsByScreen(pins); } catch {}
+    try { handleAssignColorsByScreen(pins); } catch {}
 
     const markersById = markersByIdRef.current;
 
@@ -263,7 +209,7 @@ const TravelPins = () => {
     return () => {
       // No-op here; global cleanup on unmount elsewhere
     };
-  }, [pins, mapLoaded, assignColorsByScreen]);
+  }, [pins, mapLoaded, handleAssignColorsByScreen]);
 
   // Auth 改變時，立刻同步 ref，並更新所有已開啟的 popups
   useEffect(() => {
@@ -402,7 +348,7 @@ const TravelPins = () => {
       map.current.on('load', () => {
         setMapLoaded(true);
         // Initial recolor once map is ready
-        try { recolorMarkers(); } catch {}
+        try { handleRecolorMarkers(); } catch {}
       });
 
       map.current.on('error', (e) => {
@@ -411,8 +357,8 @@ const TravelPins = () => {
       });
 
       // Update colors on zoom/move end (screen-space proximity)
-      const onMoveEnd = () => { try { recolorMarkers(); } catch {} };
-      const onZoomEnd = () => { try { recolorMarkers(); } catch {} };
+      const onMoveEnd = () => { try { handleRecolorMarkers(); } catch {} };
+      const onZoomEnd = () => { try { handleRecolorMarkers(); } catch {} };
       map.current.on('moveend', onMoveEnd);
       map.current.on('zoomend', onZoomEnd);
 
