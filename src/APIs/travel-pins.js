@@ -15,13 +15,23 @@ export const TRAVEL_PINS_QUERY_KEYS = {
 
 // Helper function to transform API data to frontend format
 const transformPinFromAPI = (apiPin) => {
+  // Debug: Log API coordinate precision after backend fix
+  console.log('🔍 API returned coordinates:', {
+    longitude: apiPin.longitude,
+    latitude: apiPin.latitude,
+    longitudeType: typeof apiPin.longitude,
+    latitudeType: typeof apiPin.latitude,
+    longitudeLength: String(apiPin.longitude).length,
+    latitudeLength: String(apiPin.latitude).length
+  });
+  
   return {
     id: apiPin.id,
     title: apiPin.title,
     note: apiPin.note,
     visited_at: apiPin.visited_at,
     photo_url: apiPin.photo_url,
-    coordinates: [parseFloat(apiPin.longitude), parseFloat(apiPin.latitude)], // API: lat/lng separate, Frontend: [lng, lat]
+    coordinates: [Number(apiPin.longitude), Number(apiPin.latitude)], // API: lat/lng separate, Frontend: [lng, lat]
     created_at: apiPin.created_at,
     updated_at: apiPin.updated_at,
   };
@@ -29,7 +39,7 @@ const transformPinFromAPI = (apiPin) => {
 
 // Helper function to transform frontend data to API format
 const transformPinToAPI = (frontendPin) => {
-  return {
+  const apiData = {
     title: frontendPin.title,
     note: frontendPin.note || null,
     visited_at: frontendPin.visited_at || null,
@@ -37,6 +47,17 @@ const transformPinToAPI = (frontendPin) => {
     latitude: frontendPin.coordinates ? frontendPin.coordinates[1] : null, // Frontend: [lng, lat], API: separate fields
     longitude: frontendPin.coordinates ? frontendPin.coordinates[0] : null,
   };
+  
+  // Debug: Log coordinate precision being sent to API
+  console.log('📤 Sending coordinates to API (after backend fix):', {
+    originalCoordinates: frontendPin.coordinates,
+    apiLatitude: apiData.latitude,
+    apiLongitude: apiData.longitude,
+    latitudePrecision: String(apiData.latitude).length,
+    longitudePrecision: String(apiData.longitude).length
+  });
+  
+  return apiData;
 };
 
 // Get All Travel Pins (Public)

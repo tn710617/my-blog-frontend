@@ -560,11 +560,16 @@ src/
 - [x] ~~Remove 'cmd / ctrl + F' placeholder text from mobile search box~~ ✅ **COMPLETED**
   - Removed irrelevant keyboard shortcut references from mobile search
   - Cleaned up placeholder text for better mobile UX
-- [x] ~~Pin accuracy/positioning issue research~~ ✅ **COMPLETED - ACCEPTED AS EXPECTED BEHAVIOR**
-  - **Research Finding**: This is documented expected behavior for Mapbox GL JS DOM markers
-  - **Root Cause**: DOM markers lose precision at different zoom levels (Mapbox Issues #4048, #10749, #10726)
-  - **Official Solution**: Symbol Layers provide better accuracy but require complete implementation overhaul
-  - **Decision**: Accepted as normal behavior - most production Mapbox applications experience this limitation
+- [x] ~~Pin accuracy/positioning issue research~~ ✅ **COMPLETED - BACKEND PRECISION LIMITATION IDENTIFIED**
+  - **Research Finding**: Pin positioning inaccuracy is caused by backend database precision limitation
+  - **Root Cause**: Backend stores coordinates with 8 decimal places (~1m accuracy) vs Mapbox's 15+ decimal precision (~1mm accuracy)
+  - **Investigation Results**: 
+    - Frontend sends full precision: `7.235999923499918` (17 digits)
+    - Backend returns truncated: `'7.23599992'` (8 decimal places)
+    - Database schema likely uses DECIMAL(10,8) instead of DECIMAL(15,12) or DOUBLE
+  - **Impact**: ~1-3 meter positioning offset on pin placement
+  - **Frontend Solution**: None available - requires backend database schema update
+  - **Workaround**: Document known limitation, acceptable for travel pin use case
 
 **Pin Display & Photo Integration Improvements**
 - [ ] Replace coordinate display section with copy location button

@@ -433,6 +433,11 @@ const TravelPins = () => {
         }
         
         const coordinates = [e.lngLat.lng, e.lngLat.lat];
+        
+        // Debug: Log click coordinates for accuracy testing
+        console.log('🎯 Click coordinates:', coordinates);
+        console.log('🎯 Click pixel position:', e.point);
+        console.log('🎯 Zoom level:', map.current.getZoom());
         const newFormData = {
           title: '',
           note: '',
@@ -540,7 +545,7 @@ const TravelPins = () => {
     return () => document.removeEventListener('keydown', handleDeleteModalEscape);
   }, [showDeleteModal]);
 
-  // ESC key handler for photo modal
+  // ESC key handler for photo modal (highest priority)
   useEffect(() => {
     if (!showPhotoModal) return;
 
@@ -548,12 +553,14 @@ const TravelPins = () => {
       if (e.key === 'Escape') {
         e.preventDefault();
         e.stopPropagation();
+        e.stopImmediatePropagation(); // Stop all other ESC handlers
         closePhotoModal();
       }
     };
 
-    document.addEventListener('keydown', handlePhotoModalEscape);
-    return () => document.removeEventListener('keydown', handlePhotoModalEscape);
+    // Add with capture=true for higher priority
+    document.addEventListener('keydown', handlePhotoModalEscape, true);
+    return () => document.removeEventListener('keydown', handlePhotoModalEscape, true);
   }, [showPhotoModal]);
 
   // Body overflow control via hook
@@ -567,6 +574,11 @@ const TravelPins = () => {
 
     const handleEscapeForPopups = (e) => {
       if (e.key === 'Escape') {
+        // Double-check modal states to prevent conflicts
+        if (showPhotoModal || showForm || showDeleteModal || showEscModal) {
+          return; // Exit early if any modal is open
+        }
+        
         if (openPopups.size > 0) {
           // Close all open popups
           markersRef.current.forEach(marker => {
@@ -581,7 +593,7 @@ const TravelPins = () => {
 
     document.addEventListener('keydown', handleEscapeForPopups);
     return () => document.removeEventListener('keydown', handleEscapeForPopups);
-  }, [showForm, pins, openPopups]);
+  }, [showForm, showDeleteModal, showEscModal, showPhotoModal, openPopups]);
 
   // Mobile single popup policy enforcement
   useEffect(() => {
@@ -924,132 +936,111 @@ const TravelPins = () => {
   };
 
   const createMarkerForPin = (pin, index) => {
+    // Debug: Log marker creation coordinates after backend fix
+    console.log(`📌 Creating marker ${index} at coordinates:`, pin.coordinates);
+    console.log(`📌 Final marker coordinates precision: lng=${String(pin.coordinates[0]).length} digits, lat=${String(pin.coordinates[1]).length} digits`);
+    
     // Create marker element with thumbtack design
     const el = document.createElement('div');
     el.className = 'travel-pin-marker';
     
-    // Create thumbtack with alternating colors
-    const colors = ['red', 'green', 'orange'];
+    // Enhanced color schemes for better UI
+    const colors = ['blue', 'purple', 'teal'];
     const selectedColor = colors[index % colors.length];
     
     const colorSchemes = {
-      red: {
-        main: '#ef4444',
-        dark: '#dc2626',
-        light: '#f87171'
+      blue: {
+        main: '#3b82f6',
+        dark: '#1d4ed8',
+        light: '#60a5fa',
+        glow: '#3b82f6'
       },
-      green: {
-        main: '#10b981',
-        dark: '#059669',
-        light: '#34d399'
+      purple: {
+        main: '#8b5cf6',
+        dark: '#7c3aed',
+        light: '#a78bfa',
+        glow: '#8b5cf6'
       },
-      orange: {
-        main: '#f97316',
-        dark: '#ea580c',
-        light: '#fb923c'
+      teal: {
+        main: '#14b8a6',
+        dark: '#0d9488',
+        light: '#5eead4',
+        glow: '#14b8a6'
       }
     };
     
     const scheme = colorSchemes[selectedColor];
     
-    el.innerHTML = `
-      <div class="pushpin-container" style="position: relative; width: 100%; height: 100%;">
-        <!-- Pin Head (top dome part) -->
-        <div class="pin-head" style="
-          width: 18px;
-          height: 18px;
-          background: radial-gradient(circle at 35% 30%, ${scheme.light}, ${scheme.main} 50%, ${scheme.dark} 90%);
-          border: 1.5px solid rgba(255,255,255,0.8);
-          border-radius: 50%;
-          position: absolute;
-          top: 0;
-          left: 50%;
-          transform: translateX(-50%);
-          box-shadow: 
-            0 3px 8px rgba(0,0,0,0.25),
-            inset 0 1px 3px rgba(255,255,255,0.4),
-            inset 0 -1px 2px rgba(0,0,0,0.2);
-        ">
-          <!-- Glossy highlight -->
-          <div style="
-            position: absolute;
-            top: 2px;
-            left: 5px;
-            width: 5px;
-            height: 5px;
-            background: rgba(255,255,255,0.8);
-            border-radius: 50%;
-            filter: blur(0.5px);
-          "></div>
-        </div>
-        
-        <!-- Pin Base (wider middle section) -->
-        <div class="pin-base" style="
-          width: 12px;
-          height: 4px;
-          background: linear-gradient(to bottom, #888, #555);
-          position: absolute;
-          top: 16px;
-          left: 50%;
-          transform: translateX(-50%);
-          border-radius: 6px 6px 2px 2px;
-          box-shadow: 0 2px 4px rgba(0,0,0,0.3);
-        "></div>
-        
-        <!-- Pin Shaft (thin needle) -->
-        <div class="pin-shaft" style="
-          width: 2px;
-          height: 10px;
-          background: linear-gradient(to right, #999 0%, #666 40%, #444 60%, #666 100%);
-          position: absolute;
-          top: 19px;
-          left: 50%;
-          transform: translateX(-50%);
-          border-radius: 0 0 1px 1px;
-          box-shadow: 
-            1px 0 2px rgba(0,0,0,0.4),
-            -1px 0 1px rgba(255,255,255,0.2);
-        "></div>
-        
-        <!-- Shadow beneath the pin -->
-        <div class="pin-shadow" style="
-          width: 20px;
-          height: 6px;
-          background: radial-gradient(ellipse, rgba(0,0,0,0.3) 0%, transparent 70%);
-          position: absolute;
-          top: 28px;
-          left: 50%;
-          transform: translateX(-50%);
-          border-radius: 50%;
-        "></div>
+    // Option 1: Custom SVG Footprint (detailed)
+    const svgFootprint = `
+      <div style="position: absolute; top: -12px; left: -12px; width: 24px; height: 24px;">
+        <svg width="24" height="24" viewBox="0 0 24 24">
+          <ellipse cx="12" cy="16" rx="4" ry="6" fill="${scheme.main}" stroke="white" stroke-width="1.5"/>
+          <circle cx="10" cy="8" r="1.5" fill="${scheme.main}" stroke="white" stroke-width="1"/>
+          <circle cx="12" cy="7" r="1.8" fill="${scheme.main}" stroke="white" stroke-width="1"/>
+          <circle cx="14" cy="8" r="1.5" fill="${scheme.main}" stroke="white" stroke-width="1"/>
+          <circle cx="15.5" cy="9.5" r="1.2" fill="${scheme.main}" stroke="white" stroke-width="1"/>
+          <circle cx="8.5" cy="9.5" r="1.2" fill="${scheme.main}" stroke="white" stroke-width="1"/>
+          <circle cx="12" cy="12" r="1" fill="${scheme.dark}" stroke="white" stroke-width="0.5" opacity="0.8"/>
+        </svg>
       </div>
     `;
     
-    el.style.cssText = `
-      width: 24px;
-      height: 32px;
-      cursor: pointer;
-      position: relative;
-      transition: width 0.2s ease, height 0.2s ease, filter 0.2s ease, margin 0.2s ease;
+    // Simple emoji footprint with better colors
+    const emojiFootprint = `
+      <div class="footprint-container" style="
+        position: absolute; 
+        top: -12px; 
+        left: -12px; 
+        width: 24px; 
+        height: 24px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 20px;
+        text-shadow: 0 2px 4px rgba(0,0,0,0.3);
+        transition: all 0.2s ease;
+        filter: hue-rotate(${index * 120}deg) saturate(1.2);
+      ">
+        👣
+      </div>
     `;
+    
+    // Option 3: Walking icon concept
+    const walkingIcon = `
+      <div style="position: absolute; top: -12px; left: -12px; width: 24px; height: 24px;">
+        <svg width="24" height="24" viewBox="0 0 24 24">
+          <!-- Person walking silhouette -->
+          <path d="M13.5 5.5c1.1 0 2-.9 2-2s-.9-2-2-2-2 .9-2 2 .9 2 2 2zM9.8 8.9L7 23h2.1l1.8-8 2.1 2v6h2v-7.5l-2.1-2 .6-3c1.3 1.5 3.3 2.5 5.5 2.5v-2c-1.9 0-3.5-1-4.3-2.4l-1-1.6c-.4-.6-1-1-1.7-1-.3 0-.5.1-.8.1L6 8.3V13h2V9.6l1.8-.7z" 
+                fill="${scheme.main}" stroke="white" stroke-width="0.5"/>
+          <circle cx="12" cy="12" r="0.8" fill="${scheme.dark}" opacity="0.6"/>
+        </svg>
+      </div>
+    `;
+    
+    // Use the emoji version for simplicity and universal compatibility
+    el.innerHTML = emojiFootprint;
+    
+    // Use exact same CSS as accurate debug crosshair
+    el.style.cssText = 'position: absolute; pointer-events: auto; cursor: pointer; z-index: 100;';
 
-    // Add hover effects without using transform (which conflicts with Mapbox positioning)
+    // Simple hover effects
+    const container = el.querySelector('.footprint-container');
+    
     el.addEventListener('mouseenter', () => {
-      el.style.filter = 'brightness(1.15) drop-shadow(0 4px 8px rgba(0,0,0,0.4))';
-      el.style.width = '28px';
-      el.style.height = '36px';
-      el.style.marginLeft = '-2px'; // Center the wider pin
-      el.style.marginBottom = '-4px'; // Keep the bottom tip anchored
+      if (container) {
+        container.style.transform = 'scale(1.2)';
+        container.style.filter = `hue-rotate(${index * 120}deg) saturate(1.5) brightness(1.2)`;
+      }
       el.style.zIndex = '1000';
     });
 
     el.addEventListener('mouseleave', () => {
-      el.style.filter = 'brightness(1)';
-      el.style.width = '24px';
-      el.style.height = '32px';
-      el.style.marginLeft = '0px';
-      el.style.marginBottom = '0px';
-      el.style.zIndex = 'auto';
+      if (container) {
+        container.style.transform = 'scale(1)';
+        container.style.filter = `hue-rotate(${index * 120}deg) saturate(1.2)`;
+      }
+      el.style.zIndex = '100';
     });
 
     const popup = createEnhancedPopup(pin);
@@ -1062,11 +1053,53 @@ const TravelPins = () => {
 
     const marker = new mapboxgl.Marker({
       element: el,
-      anchor: 'bottom' // Pin tip should anchor to the coordinates
+      anchor: 'center' // Use same anchor strategy as accurate crosshair
     })
       .setLngLat(pin.coordinates)
       .setPopup(popup)
       .addTo(map.current);
+    
+    // Debug: Add crosshair marker for coordinate verification (after backend fix)
+    // if (process.env.NODE_ENV === 'development') {
+    //   const debugEl = document.createElement('div');
+    //   debugEl.innerHTML = `
+    //     <div style="
+    //       position: absolute;
+    //       top: -10px;
+    //       left: -10px;
+    //       width: 20px;
+    //       height: 20px;
+    //       pointer-events: none;
+    //     ">
+    //       <div style="
+    //         position: absolute;
+    //         top: 9px;
+    //         left: 0;
+    //         width: 20px;
+    //         height: 2px;
+    //         background: red;
+    //         opacity: 0.8;
+    //       "></div>
+    //       <div style="
+    //         position: absolute;
+    //         top: 0;
+    //         left: 9px;
+    //         width: 2px;
+    //         height: 20px;
+    //         background: red;
+    //         opacity: 0.8;
+    //       "></div>
+    //     </div>
+    //   `;
+    //   debugEl.style.cssText = 'position: absolute; pointer-events: none; z-index: 1000;';
+    //   
+    //   new mapboxgl.Marker({
+    //     element: debugEl,
+    //     anchor: 'center'
+    //   })
+    //     .setLngLat(pin.coordinates)
+    //     .addTo(map.current);
+    // }
 
     return marker;
   };
