@@ -183,6 +183,7 @@ const TravelPins = () => {
   const [showPhotoModal, setShowPhotoModal] = useState(false);
   const [photoModalData, setPhotoModalData] = useState({ url: '', title: '' });
   const [coordsCopied, setCoordsCopied] = useState(false);
+  // Marker style: fixed to footprint
 
   // Inject custom popup styles
   useEffect(() => {
@@ -213,7 +214,7 @@ const TravelPins = () => {
     return () => window.removeEventListener('resize', handleResize);
   }, []);
 
-  // Effect to create/update/remove markers when pins change (diff by id)
+  // Effect to create/update/remove markers when pins change
   useEffect(() => {
     if (!map.current) return;
 
@@ -258,6 +259,12 @@ const TravelPins = () => {
           existing.setLngLat(pin.coordinates);
           const updatedPopup = createEnhancedPopup(pin);
           existing.setPopup(updatedPopup);
+          // Refresh marker element HTML (ensures current footprint style)
+          const el = existing.getElement();
+          if (el) {
+            const scheme = { main: '#e0ac69', dark: '#c68642', light: '#f1c27d', glow: '#e0ac69' };
+            try { el.innerHTML = buildFootprintHTML(scheme); } catch {}
+          }
           if (wasOpen) {
             // Re-open after small tick to ensure DOM updates
             setTimeout(() => {
@@ -935,128 +942,82 @@ const TravelPins = () => {
     );
   };
 
+  // (Pin style removed — using footprint only)
+
+  // Build marker inner HTML for 'footprint' style using provided SVG (bright colorized)
+  const buildFootprintHTML = (scheme) => {
+    return `
+      <div class="marker-container" style="
+        position: absolute; top: -14px; left: -14px; width: 28px; height: 28px;
+        display: flex; align-items: center; justify-content: center;
+        transition: transform 0.2s ease;">
+        <svg width="28" height="28" viewBox="0 0 193.736 193.736" xmlns="http://www.w3.org/2000/svg">
+          <defs>
+            <filter id="shadow2" x="-50%" y="-50%" width="200%" height="200%">
+              <feDropShadow dx="0" dy="1" stdDeviation="1.2" flood-color="rgba(0,0,0,0.35)"/>
+            </filter>
+          </defs>
+          <g fill="${scheme.light}" stroke="white" stroke-width="2" filter="url(#shadow2)">
+            <path d="M163.459,126.139c-1.72-28.186-46.4-49.719-70.769-40.617c-0.219,0.082-0.411,0.186-0.597,0.293
+              c-28.324-0.719-68.175,19.519-55.087,53.387c9.106,23.562,48.151,26.031,69.125,26.032
+              C129.208,165.235,165.215,154.896,163.459,126.139z M106.192,150.854c1.618,0.01,3.24-0.021,4.865-0.078
+              c0.376,0.033,0.755,0.017,1.137-0.051c0.904-0.04,1.811-0.096,2.717-0.153c0.025,0.03,0.041,0.071,0.067,0.101
+              c-4.957,0.653-9.959,0.954-14.967,0.849C102.071,151.326,104.131,151.144,106.192,150.854z M83.599,156.708
+              c2.961,0.567,5.935,1.058,8.924,1.388c-3.164-0.162-6.377-0.444-9.591-0.866C83.183,157.094,83.394,156.905,83.599,156.708z"/>
+            <path d="M49.35,40.128C37.704,24.875,15.209,25.38,4.425,41.741C-5.64,57.01,2.93,75.539,15.462,86.38
+              c8.108,7.014,21.558,10.902,27.666,2.45c0.454-0.056,0.925-0.221,1.402-0.52C61.518,77.665,60.488,54.715,49.35,40.128z
+               M50.806,67.27c0.567-2.231,0.733-4.578,0.613-6.957c0.081-0.12,0.15-0.244,0.215-0.376c0.337,3.155,0.121,6.299-0.689,9.276
+              C50.928,68.569,50.878,67.921,50.806,67.27z"/>
+            <path d="M72.884,32.114c-0.922,0.615-1.274,1.656-1.195,2.648c-7.795,8.365-9.45,21.916-5.251,32.327
+              c5.066,12.56,19.968,14.367,30.321,6.906C117.588,58.984,97.253,15.839,72.884,32.114z M82.613,35.85
+              c-0.414-0.187-0.842-0.34-1.284-0.46c4.261-0.515,7.964,0.617,11.073,3.632c-0.015-0.005-0.031-0.008-0.046-0.013
+              c-0.633-0.54-1.437-0.781-2.275-0.786C88.171,36.482,85.7,35.554,82.613,35.85z"/>
+            <path d="M131.677,33.131c-1.005,0.137-1.56,0.738-1.777,1.479c-0.384,0.032-0.768,0.13-1.136,0.346
+              c-0.914,0.535-1.296,1.413-1.492,2.36c-0.583-0.348-1.317-0.396-2.052,0.108c-16.797,11.525-17.24,45.928,9.248,40.183
+              C157.274,72.66,157.445,29.613,131.677,33.131z"/>
+            <path d="M192.231,67.035c-3.626-9.364-15.854-16.538-23.952-7.555c-0.104,0.116-0.167,0.247-0.24,0.375
+              c-2.318,0.107-4.421,0.895-5.956,2.462c-6.195,3.264-9.801,10.884-9.428,18.463c0.718,14.578,16.646,17.841,28.12,13.546
+              C191.8,90.199,196.364,77.707,192.231,67.035z"/>
+          </g>
+        </svg>
+      </div>
+    `;
+  };
+
+  // Helper to set footprint HTML
+  const setMarkerInnerHTML = (el, scheme) => {
+    el.innerHTML = buildFootprintHTML(scheme);
+  };
+
   const createMarkerForPin = (pin, index) => {
     // Debug: Log marker creation coordinates after backend fix
     console.log(`📌 Creating marker ${index} at coordinates:`, pin.coordinates);
     console.log(`📌 Final marker coordinates precision: lng=${String(pin.coordinates[0]).length} digits, lat=${String(pin.coordinates[1]).length} digits`);
     
-    // Create marker element with thumbtack design
+    // Create marker element
     const el = document.createElement('div');
     el.className = 'travel-pin-marker';
     
-    // Enhanced color schemes for better UI
-    const colors = ['blue', 'purple', 'teal'];
-    const selectedColor = colors[index % colors.length];
+    // Skin-tone color scheme (uniform across markers)
+    const scheme = { main: '#e0ac69', dark: '#c68642', light: '#f1c27d', glow: '#e0ac69' };
     
-    const colorSchemes = {
-      blue: {
-        main: '#3b82f6',
-        dark: '#1d4ed8',
-        light: '#60a5fa',
-        glow: '#3b82f6'
-      },
-      purple: {
-        main: '#8b5cf6',
-        dark: '#7c3aed',
-        light: '#a78bfa',
-        glow: '#8b5cf6'
-      },
-      teal: {
-        main: '#14b8a6',
-        dark: '#0d9488',
-        light: '#5eead4',
-        glow: '#14b8a6'
-      }
-    };
-    
-    const scheme = colorSchemes[selectedColor];
-    
-    // Option 1: Custom SVG Footprint (detailed)
-    const svgFootprint = `
-      <div style="position: absolute; top: -12px; left: -12px; width: 24px; height: 24px;">
-        <svg width="24" height="24" viewBox="0 0 24 24">
-          <ellipse cx="12" cy="16" rx="4" ry="6" fill="${scheme.main}" stroke="white" stroke-width="1.5"/>
-          <circle cx="10" cy="8" r="1.5" fill="${scheme.main}" stroke="white" stroke-width="1"/>
-          <circle cx="12" cy="7" r="1.8" fill="${scheme.main}" stroke="white" stroke-width="1"/>
-          <circle cx="14" cy="8" r="1.5" fill="${scheme.main}" stroke="white" stroke-width="1"/>
-          <circle cx="15.5" cy="9.5" r="1.2" fill="${scheme.main}" stroke="white" stroke-width="1"/>
-          <circle cx="8.5" cy="9.5" r="1.2" fill="${scheme.main}" stroke="white" stroke-width="1"/>
-          <circle cx="12" cy="12" r="1" fill="${scheme.dark}" stroke="white" stroke-width="0.5" opacity="0.8"/>
-        </svg>
-      </div>
-    `;
-    
-    // Simple emoji footprint with CSS color control
-    const emojiFootprint = `
-      <div class="footprint-container" style="
-        position: absolute; 
-        top: -12px; 
-        left: -12px; 
-        width: 24px; 
-        height: 24px;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        font-size: 20px;
-        text-shadow: 0 2px 4px rgba(0,0,0,0.3);
-        transition: all 0.2s ease;
-        filter: 
-          sepia(1) 
-          saturate(3) 
-          hue-rotate(${index * 25 + 10}deg) 
-          brightness(2.5) 
-          contrast(1.2);
-      ">
-        👣
-      </div>
-    `;
-    
-    // Option 3: Walking icon concept
-    const walkingIcon = `
-      <div style="position: absolute; top: -12px; left: -12px; width: 24px; height: 24px;">
-        <svg width="24" height="24" viewBox="0 0 24 24">
-          <!-- Person walking silhouette -->
-          <path d="M13.5 5.5c1.1 0 2-.9 2-2s-.9-2-2-2-2 .9-2 2 .9 2 2 2zM9.8 8.9L7 23h2.1l1.8-8 2.1 2v6h2v-7.5l-2.1-2 .6-3c1.3 1.5 3.3 2.5 5.5 2.5v-2c-1.9 0-3.5-1-4.3-2.4l-1-1.6c-.4-.6-1-1-1.7-1-.3 0-.5.1-.8.1L6 8.3V13h2V9.6l1.8-.7z" 
-                fill="${scheme.main}" stroke="white" stroke-width="0.5"/>
-          <circle cx="12" cy="12" r="0.8" fill="${scheme.dark}" opacity="0.6"/>
-        </svg>
-      </div>
-    `;
-    
-    // Use the emoji version for simplicity and universal compatibility
-    el.innerHTML = emojiFootprint;
+    // Inject the chosen style HTML
+    setMarkerInnerHTML(el, scheme);
     
     // Use exact same CSS as accurate debug crosshair
     el.style.cssText = 'position: absolute; pointer-events: auto; cursor: pointer; z-index: 100;';
 
-    // Simple hover effects with proper color filters
-    const container = el.querySelector('.footprint-container');
-    
+    // Simple hover effect
+    const getContainer = () => el.querySelector('.marker-container');
     el.addEventListener('mouseenter', () => {
-      if (container) {
-        container.style.transform = 'scale(1.2)';
-        container.style.filter = `
-          sepia(1) 
-          saturate(3.5) 
-          hue-rotate(${index * 25 + 10}deg) 
-          brightness(2.8) 
-          contrast(1.2)
-        `;
-      }
+      const container = getContainer();
+      if (container) container.style.transform = 'scale(1.12)';
       el.style.zIndex = '1000';
     });
 
     el.addEventListener('mouseleave', () => {
-      if (container) {
-        container.style.transform = 'scale(1)';
-        container.style.filter = `
-          sepia(1) 
-          saturate(3) 
-          hue-rotate(${index * 25 + 10}deg) 
-          brightness(2.5) 
-          contrast(1.2)
-        `;
-      }
+      const container = getContainer();
+      if (container) container.style.transform = 'scale(1)';
       el.style.zIndex = '100';
     });
 
@@ -1295,6 +1256,8 @@ const TravelPins = () => {
     <div className="w-full h-screen relative">
       {/* Map Container */}
       <div ref={mapContainer} className="w-full h-full" />
+
+      {/* Marker Style Toggle removed: footprint only */}
 
       {/* Loading indicator */}
       {pinsLoading && (
