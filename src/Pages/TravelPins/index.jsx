@@ -1056,20 +1056,21 @@ const TravelPins = () => {
     setMarkerInnerHTML(el, scheme);
     
     // Use exact same CSS as accurate debug crosshair
-    el.style.cssText = 'position: absolute; pointer-events: auto; cursor: pointer; z-index: 100;';
+    el.style.cssText = 'position: absolute; pointer-events: auto; cursor: pointer; z-index: 20;';
 
     // Simple hover effect
     const getContainer = () => el.querySelector('.marker-container');
     el.addEventListener('mouseenter', () => {
       const container = getContainer();
       if (container) container.style.transform = 'scale(1.12)';
-      el.style.zIndex = '1000';
+      // Keep below form overlay (z-50) and popup overlay (~z-[950])
+      el.style.zIndex = '40';
     });
 
     el.addEventListener('mouseleave', () => {
       const container = getContainer();
       if (container) container.style.transform = 'scale(1)';
-      el.style.zIndex = '100';
+      el.style.zIndex = '20';
     });
 
     const popup = createEnhancedPopup(pin);
