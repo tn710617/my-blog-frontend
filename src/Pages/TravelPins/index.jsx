@@ -16,6 +16,7 @@ import { debounce } from './utils/debounceUtil';
 import { customPopupStyles } from './utils/popupStyles';
 import { assignColorsByScreen, recolorMarkers, createColorAssignmentRef } from './utils/colorManager';
 import { useFormState } from './hooks/useFormState';
+import { useGeolocation } from './hooks/useGeolocation';
 
 
 const TravelPins = () => {
@@ -81,11 +82,13 @@ const TravelPins = () => {
     isFormValid,
     getFormDataForSubmission
   } = useFormState();
+
+  // Geolocation functionality
+  const { isLocating, locationError, getCurrentLocation, clearLocationError } = useGeolocation();
+
   const [openPopups, setOpenPopups] = useState(new Set());
   const [isMobile, setIsMobile] = useState(window.innerWidth <= 768);
   const [searchHistory, setSearchHistory] = useState([]);
-  const [isLocating, setIsLocating] = useState(false);
-  const [locationError, setLocationError] = useState(null);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [showEscModal, setShowEscModal] = useState(false);
   const [pendingDeletePin, setPendingDeletePin] = useState(null);
@@ -794,55 +797,14 @@ const TravelPins = () => {
 
   // Handle GPS location request
   const handleGetCurrentLocation = () => {
-    if (!navigator.geolocation) {
-      setLocationError('Geolocation is not supported by this browser');
-      return;
-    }
-
-    setIsLocating(true);
-    setLocationError(null);
-
-    const options = {
-      enableHighAccuracy: true,
-      timeout: 10000,
-      maximumAge: 300000 // 5 minutes cache
-    };
-
-    navigator.geolocation.getCurrentPosition(
-      (position) => {
-        const { latitude, longitude } = position.coords;
-
-        // Fly to current location with smooth animation
-        map.current.flyTo({
-          center: [longitude, latitude],
-          zoom: 14, // City-level zoom for current location
-          duration: 2500
-        });
-
-        setIsLocating(false);
-        setLocationError(null);
-      },
-      (error) => {
-        console.error('Geolocation error:', error);
-        setIsLocating(false);
-        
-        switch (error.code) {
-          case error.PERMISSION_DENIED:
-            setLocationError('Location access denied. Please enable location permissions.');
-            break;
-          case error.POSITION_UNAVAILABLE:
-            setLocationError('Location information unavailable.');
-            break;
-          case error.TIMEOUT:
-            setLocationError('Location request timed out. Please try again.');
-            break;
-          default:
-            setLocationError('Unable to retrieve your location.');
-            break;
-        }
-      },
-      options
-    );
+    getCurrentLocation(({ latitude, longitude }) => {
+      // Fly to current location with smooth animation
+      map.current.flyTo({
+        center: [longitude, latitude],
+        zoom: 14, // City-level zoom for current location
+        duration: 2500
+      });
+    });
   };
 
   // (Pin style removed — using footprint only)
@@ -1401,7 +1363,7 @@ const TravelPins = () => {
               <div className="text-xs text-red-100 mt-1">{locationError}</div>
             </div>
             <button 
-              onClick={() => setLocationError(null)}
+              onClick={clearLocationError}
               className="text-red-200 hover:text-white ml-2"
             >
               <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
