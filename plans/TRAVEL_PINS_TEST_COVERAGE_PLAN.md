@@ -156,6 +156,41 @@ Approach: Render with MemoryRouter at `/travel-pins` and at a non-matching route
 - ✅ Page: `src/Pages/TravelPins/__tests__/index.test.jsx` (ESC key integration tests - 2 tests)
 - ⏳ Nav: `src/Components/Nav/__tests__/TravelPinsNav.test.jsx`
 
+## 🔄 **Refactoring Plan Integration**
+
+**Component Refactoring Strategy**: The Travel Pins component (1697 lines) will be refactored into smaller, focused components and custom hooks. See `TRAVEL_PINS_REFACTORING_PLAN.md` for detailed plan.
+
+### **Test Migration Strategy During Refactoring**
+1. **Preserve All Existing Tests**: Current 86 tests must continue passing
+2. **Add Unit Tests**: For each extracted utility, hook, and component  
+3. **Update Integration Tests**: Modify page-level tests to work with new structure
+4. **Incremental Validation**: Test → Manual verify → Commit after each step
+
+### **New Test Structure Post-Refactoring**
+```
+src/Pages/TravelPins/__tests__/
+├── index.test.jsx (2 tests - preserve existing)
+├── TravelPinsContainer.test.jsx (new integration tests)
+├── components/__tests__/ (47 tests + new component tests)
+├── hooks/__tests__/ (new hook tests)
+│   ├── useFormState.test.js
+│   ├── useGeolocation.test.js  
+│   ├── usePopupManager.test.js
+│   └── useMapManager.test.js
+└── utils/__tests__/ (new utility tests)
+    ├── markdownUtils.test.js
+    ├── colorManager.test.js
+    └── debounceUtil.test.js
+```
+
+### **Testing Requirements by Phase**
+- **Phase 1 (Utilities)**: Extract pure functions → Add unit tests (5-10 tests each)
+- **Phase 2 (Hooks)**: Extract stateful logic → Add hook tests (8-15 tests each)  
+- **Phase 3 (Components)**: Extract UI components → Add component tests (5-12 tests each)
+- **Phase 4 (Integration)**: Restructure main component → Update integration tests
+
+**Estimated Test Addition**: ~80-120 new tests across all extracted pieces
+
 ## Test Data and Helpers
 - Providers helper: factory that returns wrapper with `QueryClientProvider` (retry: false) and `IntlProvider` with minimal messages used by Travel Pins.
 - Mapbox mock: lightweight classes for Map/Marker/Popup capturing `on`, `addTo`, `setLngLat`, `setHTML`, `addTo`, `remove`.
