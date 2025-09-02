@@ -6,9 +6,11 @@ import toast from 'react-hot-toast';
 import { useAuthStore } from '../../stores';
 import {
   useTravelPins,
+  useTravelPin,
   useCreateTravelPin,
   useUpdateTravelPin,
   useDeleteTravelPin,
+  useOptimisticTravelPinUpdate,
   TRAVEL_PINS_QUERY_KEYS
 } from '../travel-pins';
 
@@ -143,6 +145,81 @@ describe('Travel Pins API Hooks', () => {
     });
   });
 
+  describe('useTravelPin', () => {
+    it('should fetch and transform single travel pin correctly', async () => {
+      const mockApiResponse = {
+        data: {
+          data: {
+            id: 1,
+            title: 'Single Pin',
+            note: 'Single note',
+            latitude: '25.03396400',
+            longitude: '121.56447200',
+            visited_at: '2024-03-15',
+            photo_url: 'https://example.com/single.jpg',
+            created_at: '2024-03-15T10:30:00.000000Z',
+            updated_at: '2024-03-15T10:30:00.000000Z'
+          }
+        }
+      };
+
+      mockAxiosGet.mockResolvedValue(mockApiResponse);
+
+      const wrapper = createWrapper();
+      const { result } = renderHook(() => useTravelPin(1), { wrapper });
+
+      await waitFor(() => {
+        expect(result.current.isSuccess).toBe(true);
+      });
+
+      expect(result.current.data).toEqual({
+        id: 1,
+        title: 'Single Pin',
+        note: 'Single note',
+        coordinates: [121.56447200, 25.03396400], // [lng, lat]
+        visited_at: '2024-03-15',
+        photo_url: 'https://example.com/single.jpg',
+        created_at: '2024-03-15T10:30:00.000000Z',
+        updated_at: '2024-03-15T10:30:00.000000Z'
+      });
+
+      expect(mockAxiosGet).toHaveBeenCalledWith('travel-pins/1');
+    });
+
+    it('should be disabled when id is not provided', () => {
+      mockAxiosGet.mockClear();
+
+      const wrapper = createWrapper();
+      const { result } = renderHook(() => useTravelPin(null), { wrapper });
+
+      // Query should be disabled, so data is undefined and axios not called
+      expect(result.current.data).toBeUndefined();
+      expect(result.current.isSuccess).toBe(false);
+      expect(result.current.isError).toBe(false);
+      expect(mockAxiosGet).not.toHaveBeenCalled();
+    });
+
+    it('should handle 404 errors gracefully', async () => {
+      const notFoundError = {
+        response: {
+          status: 404,
+          data: { message: 'Travel pin not found' }
+        }
+      };
+
+      mockAxiosGet.mockRejectedValue(notFoundError);
+
+      const wrapper = createWrapper();
+      const { result } = renderHook(() => useTravelPin(999), { wrapper });
+
+      await waitFor(() => {
+        expect(result.current.isError).toBe(true);
+      });
+
+      expect(result.current.error).toEqual(notFoundError);
+    });
+  });
+
   describe('useCreateTravelPin', () => {
     it('should create a travel pin successfully', async () => {
       const mockApiResponse = {
@@ -188,18 +265,22 @@ describe('Travel Pins API Hooks', () => {
     });
 
     it('should handle authentication errors', async () => {
-      useAuthStore.mockReturnValue({ isLoggedIn: false });
+      // Reset the axios mock to not interfere
+      mockAxiosPost.mockClear();
+      
+      // Mock the auth store to return false for isLoggedIn
+      vi.mocked(useAuthStore).mockImplementation((selector) => {
+        const state = { isLoggedIn: false };
+        return selector(state);
+      });
 
       const wrapper = createWrapper();
       const { result } = renderHook(() => useCreateTravelPin(), { wrapper });
 
-      try {
-        await result.current.mutateAsync({});
-        // If we reach here, the mutation didn't throw, which means auth check failed
-        expect(true).toBe(false); // Force failure
-      } catch (error) {
-        expect(error.message).toBe('Authentication required');
-      }
+      await expect(result.current.mutateAsync({})).rejects.toThrow('Authentication required');
+      
+      // Ensure axios wasn't called since auth failed
+      expect(mockAxiosPost).not.toHaveBeenCalled();
     });
 
     it('should handle validation errors', async () => {
@@ -317,6 +398,137 @@ describe('Travel Pins API Hooks', () => {
 
       await expect(result.current.mutateAsync(999)).rejects.toEqual(notFoundError);
       expect(toast.error).toHaveBeenCalled();
+    });
+  });
+
+  describe('useOptimisticTravelPinUpdate', () => {
+    let queryClient;
+    let optimisticHelpers;
+
+    beforeEach(() => {
+      queryClient = new QueryClient({
+        defaultOptions: {
+          queries: { retry: false },
+          mutations: { retry: false }
+        }
+      });
+
+      // Pre-populate cache with initial data
+      queryClient.setQueryData(TRAVEL_PINS_QUERY_KEYS.list(), [
+        {
+          id: 1,
+          title: 'Existing Pin',
+          coordinates: [121.5, 25.0],
+          note: 'Original note'
+        },
+        {
+          id: 2,
+          title: 'Another Pin',
+          coordinates: [122.0, 26.0],
+          note: 'Another note'
+        }
+      ]);
+
+      // Create wrapper with our test query client
+      const TestWrapper = ({ children }) => (
+        <QueryClientProvider client={queryClient}>
+          <IntlProvider locale="en" messages={{}}>
+            {children}
+          </IntlProvider>
+        </QueryClientProvider>
+      );
+
+      const { result } = renderHook(() => useOptimisticTravelPinUpdate(), { 
+        wrapper: TestWrapper 
+      });
+      optimisticHelpers = result.current;
+    });
+
+    it('should add optimistic pin to cache', () => {
+      const tempPin = {
+        title: 'Optimistic Pin',
+        coordinates: [123.0, 27.0],
+        note: 'Optimistic note'
+      };
+
+      optimisticHelpers.addOptimisticPin(tempPin);
+
+      const updatedData = queryClient.getQueryData(TRAVEL_PINS_QUERY_KEYS.list());
+      expect(updatedData).toHaveLength(3);
+      
+      const newPin = updatedData[2];
+      expect(newPin.title).toBe('Optimistic Pin');
+      expect(newPin.coordinates).toEqual([123.0, 27.0]);
+      expect(newPin.id).toMatch(/^temp-/); // Should have temp ID
+      expect(newPin.created_at).toBeDefined();
+      expect(newPin.updated_at).toBeDefined();
+    });
+
+    it('should remove optimistic pin from cache', () => {
+      // First add an optimistic pin
+      optimisticHelpers.addOptimisticPin({
+        title: 'To Remove',
+        coordinates: [124.0, 28.0]
+      });
+
+      let data = queryClient.getQueryData(TRAVEL_PINS_QUERY_KEYS.list());
+      expect(data).toHaveLength(3);
+
+      const tempId = data[2].id;
+
+      // Now remove it
+      optimisticHelpers.removeOptimisticPin(tempId);
+
+      data = queryClient.getQueryData(TRAVEL_PINS_QUERY_KEYS.list());
+      expect(data).toHaveLength(2);
+      expect(data.find(pin => pin.id === tempId)).toBeUndefined();
+    });
+
+    it('should update optimistic pin in cache', () => {
+      const updates = {
+        title: 'Updated Title',
+        note: 'Updated note'
+      };
+
+      optimisticHelpers.updateOptimisticPin(1, updates);
+
+      const data = queryClient.getQueryData(TRAVEL_PINS_QUERY_KEYS.list());
+      const updatedPin = data.find(pin => pin.id === 1);
+      
+      expect(updatedPin.title).toBe('Updated Title');
+      expect(updatedPin.note).toBe('Updated note');
+      expect(updatedPin.coordinates).toEqual([121.5, 25.0]); // Original coordinates preserved
+    });
+
+    it('should handle empty cache gracefully', () => {
+      // Clear the cache
+      queryClient.setQueryData(TRAVEL_PINS_QUERY_KEYS.list(), null);
+
+      const tempPin = { title: 'Test', coordinates: [120.0, 24.0] };
+      
+      optimisticHelpers.addOptimisticPin(tempPin);
+
+      const data = queryClient.getQueryData(TRAVEL_PINS_QUERY_KEYS.list());
+      expect(data).toHaveLength(1);
+      expect(data[0].title).toBe('Test');
+    });
+
+    it('should handle removing non-existent pin gracefully', () => {
+      const initialData = queryClient.getQueryData(TRAVEL_PINS_QUERY_KEYS.list());
+      
+      optimisticHelpers.removeOptimisticPin('non-existent-id');
+
+      const data = queryClient.getQueryData(TRAVEL_PINS_QUERY_KEYS.list());
+      expect(data).toEqual(initialData); // No change
+    });
+
+    it('should handle updating non-existent pin gracefully', () => {
+      const initialData = queryClient.getQueryData(TRAVEL_PINS_QUERY_KEYS.list());
+      
+      optimisticHelpers.updateOptimisticPin('non-existent-id', { title: 'Updated' });
+
+      const data = queryClient.getQueryData(TRAVEL_PINS_QUERY_KEYS.list());
+      expect(data).toEqual(initialData); // No change
     });
   });
 

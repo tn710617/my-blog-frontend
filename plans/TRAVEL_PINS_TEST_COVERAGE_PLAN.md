@@ -21,9 +21,11 @@ Recommended defaults for new tests:
 - Add/Edit/Delete pins (auth-only), with toast feedback and React Query cache updates.
 - Copy location to clipboard from popup; render notes (Markdown), date, photo, attachments.
 - Pin form modal for create/edit; delete confirmation modal; photo lightbox.
+- Pin placement: click on map to place new pin; pins have hover effects.
+- ESC key handling: closes modals with proper navigation flow and unsaved content warnings.
 - Mobile/responsive behavior toggles classes/layout and auth-button visibility.
 - Search/nav affordances shown when on `/travel-pins`.
-- Geolocation (“locate me”) flow with loading/error states.
+- Geolocation ("locate me") flow with loading/error states.
 
 ## Coverage Goals
 - Lines: ≥ 85% across `src/Pages/TravelPins/**` and `src/APIs/travel-pins.js`.
@@ -104,8 +106,12 @@ Scenarios:
 - Auth gating
   - isLoggedIn=false → auth buttons container has hidden class; clicking edit/delete in popup requests login via `setShowLoginModal(true)`
   - isLoggedIn=true → edit opens form prefilled; delete opens confirmation modal
+- Pin placement and interaction
+  - Map click places new pin at clicked coordinates
+  - Pin hover effects display correctly
+  - Pin click opens display modal with pin details
 - Create pin flow
-  - Simulate map click to add a new pin (if supported) or open “Add Pin” affordance
+  - Simulate map click to add a new pin (if supported) or open "Add Pin" affordance
   - Fill form and submit → `useCreateTravelPin` mutation called with transformed payload; on success, toast and cache update reflected (new pin present)
 - Edit pin flow
   - From popup, choose edit → form shows existing values; submit triggers `useUpdateTravelPin` with payload; success toast and cache mutation reflect updates
@@ -115,6 +121,13 @@ Scenarios:
   - When popup has `photo_url`, clicking image opens lightbox; close works
 - Geolocation
   - Click locate-me button: loading spinner shows; on success, map center updates (assert stubbed `flyTo` called); on error, error message/ toast shown
+- ESC key behavior and modal navigation
+  - Display modal: ESC key closes modal and returns to map view
+  - Edit modal: ESC key closes edit modal and returns to display modal
+  - Create modal (empty): ESC key closes create modal immediately
+  - Create modal (with content): ESC key shows unsaved changes warning modal
+  - Delete modal: ESC key closes delete modal and returns to display modal
+  - Photo modal: ESC key closes photo modal and returns to display modal
 - Responsive/mobile behavior
   - Toggle window width to simulate mobile; verify popup uses mobile classes; repeat a core interaction to ensure no regressions
 - Error handling
@@ -123,6 +136,8 @@ Scenarios:
 Notes:
 - Where exact map events are difficult, assert calls into our stubs (e.g., `Popup#setHTML` called with string containing expected text).
 - Use `vi.useFakeTimers()` to control debounced behaviors if tested; flush timers before assertions.
+- ESC key testing: Use `fireEvent.keyDown(document, { key: 'Escape' })` to simulate ESC key presses.
+- Pin hover testing: Use `fireEvent.mouseEnter` and `fireEvent.mouseLeave` on marker elements.
 
 ### 5) Navigation Affordances (light integration)
 Targets: `src/Components/Nav/index.jsx`, `EnhancedMobileNav.jsx`, `TravelPinsButton.jsx`
@@ -132,14 +147,14 @@ Targets: `src/Components/Nav/index.jsx`, `EnhancedMobileNav.jsx`, `TravelPinsBut
 Approach: Render with MemoryRouter at `/travel-pins` and at a non-matching route to assert conditional UI.
 
 ## File Organization
-- API hook tests (keep): `src/APIs/__tests__/travel-pins.test.js` (+ add deltas for single pin + optimistic helpers)
-- Utilities: `src/Pages/TravelPins/__tests__/popupHtml.test.js`
-- Components:
-  - `src/Pages/TravelPins/components/__tests__/PinForm.test.jsx`
-  - `src/Pages/TravelPins/components/__tests__/DeleteConfirmationModal.test.jsx`
-  - `src/Pages/TravelPins/components/__tests__/PhotoLightbox.test.jsx`
-- Page: `src/Pages/TravelPins/__tests__/index.test.jsx`
-- Nav: `src/Components/Nav/__tests__/TravelPinsNav.test.jsx`
+- ✅ API hook tests: `src/APIs/__tests__/travel-pins.test.js` (added useTravelPin + optimistic helpers)
+- ✅ Utilities: `src/Pages/TravelPins/__tests__/popupHtml.test.js` (COMPLETED)
+- ✅ Components: 
+  - ✅ `src/Pages/TravelPins/components/__tests__/PinForm.test.jsx` (COMPLETED - 19 tests)
+  - ✅ `src/Pages/TravelPins/components/__tests__/DeleteConfirmationModal.test.jsx` (COMPLETED - 11 tests)
+  - ✅ `src/Pages/TravelPins/components/__tests__/PhotoLightbox.test.jsx` (COMPLETED - 17 tests)
+- ⏳ Page: `src/Pages/TravelPins/__tests__/index.test.jsx`
+- ⏳ Nav: `src/Components/Nav/__tests__/TravelPinsNav.test.jsx`
 
 ## Test Data and Helpers
 - Providers helper: factory that returns wrapper with `QueryClientProvider` (retry: false) and `IntlProvider` with minimal messages used by Travel Pins.
@@ -157,13 +172,17 @@ Approach: Render with MemoryRouter at `/travel-pins` and at a non-matching route
 - Coverage: `yarn test --coverage --watch=false`
 
 ## Milestones
-1) Utilities + components unit tests (fast wins, stable)
-2) API hook deltas (single pin + optimistic helpers)
-3) Page-level integration with mapbox mock + MSW
-4) Nav affordances
-5) Coverage gap review and add missing branches
+1) ✅ API hook deltas (single pin + optimistic helpers) - COMPLETED
+2) ✅ Utilities unit tests (popupHtml.js) - COMPLETED  
+3) ✅ Components unit tests (PinForm, DeleteConfirmationModal, PhotoLightbox) - COMPLETED (47 tests)
+4) Page-level integration with mapbox mock + MSW
+5) Nav affordances
+6) Coverage gap review and add missing branches
 
 ## Exit Criteria
 - All critical flows covered (create/edit/delete/copy/geolocate/popup rendering)
+- Pin interaction flows validated (placement, hover effects, modal navigation)
+- ESC key behavior tested across all modal states with proper navigation flow
+- Unsaved content warning system functioning correctly
 - Branch conditions validated (auth, mobile, optional sections)
 - Coverage thresholds met (≥ 85% lines in Travel Pins codepaths)
