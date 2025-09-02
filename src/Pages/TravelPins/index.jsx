@@ -17,6 +17,7 @@ import { customPopupStyles } from './utils/popupStyles';
 import { assignColorsByScreen, recolorMarkers, createColorAssignmentRef } from './utils/colorManager';
 import { useFormState } from './hooks/useFormState';
 import { useGeolocation } from './hooks/useGeolocation';
+import { usePopupManager } from './hooks/usePopupManager';
 
 
 const TravelPins = () => {
@@ -86,8 +87,29 @@ const TravelPins = () => {
   // Geolocation functionality
   const { isLocating, locationError, getCurrentLocation, clearLocationError } = useGeolocation();
 
-  const [openPopups, setOpenPopups] = useState(new Set());
   const [isMobile, setIsMobile] = useState(window.innerWidth <= 768);
+
+  // Form close handler (needed by popup manager hook)
+  const handleCloseForm = useCallback(() => {
+    setShowForm(false);
+    setEditingPin(null);
+    resetForm();
+  }, [resetForm]);
+
+  // Popup management functionality
+  const { 
+    openPopups, 
+    closeAllPopups, 
+    handlePopupOpen, 
+    handlePopupClose 
+  } = usePopupManager({
+    isMobile,
+    pins,
+    markersRef,
+    mapRef: map,
+    showForm,
+    onCloseForm: handleCloseForm
+  });
   const [searchHistory, setSearchHistory] = useState([]);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [showEscModal, setShowEscModal] = useState(false);
@@ -167,11 +189,7 @@ const TravelPins = () => {
         }
         markersById.delete(id);
         // Also ensure it's removed from open popups set
-        setOpenPopups(prev => {
-          const s = new Set(prev);
-          s.delete(id);
-          return s;
-        });
+        handlePopupClose(id);
       }
     });
 
@@ -528,7 +546,7 @@ const TravelPins = () => {
               marker.getPopup().remove();
             }
           });
-          setOpenPopups(new Set());
+          closeAllPopups();
         }
       }
     };
@@ -537,59 +555,10 @@ const TravelPins = () => {
     return () => document.removeEventListener('keydown', handleEscapeForPopups);
   }, [showForm, showDeleteModal, showEscModal, showPhotoModal, openPopups]);
 
-  // Mobile single popup policy enforcement
-  useEffect(() => {
-    if (isMobile && openPopups.size > 1) {
-
-      // Keep only the most recently opened popup (last in the Set)
-      const popupArray = Array.from(openPopups);
-      const mostRecentPopupId = popupArray[popupArray.length - 1];
-      
-      // Close all but the most recent popup
-      markersRef.current.forEach((marker, index) => {
-        const pin = pins[index];
-        if (pin && pin.id !== mostRecentPopupId && marker.getPopup() && marker.getPopup().isOpen()) {
-          marker.getPopup().remove();
-        }
-      });
-    }
-  }, [isMobile, openPopups, pins]);
-
-  // Close display popups when edit form opens
-  useEffect(() => {
-    if (showForm && openPopups.size > 0) {
-      closeAllPopups();
-    }
-  }, [showForm]);
-
-  // Close edit form when display popup opens  
-  useEffect(() => {
-    if (!showForm && openPopups.size > 0) {
-      // Display popup just opened, nothing to do
-      return;
-    }
-    if (showForm && openPopups.size > 0) {
-      // Both are open, close edit form (display popup takes priority)
-      handleCloseForm();
-    }
-  }, [openPopups]);
 
 
-  const handleCloseForm = () => {
-    setShowForm(false);
-    setEditingPin(null);
-    resetForm();
-  };
 
 
-  const closeAllPopups = () => {
-    markersRef.current.forEach(marker => {
-      if (marker.getPopup() && marker.getPopup().isOpen()) {
-        marker.getPopup().remove();
-      }
-    });
-    setOpenPopups(new Set());
-  };
 
   const handleEditPin = (pin) => {
     // Check if user is logged in
@@ -636,11 +605,7 @@ const TravelPins = () => {
       try {
         await deletePinMutation.mutateAsync(pendingDeletePin.id);
         // Remove from open popups tracking
-        setOpenPopups(prev => {
-          const newSet = new Set(prev);
-          newSet.delete(pendingDeletePin.id);
-          return newSet;
-        });
+        handlePopupClose(pendingDeletePin.id);
         // Remove marker immediately for instant UI feedback
         try {
           const marker = markersByIdRef.current.get(pendingDeletePin.id);
@@ -932,7 +897,7 @@ const TravelPins = () => {
     
     // Add event listeners to track popup state
     popup.on('open', () => {
-      setOpenPopups(prev => new Set(prev).add(pin.id));
+      handlePopupOpen(pin.id);
 
       // Improve mobile scrollability: stop events from reaching the map
       // and ensure the popup scroll container has momentum scrolling.
@@ -995,27 +960,14 @@ const TravelPins = () => {
           container.style.overscrollBehavior = 'contain';
         }
 
-        // Disable map interactions while popup is open to avoid hijacking gestures
-        if (map.current) {
-          map.current.scrollZoom?.disable();
-          map.current.boxZoom?.disable();
-          map.current.dragRotate?.disable();
-          map.current.dragPan?.disable();
-          map.current.keyboard?.disable();
-          map.current.doubleClickZoom?.disable();
-          map.current.touchZoomRotate?.disable();
-        }
       } catch (err) {
         console.warn('Failed to enhance popup scroll behavior:', err);
       }
     });
     
     popup.on('close', () => {
-      setOpenPopups(prev => {
-        const newSet = new Set(prev);
-        newSet.delete(pin.id);
-        return newSet;
-      });
+      handlePopupClose(pin.id);
+      
       // Cleanup delegated handler if present
       try {
         const container = document.getElementById(popupId);
@@ -1024,21 +976,6 @@ const TravelPins = () => {
           delete container.__tp_onClick;
         }
       } catch {}
-
-      // Re-enable map interactions after popup closes
-      try {
-        if (map.current) {
-          map.current.scrollZoom?.enable();
-          map.current.boxZoom?.enable();
-          map.current.dragRotate?.enable();
-          map.current.dragPan?.enable();
-          map.current.keyboard?.enable();
-          map.current.doubleClickZoom?.enable();
-          map.current.touchZoomRotate?.enable();
-        }
-      } catch (err) {
-        console.warn('Failed to restore map interactions:', err);
-      }
     });
     
     return popup;
