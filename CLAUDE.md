@@ -130,3 +130,27 @@ Environment files (.env.local, .env.production) are not tracked in git - ensure 
 - Test critical user journeys and business logic
 - Explain strategy behind each decision
 - Let user understand reasoning behind priorities
+
+### 🎨 UI/UX Design Standards
+**Professional styling and interaction principles:**
+- **Consistent design patterns**: Follow established component styling and layouts
+- **Responsive design**: Ensure mobile-friendly interfaces with proper breakpoint usage
+- **Accessibility compliance**: Include ARIA attributes and keyboard navigation support
+- **Performance optimization**: Use debounced interactions to prevent excessive API calls
+- **Error handling**: Implement comprehensive error states with user-friendly messages
+
+### 🔧 React Development Best Practices
+**Component and state management guidelines:**
+- **Effect cleanup**: Always remove event listeners, timers, and subscriptions in useEffect cleanup
+- **Dependency management**: Properly manage effect dependencies to prevent memory leaks
+- **State separation**: Keep editing state separate from display state for better UX
+- **Loading states**: Implement proper loading indicators and error handling
+- **Global function cleanup**: Clean up any global functions or window properties
+
+### 📱 Mobile & Cross-Platform Guidelines
+**Responsive and inclusive development:**
+- **Mobile-first approach**: Design and test mobile experiences as primary consideration
+- **Touch-friendly interfaces**: Proper button sizes and spacing for mobile devices
+- **Keyboard accessibility**: Implement ESC key handling and arrow key navigation where appropriate
+- **Modal management**: Use dedicated mobile modals for complex interactions
+- **Performance testing**: Verify functionality across desktop and mobile breakpoints
