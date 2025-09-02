@@ -1,6 +1,6 @@
 import React from 'react';
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { render, screen } from '@testing-library/react';
+import { render, screen, fireEvent } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import PhotoLightbox from '../PhotoLightbox';
 
@@ -156,4 +156,5 @@ describe('PhotoLightbox', () => {
     expect(closeButton).toHaveClass('rounded-full');
     expect(titleContainer).toHaveClass('rounded-xl');
   });
+
 });

@@ -255,4 +255,5 @@ describe('PinForm', () => {
     // The error handler should hide the image and show fallback
     expect(previewImage.style.display).toBe('none');
   });
+
 });

@@ -1,6 +1,6 @@
 import React from 'react';
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { render, screen } from '@testing-library/react';
+import { render, screen, fireEvent } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { IntlProvider } from 'react-intl';
 import DeleteConfirmationModal from '../DeleteConfirmationModal';
@@ -132,4 +132,5 @@ describe('DeleteConfirmationModal', () => {
     expect(screen.getByText('📍')).toBeInTheDocument();
     expect(screen.getByText('💡')).toBeInTheDocument();
   });
+
 });
