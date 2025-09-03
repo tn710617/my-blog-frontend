@@ -89,7 +89,14 @@ src/
 
 ## Step-by-Step Plan (Incremental, Verifiable)
 
-### TODOs (Mark as completed as we proceed)
+### Progress Summary
+- **Started**: 1,181 lines in main component
+- **Current**: 611 lines (48% reduction - 570 lines extracted!)
+- **Target**: <400 lines (additional 33% reduction needed)
+- **Files Created**: 8 new utility files and hooks
+- **Components Extracted**: 4 new reusable components
+
+### Extraction Progress (Mark as completed as we proceed)
 
 - [x] **Phase 1: Extract Utilities** ✅ COMPLETED
   - [x] Extract palettes + footprint icon to `utils/`
@@ -117,9 +124,32 @@ src/
   - [x] Extract `OverlayControls` (locate button + toast) 
   - [x] Create reusable UI components from inline JSX
 
-- [ ] **Phase 4: Main Component Restructure**
-  - [ ] Slim page container to orchestrator role (<400 lines)
-  - [ ] Clean up remaining inline code and improve organization
+- [x] **Phase 4: Main Component Restructure** ✅ IN PROGRESS (611 lines → target <400 lines)
+  - [x] Extract inline ESC modal JSX to separate component ✅ COMPLETED
+  - [x] Extract marker creation logic to utility function ✅ COMPLETED
+  - [x] Extract popup creation logic to utility function ✅ COMPLETED  
+  - [x] Extract copy coordinates functionality ✅ COMPLETED
+  - [x] Extract modal state management hook ✅ COMPLETED
+  - [x] Extract marker effects hook ✅ COMPLETED
+  - [x] Extract keyboard handlers hook ✅ COMPLETED
+  - [x] Extract Mapbox modal detection hook ✅ COMPLETED
+  - [x] Clean up unused imports and variables ✅ COMPLETED
+  - [ ] **Phase 4A: Continue Component Extraction (Small Steps)**
+    - [ ] Step 1: Extract auth effects to custom hook (20-30 lines)
+    - [ ] Step 2: Extract location event listener to custom hook (15-20 lines)
+    - [ ] Step 3: Extract style injection effect to utility (15-20 lines)
+    - [ ] Step 4: Extract mobile detection to custom hook (10-15 lines)
+    - [ ] Step 5: Extract mapbox token initialization (5-10 lines)
+    - [ ] Step 6: Simplify remaining useEffect consolidation (10-20 lines)
+  - [ ] **Phase 4B: JSX Optimization (Small Steps)**
+    - [ ] Step 7: Extract loading indicator component (10-15 lines)
+    - [ ] Step 8: Extract error indicator component (10-15 lines)
+    - [ ] Step 9: Extract background overlay component (8-12 lines)
+    - [ ] Step 10: Consolidate modal rendering into single component
+  - [ ] **Phase 4C: Final Organization (Small Steps)**
+    - [ ] Step 11: Group related functions and callbacks
+    - [ ] Step 12: Optimize import statements and dependencies
+    - [ ] Step 13: Final cleanup and organization
 
 - [ ] **Phase 5: Final Integration & Polish**
   - [ ] Add `useProximityColors` optimization (if needed)

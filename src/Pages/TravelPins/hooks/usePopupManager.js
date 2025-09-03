@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 
 /**
  * Custom hook for managing popup state and interactions
@@ -13,6 +13,7 @@ export const usePopupManager = ({
   onCloseForm 
 }) => {
   const [openPopups, setOpenPopups] = useState(new Set());
+  const lastPopupCountRef = useRef(0);
 
   /**
    * Close all open popups by removing them from markers
@@ -100,7 +101,12 @@ export const usePopupManager = ({
 
   // Mobile single popup policy enforcement
   useEffect(() => {
-    if (isMobile && openPopups.size > 1) {
+    const currentCount = openPopups.size;
+    
+    // Only enforce if we have more than 1 popup AND the count has changed
+    if (isMobile && currentCount > 1 && currentCount !== lastPopupCountRef.current) {
+      lastPopupCountRef.current = currentCount;
+      
       // Keep only the most recently opened popup (last in the Set)
       const popupArray = Array.from(openPopups);
       const mostRecentPopupId = popupArray[popupArray.length - 1];
@@ -123,12 +129,18 @@ export const usePopupManager = ({
             }
           }
         });
-        
-        // Update the state to reflect only the most recent popup
-        setOpenPopups(new Set([mostRecentPopupId]));
       }
+      
+      // Always update the state to reflect only the most recent popup
+      // Use setTimeout to avoid infinite loop
+      setTimeout(() => {
+        setOpenPopups(new Set([mostRecentPopupId]));
+        lastPopupCountRef.current = 1;
+      }, 0);
+    } else {
+      lastPopupCountRef.current = currentCount;
     }
-  }, [isMobile, openPopups, pins, markersRef]);
+  }, [isMobile, openPopups.size, pins, markersRef]); // Dependencies are stable now
 
   // Close display popups when edit form opens
   useEffect(() => {
