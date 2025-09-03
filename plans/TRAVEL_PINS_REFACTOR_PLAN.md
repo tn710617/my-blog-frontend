@@ -91,16 +91,40 @@ src/
 
 ### TODOs (Mark as completed as we proceed)
 
-- [x] Extract palettes + footprint icon to `utils/`
-- [ ] Add `useProximityColors` and wire it
-- [ ] Extract popup events wiring to `utils/`
-- [ ] Extract marker factory + popups into a hook
-- [ ] Implement `useMarkers` and replace markers effect
-- [ ] Create `TravelPinsMap` using `useMapboxMap`
-- [ ] Move map init/handlers into `TravelPinsMap`
-- [ ] Add `OverlayControls` (locate button + toast)
-- [ ] Slim page container (handlers only) + cleanup
-- [ ] Verify UX/performance; finalize refactor
+- [x] **Phase 1: Extract Utilities** ✅ COMPLETED
+  - [x] Extract palettes + footprint icon to `utils/`
+  - [x] Extract popup events wiring to `utils/`
+  - [x] Extract color management utilities
+  - [x] Extract popup HTML building utilities
+  - [x] Extract markdown and styling utilities
+
+- [x] **Phase 2: Extract Custom Hooks** ✅ COMPLETED  
+  - [x] Extract marker factory + popups into a hook (`useMapManager`)
+  - [x] Implement markers lifecycle management (integrated in `useMapManager`)
+  - [x] Create map initialization hook (`useMapManager`) 
+  - [x] Move map init/handlers into hooks
+  - [x] Extract popup state management (`usePopupManager`)
+  - [x] Extract form state management (`useFormState`)
+  - [x] Extract geolocation functionality (`useGeolocation`)
+
+- [x] **Phase 2.4: Map Management Hook** ✅ COMPLETED
+  - [x] Create comprehensive `useMapManager` hook
+  - [x] Extract ~100+ lines of map management code from main component
+  - [x] Add comprehensive test coverage (30 tests)
+  - [x] Implement defensive error handling for runtime issues
+
+- [ ] **Phase 3: Extract UI Components** 🔄 IN PROGRESS
+  - [ ] Extract `OverlayControls` (locate button + toast) 
+  - [ ] Create reusable UI components from inline JSX
+
+- [ ] **Phase 4: Main Component Restructure**
+  - [ ] Slim page container to orchestrator role (<400 lines)
+  - [ ] Clean up remaining inline code and improve organization
+
+- [ ] **Phase 5: Final Integration & Polish**
+  - [ ] Add `useProximityColors` optimization (if needed)
+  - [ ] Verify UX/performance; finalize refactor
+  - [ ] Comprehensive manual testing
 
 ## Acceptance Criteria
 

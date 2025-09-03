@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState, useCallback } from 'react';
+import React, { useEffect, useRef, useState, useCallback, useMemo } from 'react';
 import mapboxgl from 'mapbox-gl';
 import 'mapbox-gl/dist/mapbox-gl.css';
 import { useIntl } from 'react-intl';
@@ -15,16 +15,30 @@ import { renderMarkdownToHTML } from './utils/markdownUtils';
 import { debounce } from './utils/debounceUtil';
 import { customPopupStyles } from './utils/popupStyles';
 import { assignColorsByScreen, recolorMarkers, createColorAssignmentRef } from './utils/colorManager';
+import { Z_INDEX, Z_INDEX_CSS } from './utils/zIndex';
 import { useFormState } from './hooks/useFormState';
 import { useGeolocation } from './hooks/useGeolocation';
 import { usePopupManager } from './hooks/usePopupManager';
+import { useMapManager } from './hooks/useMapManager';
 
 
 const TravelPins = () => {
+  console.log('🔄 TravelPins component render started - timestamp:', Date.now());
+  
   const intl = useIntl();
   const locale = useLocaleStore((state) => state.locale);
   const isLoggedIn = useAuthStore((state) => state.isLoggedIn);
   const setShowLoginModal = useLoginModalStore((state) => state.setShowLoginModal);
+  
+  console.log('🔐 Auth state:', { isLoggedIn });
+  
+  // Add a cleanup effect to track component unmounting
+  useEffect(() => {
+    console.log('🌟 TravelPins component MOUNTED');
+    return () => {
+      console.log('⚠️ TravelPins component UNMOUNTING - this might indicate a refresh');
+    };
+  }, []);
   
   // 保存最新 auth 狀態，避免事件閉包拿到舊值
   const authRef = useRef(isLoggedIn);
@@ -57,19 +71,21 @@ const TravelPins = () => {
   };
   
   // API hooks
-  const { data: pins = [], isLoading: pinsLoading, error: pinsError } = useTravelPins();
+  const { data: rawPins = [], isLoading: pinsLoading, error: pinsError } = useTravelPins();
+  console.log('📋 Raw pins data from React Query:', rawPins.length, 'pins, isLoading:', pinsLoading);
+  
+  // Memoize pins to prevent unnecessary re-renders when the array reference changes
+  const pins = useMemo(() => {
+    console.log('📋 Memoizing pins array:', rawPins.length);
+    return rawPins;
+  }, [rawPins.length, rawPins.map(p => `${p.id}-${p.updated_at}`).join(',')]);
+  
   const createPinMutation = useCreateTravelPin();
   const updatePinMutation = useUpdateTravelPin();
   const deletePinMutation = useDeleteTravelPin();
   
-  const mapContainer = useRef(null);
-  const map = useRef(null);
-  const markersRef = useRef([]);
-  const markersByIdRef = useRef(new Map());
   const [showForm, setShowForm] = useState(false);
   const [editingPin, setEditingPin] = useState(null);
-  const [mapLoaded, setMapLoaded] = useState(false);
-  const [mapError, setMapError] = useState(null);
   const [token, setToken] = useState('');
   // Form state management
   const {
@@ -91,12 +107,75 @@ const TravelPins = () => {
 
   // Form close handler (needed by popup manager hook)
   const handleCloseForm = useCallback(() => {
+    console.log('❌ Form close called - handleCloseForm');
     setShowForm(false);
     setEditingPin(null);
     resetForm();
   }, [resetForm]);
 
+  // Stable callback functions for map manager
+  const handleMapClick = useCallback((lngLat) => {
+    console.log('🗱️ Map click callback created/recreated');
+    if (!isLoggedIn) {
+      setShowLoginModal(true);
+      return;
+    }
+    setEditingPin(null);
+    createNewForm(lngLat.toArray());
+    setShowForm(true);
+  }, [isLoggedIn, setShowLoginModal, createNewForm, setEditingPin, setShowForm]);
+
+  const handleMapLoad = useCallback((mapInstance, markersById) => {
+    console.log('📍 Map load callback created/recreated');
+    try { 
+      recolorMarkers(pins, mapInstance, markersById, assignedColorsRef.current);
+    } catch (error) {
+      console.warn('Failed initial marker recoloring:', error);
+    }
+  }, []);  // Remove pins dependency to prevent recreation
+
+  const handleRecolorMarkers = useCallback((mapInstance, markersById) => {
+    console.log('🎨 Recolor markers callback created/recreated');
+    try {
+      recolorMarkers(pins, mapInstance, markersById, assignedColorsRef.current);
+    } catch (error) {
+      console.warn('Failed marker recoloring:', error);
+    }
+  }, []);  // Remove pins dependency to prevent recreation
+
+  // Map management functionality
+  console.log('🗺️ About to call useMapManager hook');  
+  const {
+    mapContainer,
+    map,
+    markersRef,
+    markersByIdRef,
+    mapLoaded,
+    mapError,
+    flyTo,
+    getZoom,
+    addZoomHandlers
+  } = useMapManager({
+    pins,
+    mapboxToken: token,
+    locale,
+    intl,
+    onMapClick: handleMapClick,
+    onMapLoad: handleMapLoad,
+    onRecolorMarkers: handleRecolorMarkers
+  });
+
+  // Color management functions (now that map is available)
+  console.log('🎯 Creating handleAssignColorsByScreen callback');
+  const handleAssignColorsByScreen = useCallback((allPins) => {
+    console.log('🎨 Colors callback created/recreated');
+    if (map) {
+      assignColorsByScreen(allPins, map, assignedColorsRef.current);
+    }
+  }, [map]);
+
   // Popup management functionality
+  console.log('🏷️ Creating popup management hooks');
   const { 
     openPopups, 
     closeAllPopups, 
@@ -106,7 +185,7 @@ const TravelPins = () => {
     isMobile,
     pins,
     markersRef,
-    mapRef: map,
+    mapRef: { current: map },
     showForm,
     onCloseForm: handleCloseForm
   });
@@ -118,6 +197,7 @@ const TravelPins = () => {
   const [showPhotoModal, setShowPhotoModal] = useState(false);
   const [photoModalData, setPhotoModalData] = useState({ url: '', title: '' });
   const [coordsCopied, setCoordsCopied] = useState(false);
+  const [mapboxModalActive, setMapboxModalActive] = useState(false);
   // Marker style: fixed to footprint
   
   // Assigned color index per pin id
@@ -125,14 +205,6 @@ const TravelPins = () => {
 
   // Skin tone palette is defined globally as SKIN_SCHEMES
 
-  // Color management functions - moved to utils/colorManager.js
-  const handleAssignColorsByScreen = useCallback((allPins) => {
-    assignColorsByScreen(allPins, map.current, assignedColorsRef.current);
-  }, []);
-
-  const handleRecolorMarkers = useCallback(() => {
-    recolorMarkers(pins, map.current, markersByIdRef.current, assignedColorsRef.current);
-  }, [pins]);
 
   // Inject custom popup styles
   useEffect(() => {
@@ -154,24 +226,38 @@ const TravelPins = () => {
 
   // Mobile detection effect
   useEffect(() => {
+    console.log('📱 Mobile detection useEffect');
     const handleResize = () => {
       const newIsMobile = window.innerWidth <= 768;
+      console.log('📱 Resize detected - isMobile:', newIsMobile);
       setIsMobile(newIsMobile);
     };
 
     window.addEventListener('resize', handleResize);
-    return () => window.removeEventListener('resize', handleResize);
+    return () => {
+      console.log('📱 Resize event listener cleanup');
+      window.removeEventListener('resize', handleResize);
+    };
   }, []);
 
   // Effect to create/update/remove markers when pins change
   useEffect(() => {
-    if (!map.current) return;
+    console.log('🔄 Markers useEffect triggered - pins.length:', pins.length, 'mapLoaded:', mapLoaded);
+    if (!map || !mapLoaded || !map.loaded?.()) {
+      console.log('Markers effect: Map not ready', { 
+        map: !!map, 
+        mapLoaded, 
+        mapActuallyLoaded: map?.loaded?.() 
+      });
+      return;
+    }
 
-    const mapReady = mapLoaded;
-    if (!mapReady) return;
+    console.log('Markers effect: Creating/updating markers for', pins.length, 'pins', { map: !!map, mapLoaded });
 
     // Compute screen-space color assignments up front
-    try { handleAssignColorsByScreen(pins); } catch {}
+    try { 
+      assignColorsByScreen(pins, map, assignedColorsRef.current); 
+    } catch {}
 
     const markersById = markersByIdRef.current;
 
@@ -197,9 +283,11 @@ const TravelPins = () => {
     pins.forEach((pin, index) => {
       const existing = markersById.get(pin.id);
       if (!existing) {
-        const marker = createMarkerForPin(pin, index);
-        markersById.set(pin.id, marker);
-        markersRef.current.push(marker);
+        const marker = createMarkerForPin(pin, index, map);
+        if (marker) {
+          markersById.set(pin.id, marker);
+          markersRef.current.push(marker);
+        }
       } else {
         try {
           // Update coordinates and popup content; preserve open state
@@ -233,10 +321,11 @@ const TravelPins = () => {
     return () => {
       // No-op here; global cleanup on unmount elsewhere
     };
-  }, [pins, mapLoaded, handleAssignColorsByScreen]);
+  }, [pins.length, pins.map(p => p.id).join(','), mapLoaded]);  // More stable dependencies
 
   // Auth 改變時，立刻同步 ref，並更新所有已開啟的 popups
   useEffect(() => {
+    console.log('🔐 Auth changed useEffect - isLoggedIn:', isLoggedIn);
     authRef.current = isLoggedIn;
 
     // 更新目前畫面上所有已開啟的 popup
@@ -257,186 +346,39 @@ const TravelPins = () => {
       }
     }, 100);
 
-    return () => clearTimeout(t);
+    return () => {
+      console.log('🔐 Auth effect cleanup');
+      clearTimeout(t);
+    };
   }, [isLoggedIn, applyAuthButtonsVisibility]);
 
-  // Separate effect for zoom handling with debounce
+  // Add zoom handlers for popup closing behavior
   useEffect(() => {
-    if (!map.current) return;
+    if (!map || !mapLoaded || !addZoomHandlers) return;
 
-    let zoomStartLevel = null;
-    let hasClosedPopups = false;
-    let zoomTimeout = null;
+    const cleanup = addZoomHandlers(closeAllPopups);
+    return cleanup;
+  }, [mapLoaded, addZoomHandlers, closeAllPopups]);
 
-    const closeAllPopups = () => {
-      let closedCount = 0;
-
-      // Method 1: Close popups using markers
-      markersRef.current.forEach(marker => {
-        if (marker.getPopup()) {
-          const popup = marker.getPopup();
-          if (popup.isOpen()) {
-            popup.remove();
-            closedCount++;
-          }
-        }
-      });
-
-      // Method 2: Fallback - close any remaining popups via DOM
-      const remainingPopups = document.querySelectorAll('.mapboxgl-popup');
-      if (remainingPopups.length > 0) {
-        remainingPopups.forEach(popup => {
-          if (popup.parentNode) {
-            popup.parentNode.removeChild(popup);
-          }
-        });
-      }
-
-      hasClosedPopups = true;
-    };
-
-    const handleZoomStart = () => {
-      zoomStartLevel = map.current.getZoom();
-      hasClosedPopups = false;
-
-      // Clear any existing timeout
-      if (zoomTimeout) {
-        clearTimeout(zoomTimeout);
-        zoomTimeout = null;
-      }
-    };
-
-    const handleZoom = () => {
-      // Only check zoom level if we haven't already closed popups
-      if (!hasClosedPopups && zoomStartLevel !== null) {
-        const currentZoomLevel = map.current.getZoom();
-        const zoomDifference = Math.abs(currentZoomLevel - zoomStartLevel);
-
-        // Close popups if zoom difference is >= 0.1 (significant zoom change)
-        if (zoomDifference >= 0.1) {
-          closeAllPopups();
-        }
-      }
-    };
-
-    const handleZoomEnd = () => {
-      // Reset tracking variables with slight delay to ensure all zoom events are processed
-      zoomTimeout = setTimeout(() => {
-        zoomStartLevel = null;
-        hasClosedPopups = false;
-      }, 100);
-    };
-
-    map.current.on('zoomstart', handleZoomStart);
-    map.current.on('zoom', handleZoom);
-    map.current.on('zoomend', handleZoomEnd);
-
-    return () => {
-      if (map.current) {
-        map.current.off('zoomstart', handleZoomStart);
-        map.current.off('zoom', handleZoom);
-        map.current.off('zoomend', handleZoomEnd);
-      }
-      // Clear timeout if component unmounts
-      if (zoomTimeout) {
-        clearTimeout(zoomTimeout);
-      }
-    };
-  }, [pins.length, mapLoaded]);
-
+  // Set mapbox token on mount
   useEffect(() => {
-    // Debug token
+    console.log('🔑 Setting mapbox token useEffect');
     const mapboxToken = import.meta.env.VITE_MAPBOX_TOKEN;
     setToken(mapboxToken);
-    
-    mapboxgl.accessToken = mapboxToken;
-
-    if (map.current) return; // Initialize map only once
-
-
-    try {
-      map.current = new mapboxgl.Map({
-        container: mapContainer.current,
-        style: 'mapbox://styles/mapbox/streets-v12',
-        center: [0, 0],
-        zoom: 2,
-        cooperativeGestures: true,
-        locale: {
-          'ScrollZoomBlocker.CtrlMessage': t('mapbox.scroll_zoom_blocker.ctrl_message'),
-          'ScrollZoomBlocker.CmdMessage': t('mapbox.scroll_zoom_blocker.cmd_message'),
-          'TouchPanBlocker.Message': t('mapbox.touch_pan_blocker.message')
-        }
-      });
-
-
-      map.current.on('load', () => {
-        setMapLoaded(true);
-        // Initial recolor once map is ready
-        try { handleRecolorMarkers(); } catch {}
-      });
-
-      map.current.on('error', (e) => {
-        console.error('Map error:', e);
-        setMapError(e.error?.message || 'Map failed to load');
-      });
-
-      // Update colors on zoom/move end (screen-space proximity)
-      const onMoveEnd = () => { try { handleRecolorMarkers(); } catch {} };
-      const onZoomEnd = () => { try { handleRecolorMarkers(); } catch {} };
-      map.current.on('moveend', onMoveEnd);
-      map.current.on('zoomend', onZoomEnd);
-
-      // Add click handler - only for empty areas (not pins)
-      map.current.on('click', (e) => {
-        // Check if the click target is a pin marker
-        const target = e.originalEvent.target;
-        if (target && target.classList.contains('travel-pin-marker')) {
-          // Don't open form if clicking on a pin - let the popup handle it
-          return;
-        }
-        
-        // Check latest auth status via ref to avoid stale closure
-        if (!authRef.current) {
-          // Show login modal for unauthenticated users
-          setShowLoginModal(true);
-          return;
-        }
-        
-        const coordinates = [e.lngLat.lng, e.lngLat.lat];
-        
-        createNewForm(coordinates);
-        setShowForm(true);
-      });
-
-    } catch (error) {
-      console.error('Failed to create map:', error);
-      setMapError(error.message);
-    }
-
-    return () => {
-      if (map.current) {
-        try {
-          map.current.off('moveend', onMoveEnd);
-          map.current.off('zoomend', onZoomEnd);
-        } catch {}
-        map.current.remove();
-        map.current = null;
-      }
-    };
+    console.log('🔑 Token set:', !!mapboxToken);
   }, []);
 
   // Listen for location selection from navbar search
   useEffect(() => {
+    console.log('🔍 Navbar location listener useEffect');
     const handleLocationFromNavbar = (event) => {
+      console.log('🔍 Navbar location event received:', event.detail);
       const location = event.detail;
       
       // Navigate to the location on the map
-      if (map.current && location.center) {
-        map.current.flyTo({
-          center: location.center,
-          zoom: 10,
-          duration: 2000
-        });
+      if (map && location.center) {
+        console.log('🔍 Flying to search location:', location.center);
+        flyTo(location.center, 10, 2000);
         
         // Add to search history
         const historyItem = {
@@ -454,14 +396,46 @@ const TravelPins = () => {
     };
 
     window.addEventListener('travelPinsLocationSelect', handleLocationFromNavbar);
-    return () => window.removeEventListener('travelPinsLocationSelect', handleLocationFromNavbar);
-  }, []);
+    return () => {
+      console.log('🔍 Navbar location listener cleanup');
+      window.removeEventListener('travelPinsLocationSelect', handleLocationFromNavbar);
+    };
+  }, [flyTo, map]);
 
   // Global functions for popup interactions
   useEffect(() => {
+    console.log('🌐 Global functions useEffect (no-op)');
     // No-op: globals removed; compatibility hook retained for future needs
-    return () => {};
+    return () => {
+      console.log('🌐 Global functions cleanup (no-op)');
+    };
   }, []);
+
+  // Monitor for Mapbox cooperative gesture modal
+  useEffect(() => {
+    const checkMapboxModal = () => {
+      // Check for Mapbox cooperative gesture modal
+      const mapboxModal = document.querySelector('.mapboxgl-ctrl-cooperative-gesture');
+      const isModalVisible = mapboxModal && mapboxModal.style.display !== 'none';
+      
+      if (isModalVisible !== mapboxModalActive) {
+        console.log('🗺️ Mapbox modal visibility changed:', isModalVisible);
+        setMapboxModalActive(isModalVisible);
+        
+        // Disable/enable pointer events on all markers
+        const markers = document.querySelectorAll('.travel-pin-marker');
+        markers.forEach(marker => {
+          marker.style.pointerEvents = isModalVisible ? 'none' : 'auto';
+        });
+      }
+    };
+
+    // Check periodically for modal visibility changes
+    const interval = setInterval(checkMapboxModal, 100);
+    
+    return () => clearInterval(interval);
+  }, [mapboxModalActive]);
+
 
   // ESC key handler for form modal
   useEffect(() => {
@@ -472,11 +446,14 @@ const TravelPins = () => {
       if (document.activeElement?.id === 'location-search-input') return;
       
       if (e.key === 'Escape') {
+        console.log('🔑 ESC pressed - hasChanges:', hasChanges, 'showForm:', showForm);
         if (!hasChanges) {
           // No changes made, close immediately
+          console.log('🔑 No changes, closing form directly');
           handleCloseForm();
         } else {
           // Has changes, show confirmation dialog
+          console.log('🔑 Has changes, showing ESC modal');
           setPendingEscAction(() => handleCloseForm);
           setShowEscModal(true);
         }
@@ -762,13 +739,11 @@ const TravelPins = () => {
 
   // Handle GPS location request
   const handleGetCurrentLocation = () => {
+    console.log('🌍 GPS button clicked - handleGetCurrentLocation called');
     getCurrentLocation(({ latitude, longitude }) => {
+      console.log('🌍 GPS success - flying to location:', { latitude, longitude });
       // Fly to current location with smooth animation
-      map.current.flyTo({
-        center: [longitude, latitude],
-        zoom: 14, // City-level zoom for current location
-        duration: 2500
-      });
+      flyTo([longitude, latitude], 14, 2500);
     });
   };
 
@@ -779,7 +754,32 @@ const TravelPins = () => {
     el.innerHTML = buildFootprintHTML(scheme);
   };
 
-  const createMarkerForPin = (pin, index) => {
+  const createMarkerForPin = (pin, index, map) => {
+    // Defensive check: ensure map is available and ready
+    if (!map) {
+      console.error('createMarkerForPin called with undefined map:', { pin: pin.id, map });
+      return null;
+    }
+
+    // Additional check: ensure map has a valid container and is loaded (skip in test environment)
+    if (process.env.NODE_ENV !== 'test') {
+      const mapContainer = map.getContainer?.();
+      if (!mapContainer || !mapContainer.parentNode) {
+        console.error('createMarkerForPin called but map container is not attached to DOM:', { 
+          pin: pin.id, 
+          hasContainer: !!mapContainer,
+          hasParent: !!mapContainer?.parentNode 
+        });
+        return null;
+      }
+      
+      // Additional check: ensure map is actually loaded
+      if (!map.loaded?.()) {
+        console.error('createMarkerForPin called but map is not loaded:', { pin: pin.id });
+        return null;
+      }
+    }
+
     // Create marker element
     const el = document.createElement('div');
     el.className = 'travel-pin-marker';
@@ -798,40 +798,48 @@ const TravelPins = () => {
     
     // Use exact same CSS as accurate debug crosshair
     // Default fully opaque; we only lower opacity on hover
-    el.style.cssText = 'position: absolute; pointer-events: auto; cursor: pointer; z-index: 20; opacity: 1;';
+    // Use centralized z-index management to stay below Mapbox notification modals
+    el.style.cssText = `position: absolute; pointer-events: auto; cursor: pointer; z-index: ${Z_INDEX_CSS.MAP_MARKER_DEFAULT}; opacity: 1;`;
 
     // Simple hover effect
     const getContainer = () => el.querySelector('.marker-container');
     el.addEventListener('mouseenter', () => {
       const container = getContainer();
       if (container) container.style.transform = 'scale(1.12)';
-      // Keep below form overlay (z-50) and popup overlay (~z-[950])
-      el.style.zIndex = '40';
+      // Keep below form overlay, popup overlay, and Mapbox notification modals
+      el.style.zIndex = Z_INDEX_CSS.MAP_MARKER_HOVER;
       el.style.opacity = '0.65';
     });
 
     el.addEventListener('mouseleave', () => {
       const container = getContainer();
       if (container) container.style.transform = 'scale(1)';
-      el.style.zIndex = '20';
+      el.style.zIndex = Z_INDEX_CSS.MAP_MARKER_DEFAULT;
       el.style.opacity = '1';
     });
 
     const popup = createEnhancedPopup(pin);
 
-    // Add click event to show popup
-    el.addEventListener('click', (e) => {
-      e.stopPropagation(); // Prevent map click event
-      marker.togglePopup(); // Show the popup
-    });
+    try {
+      const marker = new mapboxgl.Marker({
+        element: el,
+        anchor: 'center' // Use same anchor strategy as accurate crosshair
+      })
+        .setLngLat(pin.coordinates)
+        .setPopup(popup);
 
-    const marker = new mapboxgl.Marker({
-      element: el,
-      anchor: 'center' // Use same anchor strategy as accurate crosshair
-    })
-      .setLngLat(pin.coordinates)
-      .setPopup(popup)
-      .addTo(map.current);
+      // Add click event to show popup (after marker is created)
+      el.addEventListener('click', (e) => {
+        e.stopPropagation(); // Prevent map click event
+        marker.togglePopup(); // Show the popup
+      });
+
+      marker.addTo(map);
+      return marker;
+    } catch (error) {
+      console.error('Failed to create/add marker:', { pin: pin.id, error: error.message });
+      return null;
+    }
     
     // Debug: Add crosshair marker for coordinate verification (after backend fix)
     // if (process.env.NODE_ENV === 'development') {
@@ -874,8 +882,6 @@ const TravelPins = () => {
     //     .setLngLat(pin.coordinates)
     //     .addTo(map.current);
     // }
-
-    return marker;
   };
 
   const createEnhancedPopup = (pin) => {
@@ -982,37 +988,50 @@ const TravelPins = () => {
   };
 
   const handleSavePin = async (e) => {
+    console.log('💾 Save pin button clicked - handleSavePin called');
     e.preventDefault();
-    if (!isFormValid()) return;
+    if (!isFormValid()) {
+      console.log('💾 Form validation failed, exiting');
+      return;
+    }
     
     // Check if user is logged in for create/edit operations
     if (!isLoggedIn) {
+      console.log('💾 User not logged in, showing login modal');
       // Show login modal for unauthenticated users
       setShowLoginModal(true);
       return;
     }
 
     const pinData = getFormDataForSubmission();
+    console.log('💾 Pin data prepared:', pinData);
 
     try {
       if (editingPin) {
+        console.log('💾 Updating existing pin:', editingPin.id);
         // Update existing pin
         await updatePinMutation.mutateAsync({ 
           id: editingPin.id, 
           pinData 
         });
+        console.log('💾 Pin update successful');
       } else {
+        console.log('💾 Creating new pin');
         // Create new pin
         await createPinMutation.mutateAsync(pinData);
+        console.log('💾 Pin creation successful');
       }
       
+      console.log('💾 Closing form after successful save');
       handleCloseForm();
     } catch (error) {
-      console.error('Failed to save pin:', error);
+      console.error('💾 Failed to save pin:', error);
       // Error handling is done in the mutation
     }
   };
 
+  console.log('🎨 TravelPins rendering JSX - showForm:', showForm, 'pins.length:', pins.length, 'showEscModal:', showEscModal, 'hasChanges:', hasChanges);
+  
   return (
     <div className="w-full h-screen relative">
       {/* Map Container */}
@@ -1047,7 +1066,8 @@ const TravelPins = () => {
       {/* Background overlay for display modal (popup) */}
       {openPopups.size > 0 && !showForm && !showDeleteModal && !showEscModal && !showPhotoModal && (
         <div
-          className="fixed inset-0 bg-black/40 backdrop-blur-sm z-[950]"
+          className="fixed inset-0 bg-black/40 backdrop-blur-sm"
+          style={{ zIndex: Z_INDEX.POPUP_BACKGROUND }}
           onClick={closeAllPopups}
         />
       )}
@@ -1268,11 +1288,12 @@ const TravelPins = () => {
       <button
         onClick={handleGetCurrentLocation}
         disabled={isLocating}
-        className={`fixed bottom-6 right-6 w-14 h-14 rounded-full shadow-lg transition-all duration-300 z-40 ${
+        className={`fixed bottom-6 right-6 w-14 h-14 rounded-full shadow-lg transition-all duration-300 ${
           isLocating 
             ? 'bg-gray-400 cursor-not-allowed' 
             : 'bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 hover:shadow-xl hover:-translate-y-1'
         }`}
+        style={{ zIndex: Z_INDEX.GPS_BUTTON }}
         title={isLocating ? 'Getting location...' : 'Get current location'}
       >
         {isLocating ? (
@@ -1292,7 +1313,10 @@ const TravelPins = () => {
 
       {/* Location Error Toast */}
       {locationError && (
-        <div className="fixed bottom-24 right-6 bg-red-500 text-white px-4 py-3 rounded-lg shadow-lg z-50 max-w-xs">
+        <div 
+          className="fixed bottom-24 right-6 bg-red-500 text-white px-4 py-3 rounded-lg shadow-lg max-w-xs"
+          style={{ zIndex: Z_INDEX.LOCATION_ERROR_TOAST }}
+        >
           <div className="flex items-start gap-2">
             <div className="text-red-200">⚠️</div>
             <div className="flex-1">
@@ -1399,6 +1423,7 @@ const TravelPins = () => {
 
       {/* Photo Modal/Lightbox */}
       <PhotoLightbox open={showPhotoModal} data={photoModalData} onClose={closePhotoModal} />
+
 
     </div>
   );

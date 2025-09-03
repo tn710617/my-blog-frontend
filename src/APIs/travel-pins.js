@@ -81,21 +81,28 @@ export function useCreateTravelPin() {
 
     return useMutation({
         mutationFn: async (pinData) => {
+            console.log('✨ CREATE PIN MUTATION - starting with data:', pinData);
             if (!isLoggedIn) {
+                console.log('✨ CREATE PIN - not logged in, throwing error');
                 throw new Error('Authentication required');
             }
 
             const apiData = transformPinToAPI(pinData);
+            console.log('✨ CREATE PIN - sending API data:', apiData);
             const response = await axios.post('travel-pins', apiData);
+            console.log('✨ CREATE PIN - API response received:', response.data);
             return transformPinFromAPI(response.data.data);
         },
         onSuccess: (newPin) => {
+            console.log('✨ CREATE PIN SUCCESS - new pin:', newPin);
             // Add the new pin to the cache
             queryClient.setQueryData(TRAVEL_PINS_QUERY_KEYS.list(), (oldData) => {
+                console.log('✨ CREATE PIN - updating cache, oldData length:', oldData?.length);
                 return oldData ? [...oldData, newPin] : [newPin];
             });
 
             // Invalidate and refetch
+            console.log('✨ CREATE PIN - invalidating queries');
             queryClient.invalidateQueries(TRAVEL_PINS_QUERY_KEYS.lists());
 
             toast.success(intl.formatMessage({id: 'travel_pins.toast.pin_created'}));
@@ -131,17 +138,23 @@ export function useUpdateTravelPin() {
 
     return useMutation({
         mutationFn: async ({id, pinData}) => {
+            console.log('🔄 UPDATE PIN MUTATION - starting with id:', id, 'data:', pinData);
             if (!isLoggedIn) {
+                console.log('🔄 UPDATE PIN - not logged in, throwing error');
                 throw new Error('Authentication required');
             }
 
             const apiData = transformPinToAPI(pinData);
+            console.log('🔄 UPDATE PIN - sending API data:', apiData);
             const response = await axios.put(`travel-pins/${id}`, apiData);
+            console.log('🔄 UPDATE PIN - API response received:', response.data);
             return transformPinFromAPI(response.data.data);
         },
         onSuccess: (updatedPin) => {
+            console.log('🔄 UPDATE PIN SUCCESS - updated pin:', updatedPin);
             // Update the pin in the cache
             queryClient.setQueryData(TRAVEL_PINS_QUERY_KEYS.list(), (oldData) => {
+                console.log('🔄 UPDATE PIN - updating cache, oldData length:', oldData?.length);
                 return oldData ? oldData.map(pin =>
                     pin.id === updatedPin.id ? updatedPin : pin
                 ) : [updatedPin];
@@ -154,7 +167,7 @@ export function useUpdateTravelPin() {
             );
 
             // Invalidate queries to ensure fresh data
-            queryClient.invalidateQueries(TRAVEL_PINS_QUERY_KEYS.lists());
+            console.log('🔄 UPDATE PIN - invalidating detail queries');
             queryClient.invalidateQueries(TRAVEL_PINS_QUERY_KEYS.detail(updatedPin.id));
 
             toast.success(intl.formatMessage({id: 'travel_pins.toast.pin_updated'}));
