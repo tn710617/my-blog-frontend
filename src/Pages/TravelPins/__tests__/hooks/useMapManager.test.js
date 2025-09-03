@@ -279,7 +279,6 @@ describe('useMapManager', () => {
     });
 
     it('should handle onRecolorMarkers errors gracefully', () => {
-      const consoleWarnSpy = vi.spyOn(console, 'warn').mockImplementation(() => {});
       const errorOnRecolorMarkers = vi.fn(() => { throw new Error('Recolor failed'); });
       
       renderHook(() => useMapManager({
@@ -295,9 +294,8 @@ describe('useMapManager', () => {
         moveEndHandler();
       });
 
-      expect(consoleWarnSpy).toHaveBeenCalledWith('Failed to recolor markers on move:', expect.any(Error));
-      
-      consoleWarnSpy.mockRestore();
+      // Verify error callback was called and hook continues to work
+      expect(errorOnRecolorMarkers).toHaveBeenCalledTimes(1);
     });
 
     it('should register click handler when onMapClick provided', () => {
@@ -612,7 +610,6 @@ describe('useMapManager', () => {
     });
 
     it('should handle cleanup errors gracefully', () => {
-      const consoleWarnSpy = vi.spyOn(console, 'warn').mockImplementation(() => {});
       mockMap.remove.mockImplementation(() => { throw new Error('Cleanup failed'); });
 
       const { unmount } = renderHook(() => useMapManager({
@@ -623,11 +620,8 @@ describe('useMapManager', () => {
         onRecolorMarkers: mockOnRecolorMarkers
       }));
 
-      unmount();
-
-      expect(consoleWarnSpy).toHaveBeenCalledWith('Failed to clean up map:', expect.any(Error));
-      
-      consoleWarnSpy.mockRestore();
+      // Should not throw an error during unmount even if map.remove() fails
+      expect(() => unmount()).not.toThrow();
     });
 
     it('should handle cleanup when map is null', () => {

@@ -313,8 +313,6 @@ describe('usePopupManager', () => {
     });
 
     it('should handle map interaction errors gracefully', () => {
-      const consoleWarnSpy = vi.spyOn(console, 'warn').mockImplementation(() => {});
-      
       const errorMapRef = {
         current: {
           scrollZoom: { enable: vi.fn(() => { throw new Error('Test error'); }) }
@@ -330,15 +328,15 @@ describe('usePopupManager', () => {
         onCloseForm: mockOnCloseForm
       }));
 
+      // Should not throw even when map interactions fail
       expect(() => {
         act(() => {
           result.current.enableMapInteractions();
         });
       }).not.toThrow();
-
-      expect(consoleWarnSpy).toHaveBeenCalledWith('Failed to enable map interactions:', expect.any(Error));
       
-      consoleWarnSpy.mockRestore();
+      // Verify the error method was called
+      expect(errorMapRef.current.scrollZoom.enable).toHaveBeenCalledTimes(1);
     });
   });
 

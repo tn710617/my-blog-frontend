@@ -113,9 +113,9 @@ src/
   - [x] Add comprehensive test coverage (30 tests)
   - [x] Implement defensive error handling for runtime issues
 
-- [ ] **Phase 3: Extract UI Components** 🔄 IN PROGRESS
-  - [ ] Extract `OverlayControls` (locate button + toast) 
-  - [ ] Create reusable UI components from inline JSX
+- [x] **Phase 3: Extract UI Components** ✅ COMPLETED
+  - [x] Extract `OverlayControls` (locate button + toast) 
+  - [x] Create reusable UI components from inline JSX
 
 - [ ] **Phase 4: Main Component Restructure**
   - [ ] Slim page container to orchestrator role (<400 lines)

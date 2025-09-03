@@ -180,7 +180,7 @@ describe('useGeolocation', () => {
 
       expect(result.current.isLocating).toBe(false);
       expect(result.current.locationError).toBe('Location access denied. Please enable location permissions.');
-      expect(consoleErrorSpy).toHaveBeenCalledWith('Geolocation error:', error);
+      expect(consoleErrorSpy).toHaveBeenCalledWith('📍 Geolocation error:', error);
     });
 
     it('should handle POSITION_UNAVAILABLE error', () => {
@@ -197,7 +197,7 @@ describe('useGeolocation', () => {
 
       expect(result.current.isLocating).toBe(false);
       expect(result.current.locationError).toBe('Location information unavailable.');
-      expect(consoleErrorSpy).toHaveBeenCalledWith('Geolocation error:', error);
+      expect(consoleErrorSpy).toHaveBeenCalledWith('📍 Geolocation error:', error);
     });
 
     it('should handle TIMEOUT error', () => {
@@ -214,7 +214,7 @@ describe('useGeolocation', () => {
 
       expect(result.current.isLocating).toBe(false);
       expect(result.current.locationError).toBe('Location request timed out. Please try again.');
-      expect(consoleErrorSpy).toHaveBeenCalledWith('Geolocation error:', error);
+      expect(consoleErrorSpy).toHaveBeenCalledWith('📍 Geolocation error:', error);
     });
 
     it('should handle unknown error', () => {
@@ -231,7 +231,7 @@ describe('useGeolocation', () => {
 
       expect(result.current.isLocating).toBe(false);
       expect(result.current.locationError).toBe('Unable to retrieve your location.');
-      expect(consoleErrorSpy).toHaveBeenCalledWith('Geolocation error:', error);
+      expect(consoleErrorSpy).toHaveBeenCalledWith('📍 Geolocation error:', error);
     });
 
     it('should clear previous errors when starting new request', () => {
