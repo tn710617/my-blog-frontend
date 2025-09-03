@@ -109,7 +109,6 @@ export const recolorMarkers = (pins, map, markersByIdRef, assignedColorsRef) => 
     });
   } catch (error) {
     // Silently handle errors to prevent disrupting user experience
-    console.debug('Color recoloring error:', error);
   }
 };
 

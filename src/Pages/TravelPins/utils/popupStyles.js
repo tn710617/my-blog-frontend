@@ -3,6 +3,17 @@
  * These styles handle auth button visibility, popup positioning, animations, and responsive behavior
  */
 export const customPopupStyles = `
+  /* Disable marker interactions when Mapbox modal is active */
+  .travel-pin-marker.modal-active-disabled {
+    pointer-events: none !important;
+    cursor: default !important;
+    opacity: 0.5 !important;
+  }
+  
+  .travel-pin-marker.modal-active-disabled .marker-container {
+    transform: scale(1) !important;
+  }
+
   /* Auth buttons visibility classes */
   .auth-buttons-visible {
     display: block !important;

@@ -48,7 +48,6 @@ export const Z_INDEX = {
  */
 export const getZIndex = (key, offset = 0) => {
   if (!(key in Z_INDEX)) {
-    console.warn(`Z-Index key "${key}" not found. Available keys:`, Object.keys(Z_INDEX));
     return 1;
   }
   return Z_INDEX[key] + offset;

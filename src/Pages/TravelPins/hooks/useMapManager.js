@@ -27,7 +27,6 @@ export const useMapManager = ({
    */
   const getLocaleMessages = useCallback(() => {
     if (!intl) {
-      console.warn('No intl object provided to useMapManager');
       return {};
     }
 
@@ -48,7 +47,6 @@ export const useMapManager = ({
    * Initialize the Mapbox map
    */
   const initializeMap = useCallback(() => {
-    console.log('🗺️ initializeMap called - token:', !!mapboxToken, 'existing map:', !!map.current, 'locale:', locale);
     if (!mapboxToken) return;
     if (map.current) return; // Initialize map only once
 
@@ -62,7 +60,6 @@ export const useMapManager = ({
 
     try {
       const localeMessages = getLocaleMessages();
-      console.log('🌐 Using locale messages for', locale, localeMessages);
       
       map.current = new mapboxgl.Map({
         container: mapContainer.current,
@@ -84,13 +81,10 @@ export const useMapManager = ({
 
       // Handle map load event
       map.current.on('load', () => {
-        console.log('🗺️ Map load event triggered');
         // Double-check that map is actually loaded before setting state
         if (map.current && map.current.loaded()) {
-          console.log('🗺️ Map fully loaded, setting mapLoaded to true');
           setMapLoaded(true);
           if (onMapLoad) {
-            console.log('🗺️ Calling onMapLoad callback');
             onMapLoad(map.current, markersByIdRef.current);
           }
         }
@@ -109,7 +103,6 @@ export const useMapManager = ({
           try { 
             onRecolorMarkers(map.current, markersByIdRef.current); 
           } catch (error) {
-            console.warn('Failed to recolor markers on move:', error);
           } 
         };
         
@@ -117,7 +110,6 @@ export const useMapManager = ({
           try { 
             onRecolorMarkers(map.current, markersByIdRef.current); 
           } catch (error) {
-            console.warn('Failed to recolor markers on zoom:', error);
           } 
         };
 
@@ -158,14 +150,12 @@ export const useMapManager = ({
    * Fly to a specific location
    */
   const flyTo = useCallback((center, zoom = 10, duration = 2500) => {
-    console.log('✈️ flyTo called:', { center, zoom, duration, hasMap: !!map.current });
     if (map.current) {
       map.current.flyTo({
         center,
         zoom,
         duration
       });
-      console.log('✈️ flyTo executed');
     }
   }, []);
 
@@ -269,7 +259,6 @@ export const useMapManager = ({
         map.current.remove();
         map.current = null;
       } catch (error) {
-        console.warn('Failed to clean up map:', error);
       }
     }
 

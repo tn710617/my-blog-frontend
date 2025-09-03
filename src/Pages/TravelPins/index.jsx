@@ -23,22 +23,13 @@ import { useMapManager } from './hooks/useMapManager';
 
 
 const TravelPins = () => {
-  console.log('🔄 TravelPins component render started - timestamp:', Date.now());
   
   const intl = useIntl();
   const locale = useLocaleStore((state) => state.locale);
   const isLoggedIn = useAuthStore((state) => state.isLoggedIn);
   const setShowLoginModal = useLoginModalStore((state) => state.setShowLoginModal);
   
-  console.log('🔐 Auth state:', { isLoggedIn });
   
-  // Add a cleanup effect to track component unmounting
-  useEffect(() => {
-    console.log('🌟 TravelPins component MOUNTED');
-    return () => {
-      console.log('⚠️ TravelPins component UNMOUNTING - this might indicate a refresh');
-    };
-  }, []);
   
   // 保存最新 auth 狀態，避免事件閉包拿到舊值
   const authRef = useRef(isLoggedIn);
@@ -65,18 +56,15 @@ const TravelPins = () => {
         day: 'numeric' 
       });
     } catch (error) {
-      console.warn('Date formatting error:', error);
       return dateString; // Fallback to original string
     }
   };
   
   // API hooks
   const { data: rawPins = [], isLoading: pinsLoading, error: pinsError } = useTravelPins();
-  console.log('📋 Raw pins data from React Query:', rawPins.length, 'pins, isLoading:', pinsLoading);
   
   // Memoize pins to prevent unnecessary re-renders when the array reference changes
   const pins = useMemo(() => {
-    console.log('📋 Memoizing pins array:', rawPins.length);
     return rawPins;
   }, [rawPins.length, rawPins.map(p => `${p.id}-${p.updated_at}`).join(',')]);
   
@@ -107,7 +95,6 @@ const TravelPins = () => {
 
   // Form close handler (needed by popup manager hook)
   const handleCloseForm = useCallback(() => {
-    console.log('❌ Form close called - handleCloseForm');
     setShowForm(false);
     setEditingPin(null);
     resetForm();
@@ -115,7 +102,6 @@ const TravelPins = () => {
 
   // Stable callback functions for map manager
   const handleMapClick = useCallback((lngLat) => {
-    console.log('🗱️ Map click callback created/recreated');
     if (!isLoggedIn) {
       setShowLoginModal(true);
       return;
@@ -126,25 +112,21 @@ const TravelPins = () => {
   }, [isLoggedIn, setShowLoginModal, createNewForm, setEditingPin, setShowForm]);
 
   const handleMapLoad = useCallback((mapInstance, markersById) => {
-    console.log('📍 Map load callback created/recreated');
     try { 
       recolorMarkers(pins, mapInstance, markersById, assignedColorsRef.current);
     } catch (error) {
-      console.warn('Failed initial marker recoloring:', error);
     }
   }, []);  // Remove pins dependency to prevent recreation
 
   const handleRecolorMarkers = useCallback((mapInstance, markersById) => {
-    console.log('🎨 Recolor markers callback created/recreated');
     try {
       recolorMarkers(pins, mapInstance, markersById, assignedColorsRef.current);
     } catch (error) {
-      console.warn('Failed marker recoloring:', error);
     }
   }, []);  // Remove pins dependency to prevent recreation
 
   // Map management functionality
-  console.log('🗺️ About to call useMapManager hook');  
+  
   const {
     mapContainer,
     map,
@@ -166,16 +148,13 @@ const TravelPins = () => {
   });
 
   // Color management functions (now that map is available)
-  console.log('🎯 Creating handleAssignColorsByScreen callback');
   const handleAssignColorsByScreen = useCallback((allPins) => {
-    console.log('🎨 Colors callback created/recreated');
     if (map) {
       assignColorsByScreen(allPins, map, assignedColorsRef.current);
     }
   }, [map]);
 
   // Popup management functionality
-  console.log('🏷️ Creating popup management hooks');
   const { 
     openPopups, 
     closeAllPopups, 
@@ -198,6 +177,7 @@ const TravelPins = () => {
   const [photoModalData, setPhotoModalData] = useState({ url: '', title: '' });
   const [coordsCopied, setCoordsCopied] = useState(false);
   const [mapboxModalActive, setMapboxModalActive] = useState(false);
+  const mapboxModalActiveRef = useRef(false);
   // Marker style: fixed to footprint
   
   // Assigned color index per pin id
@@ -226,33 +206,22 @@ const TravelPins = () => {
 
   // Mobile detection effect
   useEffect(() => {
-    console.log('📱 Mobile detection useEffect');
     const handleResize = () => {
       const newIsMobile = window.innerWidth <= 768;
-      console.log('📱 Resize detected - isMobile:', newIsMobile);
       setIsMobile(newIsMobile);
     };
 
     window.addEventListener('resize', handleResize);
     return () => {
-      console.log('📱 Resize event listener cleanup');
       window.removeEventListener('resize', handleResize);
     };
   }, []);
 
   // Effect to create/update/remove markers when pins change
   useEffect(() => {
-    console.log('🔄 Markers useEffect triggered - pins.length:', pins.length, 'mapLoaded:', mapLoaded);
     if (!map || !mapLoaded || !map.loaded?.()) {
-      console.log('Markers effect: Map not ready', { 
-        map: !!map, 
-        mapLoaded, 
-        mapActuallyLoaded: map?.loaded?.() 
-      });
       return;
     }
-
-    console.log('Markers effect: Creating/updating markers for', pins.length, 'pins', { map: !!map, mapLoaded });
 
     // Compute screen-space color assignments up front
     try { 
@@ -325,7 +294,6 @@ const TravelPins = () => {
 
   // Auth 改變時，立刻同步 ref，並更新所有已開啟的 popups
   useEffect(() => {
-    console.log('🔐 Auth changed useEffect - isLoggedIn:', isLoggedIn);
     authRef.current = isLoggedIn;
 
     // 更新目前畫面上所有已開啟的 popup
@@ -347,7 +315,6 @@ const TravelPins = () => {
     }, 100);
 
     return () => {
-      console.log('🔐 Auth effect cleanup');
       clearTimeout(t);
     };
   }, [isLoggedIn, applyAuthButtonsVisibility]);
@@ -362,22 +329,17 @@ const TravelPins = () => {
 
   // Set mapbox token on mount
   useEffect(() => {
-    console.log('🔑 Setting mapbox token useEffect');
     const mapboxToken = import.meta.env.VITE_MAPBOX_TOKEN;
     setToken(mapboxToken);
-    console.log('🔑 Token set:', !!mapboxToken);
   }, []);
 
   // Listen for location selection from navbar search
   useEffect(() => {
-    console.log('🔍 Navbar location listener useEffect');
     const handleLocationFromNavbar = (event) => {
-      console.log('🔍 Navbar location event received:', event.detail);
       const location = event.detail;
       
       // Navigate to the location on the map
       if (map && location.center) {
-        console.log('🔍 Flying to search location:', location.center);
         flyTo(location.center, 10, 2000);
         
         // Add to search history
@@ -397,44 +359,78 @@ const TravelPins = () => {
 
     window.addEventListener('travelPinsLocationSelect', handleLocationFromNavbar);
     return () => {
-      console.log('🔍 Navbar location listener cleanup');
       window.removeEventListener('travelPinsLocationSelect', handleLocationFromNavbar);
     };
   }, [flyTo, map]);
 
   // Global functions for popup interactions
   useEffect(() => {
-    console.log('🌐 Global functions useEffect (no-op)');
     // No-op: globals removed; compatibility hook retained for future needs
-    return () => {
-      console.log('🌐 Global functions cleanup (no-op)');
-    };
+    return () => {};
   }, []);
 
-  // Monitor for Mapbox cooperative gesture modal
+  // Initialize modal state to false on mount
   useEffect(() => {
-    const checkMapboxModal = () => {
-      // Check for Mapbox cooperative gesture modal
-      const mapboxModal = document.querySelector('.mapboxgl-ctrl-cooperative-gesture');
-      const isModalVisible = mapboxModal && mapboxModal.style.display !== 'none';
+    setMapboxModalActive(false);
+    mapboxModalActiveRef.current = false;
+  }, []);
+
+  // Monitor for Mapbox cooperative gesture modal using opacity detection
+  useEffect(() => {
+    let lastOpacity = 0;
+    
+    const checkScrollZoomBlocker = () => {
+      const scrollBlocker = document.querySelector('.mapboxgl-scroll-zoom-blocker');
+      if (!scrollBlocker) return;
       
-      if (isModalVisible !== mapboxModalActive) {
-        console.log('🗺️ Mapbox modal visibility changed:', isModalVisible);
-        setMapboxModalActive(isModalVisible);
+      const style = window.getComputedStyle(scrollBlocker);
+      const opacity = parseFloat(style.opacity);
+      const isActive = opacity > 0;
+      
+      // Only log when opacity changes
+      if (opacity !== lastOpacity) {
+        lastOpacity = opacity;
+      }
+      
+      if (isActive && !mapboxModalActiveRef.current) {
+        mapboxModalActiveRef.current = true;
+        setMapboxModalActive(true);
         
-        // Disable/enable pointer events on all markers
+        // Disable marker interactions and reset hover states
         const markers = document.querySelectorAll('.travel-pin-marker');
+        
         markers.forEach(marker => {
-          marker.style.pointerEvents = isModalVisible ? 'none' : 'auto';
+          marker.style.cursor = 'default';
+          marker.classList.add('modal-active-disabled');
+          
+          // Reset any existing hover states
+          const container = marker.querySelector('.marker-container');
+          if (container) container.style.transform = 'scale(1)';
+          marker.style.zIndex = Z_INDEX_CSS.MAP_MARKER_DEFAULT;
+          marker.style.opacity = '1';
+        });
+        
+      } else if (!isActive && mapboxModalActiveRef.current) {
+        mapboxModalActiveRef.current = false;
+        setMapboxModalActive(false);
+        
+        // Re-enable marker interactions
+        const markers = document.querySelectorAll('.travel-pin-marker');
+        
+        markers.forEach(marker => {
+          marker.style.cursor = 'pointer';
+          marker.classList.remove('modal-active-disabled');
         });
       }
     };
 
-    // Check periodically for modal visibility changes
-    const interval = setInterval(checkMapboxModal, 100);
+    // Check every 100ms for opacity changes
+    const interval = setInterval(checkScrollZoomBlocker, 100);
     
-    return () => clearInterval(interval);
-  }, [mapboxModalActive]);
+    return () => {
+      clearInterval(interval);
+    };
+  }, []); // No dependencies needed
 
 
   // ESC key handler for form modal
@@ -446,14 +442,11 @@ const TravelPins = () => {
       if (document.activeElement?.id === 'location-search-input') return;
       
       if (e.key === 'Escape') {
-        console.log('🔑 ESC pressed - hasChanges:', hasChanges, 'showForm:', showForm);
         if (!hasChanges) {
           // No changes made, close immediately
-          console.log('🔑 No changes, closing form directly');
           handleCloseForm();
         } else {
           // Has changes, show confirmation dialog
-          console.log('🔑 Has changes, showing ESC modal');
           setPendingEscAction(() => handleCloseForm);
           setShowEscModal(true);
         }
@@ -615,7 +608,6 @@ const TravelPins = () => {
             closeAllPopups();
             marker.togglePopup();
           } catch (e) {
-            console.warn('Failed to restore popup for pin', pendingDeletePin.id, e);
           }
         }, 200); // Small delay to ensure modal closes smoothly
       }
@@ -739,9 +731,7 @@ const TravelPins = () => {
 
   // Handle GPS location request
   const handleGetCurrentLocation = () => {
-    console.log('🌍 GPS button clicked - handleGetCurrentLocation called');
     getCurrentLocation(({ latitude, longitude }) => {
-      console.log('🌍 GPS success - flying to location:', { latitude, longitude });
       // Fly to current location with smooth animation
       flyTo([longitude, latitude], 14, 2500);
     });
@@ -801,9 +791,12 @@ const TravelPins = () => {
     // Use centralized z-index management to stay below Mapbox notification modals
     el.style.cssText = `position: absolute; pointer-events: auto; cursor: pointer; z-index: ${Z_INDEX_CSS.MAP_MARKER_DEFAULT}; opacity: 1;`;
 
-    // Simple hover effect
+    // Hover effect (disabled when Mapbox gesture modal is active)
     const getContainer = () => el.querySelector('.marker-container');
     el.addEventListener('mouseenter', () => {
+      // Don't apply hover effects when Mapbox gesture modal is active
+      if (mapboxModalActiveRef.current) return;
+      
       const container = getContainer();
       if (container) container.style.transform = 'scale(1.12)';
       // Keep below form overlay, popup overlay, and Mapbox notification modals
@@ -812,6 +805,7 @@ const TravelPins = () => {
     });
 
     el.addEventListener('mouseleave', () => {
+      // Always reset on mouse leave to prevent stuck states
       const container = getContainer();
       if (container) container.style.transform = 'scale(1)';
       el.style.zIndex = Z_INDEX_CSS.MAP_MARKER_DEFAULT;
@@ -830,6 +824,13 @@ const TravelPins = () => {
 
       // Add click event to show popup (after marker is created)
       el.addEventListener('click', (e) => {
+        // Prevent marker interaction when Mapbox gesture modal is active
+        if (mapboxModalActiveRef.current) {
+          e.preventDefault();
+          e.stopPropagation();
+          return;
+        }
+        
         e.stopPropagation(); // Prevent map click event
         marker.togglePopup(); // Show the popup
       });
@@ -967,7 +968,6 @@ const TravelPins = () => {
         }
 
       } catch (err) {
-        console.warn('Failed to enhance popup scroll behavior:', err);
       }
     });
     
@@ -988,41 +988,32 @@ const TravelPins = () => {
   };
 
   const handleSavePin = async (e) => {
-    console.log('💾 Save pin button clicked - handleSavePin called');
     e.preventDefault();
     if (!isFormValid()) {
-      console.log('💾 Form validation failed, exiting');
       return;
     }
     
     // Check if user is logged in for create/edit operations
     if (!isLoggedIn) {
-      console.log('💾 User not logged in, showing login modal');
       // Show login modal for unauthenticated users
       setShowLoginModal(true);
       return;
     }
 
     const pinData = getFormDataForSubmission();
-    console.log('💾 Pin data prepared:', pinData);
 
     try {
       if (editingPin) {
-        console.log('💾 Updating existing pin:', editingPin.id);
         // Update existing pin
         await updatePinMutation.mutateAsync({ 
           id: editingPin.id, 
           pinData 
         });
-        console.log('💾 Pin update successful');
       } else {
-        console.log('💾 Creating new pin');
         // Create new pin
         await createPinMutation.mutateAsync(pinData);
-        console.log('💾 Pin creation successful');
       }
       
-      console.log('💾 Closing form after successful save');
       handleCloseForm();
     } catch (error) {
       console.error('💾 Failed to save pin:', error);
@@ -1030,7 +1021,6 @@ const TravelPins = () => {
     }
   };
 
-  console.log('🎨 TravelPins rendering JSX - showForm:', showForm, 'pins.length:', pins.length, 'showEscModal:', showEscModal, 'hasChanges:', hasChanges);
   
   return (
     <div className="w-full h-screen relative">
@@ -1070,205 +1060,6 @@ const TravelPins = () => {
           style={{ zIndex: Z_INDEX.POPUP_BACKGROUND }}
           onClick={closeAllPopups}
         />
-      )}
-
-
-      {/* Enhanced Pin Creation/Edit Form */}
-      {false && showForm && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex justify-center z-50 p-4 overflow-y-auto">
-          <div 
-            className="bg-white rounded-2xl overflow-hidden shadow-2xl border border-slate-200/50 w-[450px] max-w-[90vw] my-4 self-start"
-            style={{ WebkitOverflowScrolling: 'touch' }}
-          >
-            {/* Same gradient header as display modal */}
-            <div className="bg-gradient-to-r from-indigo-600 via-purple-600 to-blue-600 text-white px-6 py-5 relative">
-              <div className="absolute inset-0 bg-gradient-to-br from-white/10 to-transparent"></div>
-              <div className="flex justify-between items-center relative z-10">
-                <div className="flex-1">
-                  <h3 className="text-xl font-bold tracking-tight leading-tight m-0">
-{editingPin ? t('travel_pins.form.edit_title') : t('travel_pins.form.add_title')}
-                  </h3>
-                </div>
-                <div className="flex items-center gap-3 text-xs opacity-75">
-                  {!hasChanges ? (
-                    <span>{t('travel_pins.form.press_esc_to_close')}</span>
-                  ) : (
-                    <span>{t('travel_pins.form.unsaved_changes')}</span>
-                  )}
-                  <button 
-                    onClick={handleCloseForm}
-                    className="w-8 h-8 flex items-center justify-center hover:bg-white/20 rounded-full transition-colors duration-200 text-white/80 hover:text-white"
-                  >
-                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
-                      <line x1="18" y1="6" x2="6" y2="18"></line>
-                      <line x1="6" y1="6" x2="18" y2="18"></line>
-                    </svg>
-                  </button>
-                </div>
-              </div>
-            </div>
-            
-            {/* Color-coded form sections */}
-            <form onSubmit={handleSavePin} className="p-6 space-y-5">
-              {/* Title Section */}
-              <div className="space-y-3">
-                <div className="flex items-center gap-2">
-                  <div className="w-6 h-6 bg-gradient-to-br from-blue-400 to-blue-500 rounded-lg flex items-center justify-center text-white text-sm">
-                    📝
-                  </div>
-                  <h4 className="text-sm font-bold text-slate-700 uppercase tracking-wide">{t('travel_pins.form.title_label')}</h4>
-                </div>
-                <input
-                  type="text"
-                  required
-                  value={formData.title}
-                  onChange={(e) => handleInputChange('title', e.target.value)}
-                  className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
-                  style={{ fontSize: '16px' }}
-                  placeholder={t('travel_pins.form.title_placeholder')}
-                />
-              </div>
-
-              {/* Notes Section */}
-              <div className="space-y-3">
-                <div className="flex items-center gap-2">
-                  <div className="w-6 h-6 bg-gradient-to-br from-amber-400 to-orange-500 rounded-lg flex items-center justify-center text-white text-sm">
-                    📖
-                  </div>
-                  <h4 className="text-sm font-bold text-slate-700 uppercase tracking-wide">{t('travel_pins.form.travel_notes_label')}</h4>
-                </div>
-                <div className="bg-gradient-to-br from-amber-50 to-orange-50 border border-amber-200/50 rounded-xl p-4">
-                  <textarea
-                    rows={4}
-                    value={formData.note}
-                    onChange={(e) => handleInputChange('note', e.target.value)}
-                    className="w-full bg-transparent border-none resize-none focus:outline-none text-slate-700 placeholder:text-slate-400"
-                    style={{ fontSize: '16px' }}
-                    placeholder={t('travel_pins.form.travel_notes_placeholder')}
-                  />
-                </div>
-              </div>
-
-              {/* Visit Date Section */}
-              <div className="space-y-3">
-                <div className="flex items-center gap-2">
-                  <div className="w-6 h-6 bg-gradient-to-br from-green-400 to-emerald-500 rounded-lg flex items-center justify-center text-white text-sm">
-                    📅
-                  </div>
-                  <h4 className="text-sm font-bold text-slate-700 uppercase tracking-wide">{t('travel_pins.form.visit_date_label')}</h4>
-                </div>
-                <div className="relative">
-                  {/* Hidden native date input for functionality */}
-                  <input
-                    type="date"
-                    value={formData.visited_at}
-                    onChange={(e) => handleInputChange('visited_at', e.target.value)}
-                    className="absolute opacity-0 pointer-events-none"
-                    style={{ fontSize: '16px' }}
-                    id="hidden-date-input"
-                  />
-                  {/* Custom display input that shows locale-formatted date */}
-                  <div className="relative">
-                    <input
-                      type="text"
-                      value={formData.visited_at ? formatDate(formData.visited_at) : ''}
-                      onClick={() => document.getElementById('hidden-date-input').showPicker?.() || document.getElementById('hidden-date-input').focus()}
-                      readOnly
-                      className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-green-500 cursor-pointer"
-                      style={{ fontSize: '16px' }}
-                      placeholder={t('travel_pins.form.visit_date_placeholder')}
-                    />
-                    <div className="absolute right-3 top-1/2 transform -translate-y-1/2 pointer-events-none text-gray-400">
-                      📅
-                    </div>
-                  </div>
-                </div>
-              </div>
-
-              {/* Photo URL Section */}
-              <div className="space-y-3">
-                <div className="flex items-center gap-2">
-                  <div className="w-6 h-6 bg-gradient-to-br from-pink-400 to-rose-500 rounded-lg flex items-center justify-center text-white text-sm">
-                    📷
-                  </div>
-                  <h4 className="text-sm font-bold text-slate-700 uppercase tracking-wide">{t('travel_pins.form.photo_url_label')}</h4>
-                </div>
-                <div className="bg-gradient-to-br from-pink-50 to-rose-50 border border-pink-200/50 rounded-xl p-4">
-                  <input
-                    type="url"
-                    value={formData.photo_url || ''}
-                    onChange={(e) => handleInputChange('photo_url', e.target.value)}
-                    className="w-full bg-transparent border-none focus:outline-none text-slate-700 placeholder:text-slate-400"
-                    style={{ fontSize: '16px' }}
-                    placeholder={t('travel_pins.form.photo_url_placeholder')}
-                  />
-                  {formData.photo_url && (
-                    <div className="mt-3 border-t border-pink-200 pt-3">
-                      <div className="text-xs text-slate-500 mb-2">{t('travel_pins.form.photo_preview')}</div>
-                      <div className="relative w-full" style={{aspectRatio: '16/10'}}>
-                        <img
-                          src={formData.photo_url}
-                          alt="Preview"
-                          className="absolute inset-0 w-full h-full object-cover rounded-lg"
-                          onError={(e) => {
-                            e.target.style.display = 'none';
-                            e.target.nextElementSibling.style.display = 'flex';
-                          }}
-                        />
-                        <div style={{display: 'none'}} className="absolute inset-0 bg-slate-100 rounded-lg flex items-center justify-center text-slate-400">
-                          <div className="text-center">
-                            <div className="text-lg mb-1">📷</div>
-                            <div className="text-xs">{t('travel_pins.form.invalid_url')}</div>
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-                  )}
-                </div>
-              </div>
-
-              {/* Coordinates Section */}
-              {formData.coordinates && (
-                <div className="space-y-3">
-                  <div className="flex items-center gap-2">
-                    <div className="w-6 h-6 bg-gradient-to-br from-emerald-400 to-green-500 rounded-lg flex items-center justify-center text-white text-sm">
-                      🌍
-                    </div>
-                    <h4 className="text-sm font-bold text-slate-700 uppercase tracking-wide">Location</h4>
-                  </div>
-                  <div className="bg-gradient-to-br from-emerald-50 to-green-50 border border-emerald-200/50 rounded-xl p-4">
-                    <div className="flex items-center justify-between">
-                      <div>
-                        <div className="text-xs text-slate-500 font-medium mb-1">COORDINATES</div>
-                        <div className="font-mono text-sm text-slate-800 font-semibold">
-                          {formData.coordinates[1].toFixed(6)}, {formData.coordinates[0].toFixed(6)}
-                        </div>
-                      </div>
-                      <div className="text-2xl">📍</div>
-                    </div>
-                  </div>
-                </div>
-              )}
-
-              {/* Action Buttons */}
-              <div className="flex gap-3 pt-4 border-t border-slate-100">
-                <button
-                  type="button"
-                  onClick={handleCloseForm}
-                  className="flex-1 bg-gradient-to-r from-gray-100 to-gray-200 hover:from-gray-200 hover:to-gray-300 text-gray-700 font-medium py-3 px-4 rounded-xl transition-all duration-300 text-sm uppercase tracking-wide"
-                >
-                  {t('travel_pins.form.cancel_button')}
-                </button>
-                <button
-                  type="submit"
-                  className="flex-1 bg-gradient-to-r from-indigo-500 via-purple-500 to-blue-500 hover:from-indigo-600 hover:via-purple-600 hover:to-blue-600 text-white font-bold py-3 px-4 rounded-xl transition-all duration-300 shadow-lg hover:shadow-xl hover:-translate-y-0.5 text-sm uppercase tracking-wide"
-                >
-{editingPin ? t('travel_pins.form.update_button') : t('travel_pins.form.save_button')}
-                </button>
-              </div>
-            </form>
-          </div>
-        </div>
       )}
 
       {/* Refactored Pin Creation/Edit Form */}

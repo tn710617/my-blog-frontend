@@ -61,7 +61,6 @@ export const usePopupManager = ({
         mapRef.current.touchZoomRotate?.enable();
       }
     } catch (error) {
-      console.warn('Failed to enable map interactions:', error);
     }
   }, [mapRef]);
 
@@ -80,7 +79,6 @@ export const usePopupManager = ({
         mapRef.current.touchZoomRotate?.disable();
       }
     } catch (error) {
-      console.warn('Failed to disable map interactions:', error);
     }
   }, [mapRef]);
 

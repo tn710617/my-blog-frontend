@@ -14,14 +14,11 @@ export const useGeolocation = () => {
    * @param {Object} options - Optional geolocation options
    */
   const getCurrentLocation = (onSuccess, options = {}) => {
-    console.log('📍 getCurrentLocation called - GPS request started');
     if (!navigator.geolocation) {
-      console.log('📍 Geolocation not supported');
       setLocationError('Geolocation is not supported by this browser');
       return;
     }
 
-    console.log('📍 Setting isLocating to true, starting GPS request');
     setIsLocating(true);
     setLocationError(null);
 
@@ -36,20 +33,16 @@ export const useGeolocation = () => {
     navigator.geolocation.getCurrentPosition(
       (position) => {
         const { latitude, longitude } = position.coords;
-        console.log('📍 GPS success - got coordinates:', { latitude, longitude });
         
-        console.log('📍 Setting isLocating to false');
         setIsLocating(false);
         setLocationError(null);
         
         if (onSuccess) {
-          console.log('📍 Calling onSuccess callback with coordinates');
           onSuccess({ latitude, longitude });
         }
       },
       (error) => {
         console.error('📍 Geolocation error:', error);
-        console.log('📍 Setting isLocating to false due to error');
         setIsLocating(false);
         
         switch (error.code) {
