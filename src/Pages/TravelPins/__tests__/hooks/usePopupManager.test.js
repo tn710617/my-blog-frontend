@@ -1,4 +1,4 @@
-import { renderHook, act } from '@testing-library/react';
+import { renderHook, act, waitFor } from '@testing-library/react';
 import { usePopupManager } from '../../hooks/usePopupManager';
 
 describe('usePopupManager', () => {
