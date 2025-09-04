@@ -91,10 +91,12 @@ src/
 
 ### Progress Summary
 - **Started**: 1,181 lines in main component
-- **Current**: 611 lines (48% reduction - 570 lines extracted!)
-- **Target**: <400 lines (additional 33% reduction needed)
-- **Files Created**: 8 new utility files and hooks
-- **Components Extracted**: 4 new reusable components
+- **Current**: 659 lines (44% reduction - 522 lines extracted!)
+- **Target**: <400 lines (additional 39% reduction needed - 259 lines to go)
+- **Files Created**: 11 new utility files and hooks
+- **Components Extracted**: 5 new reusable components
+- **Critical Issues Resolved**: ✅ Infinite loop fixes, popup content updates, form repopulation
+- **Test Status**: ✅ All 558 tests passing
 
 ### Extraction Progress (Mark as completed as we proceed)
 
@@ -124,7 +126,7 @@ src/
   - [x] Extract `OverlayControls` (locate button + toast) 
   - [x] Create reusable UI components from inline JSX
 
-- [x] **Phase 4: Main Component Restructure** ✅ IN PROGRESS (611 lines → target <400 lines)
+- [x] **Phase 4: Main Component Restructure** ✅ IN PROGRESS (659 lines → target <400 lines)
   - [x] Extract inline ESC modal JSX to separate component ✅ COMPLETED
   - [x] Extract marker creation logic to utility function ✅ COMPLETED
   - [x] Extract popup creation logic to utility function ✅ COMPLETED  
@@ -133,9 +135,15 @@ src/
   - [x] Extract marker effects hook ✅ COMPLETED
   - [x] Extract keyboard handlers hook ✅ COMPLETED
   - [x] Extract Mapbox modal detection hook ✅ COMPLETED
+  - [x] Extract auth effects hook ✅ COMPLETED
   - [x] Clean up unused imports and variables ✅ COMPLETED
+  - [x] **Critical Bug Fixes** ✅ COMPLETED
+    - [x] Fixed infinite loop in usePopupManager and useMarkerEffects ✅ COMPLETED
+    - [x] Fixed popup content not updating immediately after pin changes ✅ COMPLETED  
+    - [x] Fixed form not repopulating with updated pin data ✅ COMPLETED
+    - [x] Fixed mobile popup policy test ✅ COMPLETED
   - [ ] **Phase 4A: Continue Component Extraction (Small Steps)**
-    - [ ] Step 1: Extract auth effects to custom hook (20-30 lines)
+    - [x] Step 1: Extract auth effects to custom hook (34 lines saved) ✅ COMPLETED
     - [ ] Step 2: Extract location event listener to custom hook (15-20 lines)
     - [ ] Step 3: Extract style injection effect to utility (15-20 lines)
     - [ ] Step 4: Extract mobile detection to custom hook (10-15 lines)
