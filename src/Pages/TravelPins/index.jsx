@@ -262,12 +262,22 @@ const TravelPins = () => {
   // Skin tone palette is defined globally as SKIN_SCHEMES
 
 
-  // Inject custom popup styles
+  // Initialize styles and token on mount
   useEffect(() => {
-    return injectTravelPinsStyles();
+    // Inject custom popup styles
+    const styleCleanup = injectTravelPinsStyles();
+    
+    // Set mapbox token
+    const mapboxToken = import.meta.env.VITE_MAPBOX_TOKEN;
+    setToken(mapboxToken);
+    // Also set the global mapbox token for search functionality
+    if (mapboxToken) {
+      mapboxgl.accessToken = mapboxToken;
+    }
+    
+    // Return cleanup function for styles
+    return styleCleanup;
   }, []);
-
-
 
   // Add zoom handlers for popup closing behavior
   useEffect(() => {
@@ -276,23 +286,6 @@ const TravelPins = () => {
     const cleanup = addZoomHandlers(closeAllPopups);
     return cleanup;
   }, [mapLoaded, addZoomHandlers, closeAllPopups]);
-
-  // Set mapbox token on mount
-  useEffect(() => {
-    const mapboxToken = import.meta.env.VITE_MAPBOX_TOKEN;
-    setToken(mapboxToken);
-    // Also set the global mapbox token for search functionality
-    if (mapboxToken) {
-      mapboxgl.accessToken = mapboxToken;
-    }
-  }, []);
-
-
-  // Global functions for popup interactions
-  useEffect(() => {
-    // No-op: globals removed; compatibility hook retained for future needs
-    return () => {};
-  }, []);
 
 
 
