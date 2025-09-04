@@ -189,18 +189,13 @@ const TravelPins = () => {
     onCloseForm: handleCloseForm
   });
   
-  // Action handlers (defined before keyboard handlers that use them)
+  // === PIN ACTION HANDLERS ===
   const handleEditPin = (pin) => {
-    // Check if user is logged in
     if (!isLoggedIn) {
-      // Show login modal for unauthenticated users
       setShowLoginModal(true);
       return;
     }
-    
-    // Close all display popups when opening edit form
     closeAllPopups();
-    
     const originalData = {
       title: pin.title,
       note: pin.note || '',
@@ -209,41 +204,73 @@ const TravelPins = () => {
       photos: pin.photos || [],
       coordinates: pin.coordinates
     };
-    
     setEditingPin(pin);
     initializeForm(originalData);
     setShowForm(true);
   };
 
   const handleDeletePin = (pin) => {
-    // Check if user is logged in
     if (!isLoggedIn) {
-      // Show login modal for unauthenticated users
       setShowLoginModal(true);
       return;
     }
-    
-    // Close all popups when opening delete modal
     closeAllPopups();
     openDeleteModal(pin);
   };
 
+  const handleSavePin = async (e) => {
+    e.preventDefault();
+    if (!isFormValid()) return;
+    if (!isLoggedIn) {
+      setShowLoginModal(true);
+      return;
+    }
+    const pinData = getFormDataForSubmission();
+    try {
+      if (editingPin) {
+        await updatePinMutation.mutateAsync({ id: editingPin.id, pinData });
+      } else {
+        await createPinMutation.mutateAsync(pinData);
+      }
+      handleCloseForm();
+    } catch (error) {
+      console.error('💾 Failed to save pin:', error);
+    }
+  };
+
+  // === MODAL HANDLERS ===
   const cancelDeletePin = () => {
-    // Restore the original popup after a brief delay
     if (pendingDeletePin) {
       const marker = markersByIdRef.current.get(pendingDeletePin.id);
       if (marker && marker.getPopup()) {
         setTimeout(() => {
           try {
-            // Ensure all other popups remain closed, then open this one
             closeAllPopups();
             marker.togglePopup();
-          } catch (e) {
-          }
-        }, 200); // Small delay to ensure modal closes smoothly
+          } catch (e) {}
+        }, 200);
       }
     }
+    closeDeleteModal();
+  };
 
+  const confirmDeletePin = async () => {
+    if (pendingDeletePin) {
+      try {
+        await deletePinMutation.mutateAsync(pendingDeletePin.id);
+        handlePopupClose(pendingDeletePin.id);
+        try {
+          const marker = markersByIdRef.current.get(pendingDeletePin.id);
+          if (marker) {
+            marker.remove();
+            markersRef.current = markersRef.current.filter(m => m !== marker);
+            markersByIdRef.current.delete(pendingDeletePin.id);
+          }
+        } catch {}
+      } catch (error) {
+        console.error('Failed to delete pin:', error);
+      }
+    }
     closeDeleteModal();
   };
 
@@ -313,51 +340,18 @@ const TravelPins = () => {
 
 
 
-
-
-  const confirmDeletePin = async () => {
-    if (pendingDeletePin) {
-      try {
-        await deletePinMutation.mutateAsync(pendingDeletePin.id);
-        // Remove from open popups tracking
-        handlePopupClose(pendingDeletePin.id);
-        // Remove marker immediately for instant UI feedback
-        try {
-          const marker = markersByIdRef.current.get(pendingDeletePin.id);
-          if (marker) {
-            marker.remove();
-            // purge from refs
-            markersRef.current = markersRef.current.filter(m => m !== marker);
-            markersByIdRef.current.delete(pendingDeletePin.id);
-          }
-        } catch {}
-      } catch (error) {
-        console.error('Failed to delete pin:', error);
-        // Error handling is done in the mutation
-      }
-    }
-    closeDeleteModal();
-  };
-
-
-
-  // Handle GPS location request
+  // === LOCATION HANDLER ===
   const handleGetCurrentLocation = () => {
     getCurrentLocation(({ latitude, longitude }) => {
-      // Fly to current location with smooth animation
       flyTo([longitude, latitude], 14, 2500);
     });
   };
 
-  // (Pin style removed — using footprint only)
-
-
-  // Function to get current pin data by ID
+  // === POPUP & MARKER HELPERS ===
   const getCurrentPinData = useCallback((pinId) => {
     return pins.find(p => p.id === pinId);
   }, [pins]);
 
-  // Create enhanced popup with all dependencies
   const createEnhancedPopupForPin = (pin) => {
     return createEnhancedPopup(pin, {
       t,
@@ -376,7 +370,6 @@ const TravelPins = () => {
     });
   };
 
-  // Create marker using utility function (memoized to prevent infinite loops)
   const createMarkerForPinWithDeps = useCallback((pin, index, map) => {
     return createMarkerForPin(
       pin,
@@ -386,9 +379,10 @@ const TravelPins = () => {
       mapboxModalActiveRef,
       createEnhancedPopupForPin
     );
-  }, [createEnhancedPopupForPin]); // Only depends on popup creation function
+  }, [createEnhancedPopupForPin]);
 
-  // Use marker effects hook to handle marker lifecycle
+  // === EFFECTS ===
+  // Marker lifecycle management
   useMarkerEffects({
     map,
     mapLoaded,
@@ -401,7 +395,7 @@ const TravelPins = () => {
     createEnhancedPopupForPin
   });
 
-  // Separate effect to update popup content when pins change (without infinite loops)
+  // Update popup content when pins change
   useEffect(() => {
     if (!map || !mapLoaded || !pins.length) return;
 
@@ -474,42 +468,7 @@ const TravelPins = () => {
         }
       }
     });
-  }, [pins.map(p => `${p.id}-${p.updated_at}-${p.title}-${p.note}`).join(','), map, mapLoaded, t, formatDate, isMobile, isLoggedIn, renderMarkdownToHTML, applyAuthButtonsVisibility, handleDeletePin, handleEditPin, openPhotoModal, setCoordsCopied]); // Only when actual pin content changes
-
-
-  const handleSavePin = async (e) => {
-    e.preventDefault();
-    if (!isFormValid()) {
-      return;
-    }
-    
-    // Check if user is logged in for create/edit operations
-    if (!isLoggedIn) {
-      // Show login modal for unauthenticated users
-      setShowLoginModal(true);
-      return;
-    }
-
-    const pinData = getFormDataForSubmission();
-
-    try {
-      if (editingPin) {
-        // Update existing pin
-        await updatePinMutation.mutateAsync({ 
-          id: editingPin.id, 
-          pinData 
-        });
-      } else {
-        // Create new pin
-        await createPinMutation.mutateAsync(pinData);
-      }
-      
-      handleCloseForm();
-    } catch (error) {
-      console.error('💾 Failed to save pin:', error);
-      // Error handling is done in the mutation
-    }
-  };
+  }, [pins.map(p => `${p.id}-${p.updated_at}-${p.title}-${p.note}`).join(','), map, mapLoaded, t, formatDate, isMobile, isLoggedIn, renderMarkdownToHTML, applyAuthButtonsVisibility, handleDeletePin, handleEditPin, openPhotoModal, setCoordsCopied]);
 
   
   return (
