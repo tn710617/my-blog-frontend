@@ -2,6 +2,7 @@ import mapboxgl from 'mapbox-gl';
 import { SKIN_SCHEMES, CONTRAST_SCHEMES } from './palettes';
 import { buildFootprintHTML } from './footprintIcon';
 import { Z_INDEX_CSS } from './zIndex';
+import { isBehindGlobe } from './hemisphereCulling';
 
 /**
  * Creates a Mapbox marker element for a travel pin
@@ -81,6 +82,20 @@ export const createMarkerForPin = (
   // Default fully opaque; we only lower opacity on hover
   // Use centralized z-index management to stay below Mapbox notification modals
   el.style.cssText = `position: absolute; pointer-events: auto; cursor: pointer; z-index: ${Z_INDEX_CSS.MAP_MARKER_DEFAULT}; opacity: 1;`;
+
+  // Initial hemisphere visibility (avoid showing back-side markers at first paint)
+  try {
+    const center = map.getCenter?.();
+    const zoom = map.getZoom?.();
+    const pitch = map.getPitch?.();
+    if (center && typeof zoom === 'number' && typeof pitch === 'number') {
+      const hidden = isBehindGlobe([center.lng, center.lat], pin.coordinates, zoom, pitch);
+      if (hidden) {
+        el.style.visibility = 'hidden';
+        el.style.pointerEvents = 'none';
+      }
+    }
+  } catch {}
 
   // Hover effect (disabled when Mapbox gesture modal is active)
   const getContainer = () => el.querySelector('.marker-container');

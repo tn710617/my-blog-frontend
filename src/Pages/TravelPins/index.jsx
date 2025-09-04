@@ -31,6 +31,7 @@ import { useLocationListener } from './hooks/useLocationListener';
 // Local utilities
 import { renderMarkdownToHTML } from './utils/markdownUtils';
 import { assignColorsByScreen, recolorMarkers, createColorAssignmentRef } from './utils/colorManager';
+import { updateMarkerHemisphereVisibility } from './utils/hemisphereCulling';
 import { createMarkerForPin } from './utils/markerFactory';
 import { createEnhancedPopup } from './utils/popupFactory';
 import { handleCopyCoordinates } from './utils/coordinateUtils';
@@ -298,6 +299,28 @@ const TravelPins = () => {
     map, mapLoaded, pins, assignedColorsRef, markersRef, markersByIdRef,
     createMarkerForPinWithDeps, handlePopupClose, createEnhancedPopupForPin
   });
+
+  // Keep marker visibility in sync with camera position (no React state changes)
+  useEffect(() => {
+    if (!map || !mapLoaded) return;
+    const handler = () => {
+      try { updateMarkerHemisphereVisibility(pins, map, markersByIdRef); } catch {}
+    };
+    // Apply immediately after load and on relevant camera changes
+    handler();
+    map.on('move', handler);
+    map.on('rotate', handler);
+    map.on('pitch', handler);
+    map.on('zoom', handler);
+    return () => {
+      try {
+        map.off('move', handler);
+        map.off('rotate', handler);
+        map.off('pitch', handler);
+        map.off('zoom', handler);
+      } catch {}
+    };
+  }, [map, mapLoaded, pins.length]);
 
   // Update popup content when pins change
   useEffect(() => {
