@@ -13,7 +13,6 @@ import OverlayControls from './components/OverlayControls';
 import EscConfirmationModal from './components/EscConfirmationModal';
 import { SKIN_SCHEMES, CONTRAST_SCHEMES } from './utils/palettes';
 import { renderMarkdownToHTML } from './utils/markdownUtils';
-import { customPopupStyles } from './utils/popupStyles';
 import { assignColorsByScreen, recolorMarkers, createColorAssignmentRef } from './utils/colorManager';
 import { Z_INDEX, Z_INDEX_CSS } from './utils/zIndex';
 import { createMarkerForPin } from './utils/markerFactory';
@@ -29,6 +28,7 @@ import { useMapboxModalDetection } from './hooks/useMapboxModalDetection';
 import { useAuthEffects } from './hooks/useAuthEffects';
 import { useLocationListener } from './hooks/useLocationListener';
 import { handleCopyCoordinates } from './utils/coordinateUtils';
+import { injectTravelPinsStyles } from './utils/styleInjection';
 
 
 const TravelPins = () => {
@@ -264,20 +264,7 @@ const TravelPins = () => {
 
   // Inject custom popup styles
   useEffect(() => {
-    const styleId = 'travel-pins-popup-styles';
-    if (!document.getElementById(styleId)) {
-      const style = document.createElement('style');
-      style.id = styleId;
-      style.textContent = customPopupStyles;
-      document.head.appendChild(style);
-    }
-    
-    return () => {
-      const existingStyle = document.getElementById(styleId);
-      if (existingStyle) {
-        existingStyle.remove();
-      }
-    };
+    return injectTravelPinsStyles();
   }, []);
 
 

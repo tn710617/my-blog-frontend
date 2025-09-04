@@ -91,8 +91,8 @@ src/
 
 ### Progress Summary
 - **Started**: 1,181 lines in main component
-- **Current**: 620 lines (48% reduction - 561 lines extracted!)
-- **Target**: <400 lines (additional 35% reduction needed - 220 lines to go)
+- **Current**: 611 lines (48% reduction - 570 lines extracted!)
+- **Target**: <400 lines (additional 35% reduction needed - 211 lines to go)
 - **Files Created**: 12 new utility files and hooks
 - **Components Extracted**: 5 new reusable components
 - **Critical Issues Resolved**: ✅ Infinite loop fixes, popup content updates, form repopulation, marker rendering after auth changes, search functionality
@@ -148,9 +148,9 @@ src/
   - [ ] **Phase 4A: Continue Component Extraction (Small Steps)**
     - [x] Step 1: Extract auth effects to custom hook (34 lines saved) ✅ COMPLETED
     - [x] Step 2: Extract location event listener to custom hook (39 lines saved) ✅ COMPLETED
-    - [ ] Step 3: Extract style injection effect to utility (15-20 lines) **← NEXT STEP**
+    - [x] Step 3: Extract style injection effect to utility (13 lines saved) ✅ COMPLETED
     - [ ] Step 4: ~~Extract mobile detection to custom hook~~ (ALREADY DONE in Step 2)
-    - [ ] Step 5: Extract mapbox token initialization (5-10 lines)
+    - [ ] Step 5: Extract mapbox token initialization (5-10 lines) **← NEXT STEP**
     - [ ] Step 6: Simplify remaining useEffect consolidation (10-20 lines)
   - [ ] **Phase 4B: JSX Optimization (Small Steps)**
     - [ ] Step 7: Extract loading indicator component (10-15 lines)
@@ -197,19 +197,21 @@ src/
 
 - On completing any step, immediately update this checklist and mark the item as completed.
 - Keep exactly one step in progress at a time for clarity.
-- Make small, verifiable commits/patches per step; avoid unrelated changes.
+- **DO NOT make git commits or run `git add` after completing steps** - focus on code changes only.
+- Make small, verifiable changes per step; avoid unrelated changes.
 - Preserve functional parity after each step; validate before moving on.
 - **WAIT for user approval and testing after each step before proceeding to the next step**.
 - Update this plan if scope or ordering needs to change, explaining rationale.
 
 ## Current Status (Updated 2025-09-03)
 
-**Next Step**: Step 3 - Extract style injection effect to utility (15-20 lines)
-**Last completed**: Step 2 - Extracted location event listener (39 lines saved)
-**Recent fixes**: Fixed marker rendering after auth changes + search functionality 
-**Current status**: 620 lines (48% reduction achieved, 220 lines to target)
+**Next Step**: Step 5 - Extract mapbox token initialization (5-10 lines)
+**Last completed**: Step 3 - Extracted style injection effect (13 lines saved)
+**Recent fixes**: Fixed search functionality (map loading timing issue) + style injection extraction
+**Current status**: 611 lines (48% reduction achieved, 211 lines to target)
 **Files created this session**: 
 - `src/Pages/TravelPins/hooks/useLocationListener.js` (53 lines)
+- `src/Pages/TravelPins/utils/styleInjection.js` (25 lines)
 **Files to modify next**: 
-- Create: `src/Pages/TravelPins/utils/styleInjection.js`  
-- Update: `src/Pages/TravelPins/index.jsx` (extract style injection effect)
+- Extract mapbox token initialization to utility or hook
+- Update: `src/Pages/TravelPins/index.jsx` (extract token initialization effect)
