@@ -325,6 +325,27 @@ const TravelPins = () => {
     };
   }, [map, mapLoaded, pins.length]);
 
+  // Raise globe position on mobile by adding bottom padding to the map camera
+  useEffect(() => {
+    if (!map || !mapLoaded) return;
+
+    const applyMobilePadding = () => {
+      try {
+        const vh = window.innerHeight || 800;
+        // Use larger bottom padding so the globe sits higher on mobile
+        // Roughly ~28% of viewport height, clamped for sanity
+        const bottomPad = isMobile ? Math.round(Math.max(120, Math.min(320, vh * 0.28))) : 0;
+        map.setPadding({ top: 0, right: 0, bottom: bottomPad, left: 0 });
+      } catch {}
+    };
+
+    applyMobilePadding();
+    window.addEventListener('resize', applyMobilePadding);
+    return () => {
+      window.removeEventListener('resize', applyMobilePadding);
+    };
+  }, [map, mapLoaded, isMobile]);
+
   // Update popup content when pins change
   useEffect(() => {
     updateOpenPopupContent({
