@@ -66,7 +66,6 @@ export const useKeyboardHandlers = ({
       if (e.key === 'Escape') {
         e.preventDefault();
         e.stopPropagation();
-        e.stopImmediatePropagation(); // Stop all other ESC handlers
         closePhotoModal();
       }
     };
