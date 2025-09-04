@@ -147,6 +147,8 @@
   "travel_pins.toast.create_error": "建立旅遊標記失敗，請重試。",
   "travel_pins.toast.update_error": "更新旅遊標記失敗，請重試。",
   "travel_pins.toast.delete_error": "刪除旅遊標記失敗，請重試。",
+  "travel_pins.mobile_toggle.scroll_mode": "滾動",
+  "travel_pins.mobile_toggle.rotation_mode": "旋轉",
   "mapbox.scroll_zoom_blocker.ctrl_message": "按住 Ctrl + 滾輪縮放地圖",
   "mapbox.scroll_zoom_blocker.cmd_message": "按住 ⌘ + 滾輪縮放地圖",
   "mapbox.touch_pan_blocker.message": "使用兩指移動地圖"

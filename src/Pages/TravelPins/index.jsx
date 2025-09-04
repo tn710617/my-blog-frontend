@@ -15,6 +15,7 @@ import LoadingIndicator from './components/LoadingIndicator';
 import ErrorIndicator from './components/ErrorIndicator';
 import BackgroundOverlay from './components/BackgroundOverlay';
 import ModalManager from './components/ModalManager';
+import MobileToggleButton from './components/MobileToggleButton';
 
 // Local hooks
 import { useFormState } from './hooks/useFormState';
@@ -27,6 +28,7 @@ import { useKeyboardHandlers } from './hooks/useKeyboardHandlers';
 import { useMapboxModalDetection } from './hooks/useMapboxModalDetection';
 import { useAuthEffects } from './hooks/useAuthEffects';
 import { useLocationListener } from './hooks/useLocationListener';
+import { useMobileToggle } from './hooks/useMobileToggle';
 
 // Local utilities
 import { renderMarkdownToHTML } from './utils/markdownUtils';
@@ -131,6 +133,7 @@ const TravelPins = () => {
   });
   
   const { isMobile } = useLocationListener(mapLoaded ? map : null, flyTo);
+  const { isRotationMode, isMobile: isMobileToggle, handleToggle } = useMobileToggle(map);
   const { openPopups, closeAllPopups, handlePopupOpen, handlePopupClose } = usePopupManager({
     isMobile, pins, markersRef, mapRef: { current: map }, showForm, onCloseForm: handleCloseForm
   });
@@ -346,6 +349,10 @@ const TravelPins = () => {
         locationError={locationError}
         onGetCurrentLocation={handleGetCurrentLocation}
         onClearLocationError={clearLocationError}
+      />
+      <MobileToggleButton
+        isRotationMode={isRotationMode}
+        onToggle={handleToggle}
       />
       <ModalManager
         showForm={showForm}

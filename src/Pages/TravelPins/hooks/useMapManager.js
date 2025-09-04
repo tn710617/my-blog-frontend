@@ -70,14 +70,21 @@ export const useMapManager = ({
       
       const localeMessages = getLocaleMessages();
       
+      // Detect mobile device for positioning
+      const isMobile = window.innerWidth <= 768 || 
+        /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+      
+      // Adjust center position for mobile - move earth higher (more negative latitude)
+      const center = isMobile ? [0, -15] : [0, 0];
+      
       map.current = new mapboxgl.Map({
         container: mapContainer.current,
         style: 'mapbox://styles/mapbox/streets-v12',
-        center: [0, 0],
+        center: center,
         zoom: 2,
+        projection: 'globe',    // Enable globe projection for 3D earth view
         attributionControl: false,
         logoPosition: 'bottom-right',
-        cooperativeGestures: true,
         doubleClickZoom: true,
         touchZoomRotate: true,  // Enables two-finger zoom and rotate on mobile
         dragRotate: true,       // Allows rotation with mouse + modifier key on desktop

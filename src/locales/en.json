@@ -146,6 +146,8 @@
   "travel_pins.toast.create_error": "Failed to create travel pin. Please try again.",
   "travel_pins.toast.update_error": "Failed to update travel pin. Please try again.",
   "travel_pins.toast.delete_error": "Failed to delete travel pin. Please try again.",
+  "travel_pins.mobile_toggle.scroll_mode": "Scroll",
+  "travel_pins.mobile_toggle.rotation_mode": "Rotate",
   "mapbox.scroll_zoom_blocker.ctrl_message": "Use ctrl + scroll to zoom the map",
   "mapbox.scroll_zoom_blocker.cmd_message": "Use ⌘ + scroll to zoom the map",
   "mapbox.touch_pan_blocker.message": "Use two fingers to move the map"

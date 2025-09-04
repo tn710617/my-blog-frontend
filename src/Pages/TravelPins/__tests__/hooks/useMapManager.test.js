@@ -116,13 +116,15 @@ describe('useMapManager', () => {
       const mapboxglModule = await import('mapbox-gl');
       const mockMapboxgl = mapboxglModule.default;
       expect(mockMapboxgl.accessToken).toBe('test-token');
-      expect(mockMapboxgl.Map).toHaveBeenCalledWith(expect.objectContaining({
+      const mapCall = mockMapboxgl.Map.mock.calls[0][0];
+      expect(mapCall).toEqual(expect.objectContaining({
         style: 'mapbox://styles/mapbox/streets-v12',
-        center: [0, 0],
         zoom: 2,
         attributionControl: false,
         logoPosition: 'bottom-right'
       }));
+      // Center can be [0,0] for desktop or [0,-15] for mobile
+      expect(mapCall.center).toEqual(expect.arrayContaining([0, expect.any(Number)]));
     });
 
     it('should handle map initialization error', async () => {
