@@ -160,7 +160,13 @@ src/
   - [ ] **Phase 4C: Final Organization (Small Steps)**
     - [x] Step 11: Group related functions and callbacks (41 lines saved) ✅ COMPLETED
     - [x] Step 12: Optimize import statements and dependencies (improved maintainability) ✅ COMPLETED
-    - [ ] Step 13: Final cleanup and organization
+    - [ ] Step 13: Final cleanup and organization (**IN PROGRESS**)
+      - [x] Step 13a: Extract complex popup update logic to utility function (61 lines saved) ✅ COMPLETED
+      - [ ] Step 13b: Group related variable declarations together
+      - [ ] Step 13c: Consolidate similar callback functions  
+      - [ ] Step 13d: Optimize effect dependencies and remove redundant effects
+      - [ ] Step 13e: Simplify JSX structure and remove unnecessary wrappers
+      - [ ] Step 13f: Final cleanup - remove unused variables and optimize imports
 
 - [ ] **Phase 5: Final Integration & Polish**
   - [ ] Add `useProximityColors` optimization (if needed)
@@ -203,12 +209,12 @@ src/
 - **WAIT for user approval and testing after each step before proceeding to the next step**.
 - Update this plan if scope or ordering needs to change, explaining rationale.
 
-## Current Status (Updated 2025-09-03)
+## Current Status (Updated 2025-09-04)
 
-**Next Step**: Step 13 - Final cleanup and organization
-**Last completed**: Step 12 - Optimize import statements and dependencies (improved maintainability)
-**Recent fixes**: Fixed search functionality + consolidated useEffect hooks for better organization
-**Current status**: 534 lines (55% reduction achieved, 134 lines to target)
+**Next Step**: Step 13b - Group related variable declarations together
+**Last completed**: Step 13a - Extract complex popup update logic to utility function (61 lines saved)
+**Recent progress**: Major popup update logic extraction completed - reduced from 534 to 473 lines
+**Current status**: 473 lines (60% reduction achieved, 73 lines to target <400)
 **Files created this session**: 
 - `src/Pages/TravelPins/hooks/useLocationListener.js` (53 lines)
 - `src/Pages/TravelPins/utils/styleInjection.js` (25 lines)
@@ -216,6 +222,7 @@ src/
 - `src/Pages/TravelPins/components/ErrorIndicator.jsx` (17 lines)
 - `src/Pages/TravelPins/components/BackgroundOverlay.jsx` (14 lines)
 - `src/Pages/TravelPins/components/ModalManager.jsx` (54 lines)
+- `src/Pages/TravelPins/utils/popupUpdater.js` (81 lines) ✅ NEW
 **Files to modify next**: 
-- Group related functions and callbacks for better organization
-- Update: `src/Pages/TravelPins/index.jsx` (group related code)
+- Continue Step 13b: Group related variable declarations for better organization
+- Update: `src/Pages/TravelPins/index.jsx` (consolidate variable declarations)
