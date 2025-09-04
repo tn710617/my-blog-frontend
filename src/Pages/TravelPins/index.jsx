@@ -73,47 +73,27 @@ const TravelPins = () => {
     }
   };
   
-  // API hooks
+  // API hooks and data
   const { data: rawPins = [], isLoading: pinsLoading, error: pinsError } = useTravelPins();
-  
-  // Memoize pins to prevent unnecessary re-renders when the array reference changes
-  const pins = useMemo(() => {
-    return rawPins;
-  }, [rawPins.length, rawPins.map(p => `${p.id}-${p.updated_at}`).join(',')]);
-  
   const createPinMutation = useCreateTravelPin();
   const updatePinMutation = useUpdateTravelPin();
   const deletePinMutation = useDeleteTravelPin();
   
-  // Hook-based state management
+  // Memoized pins to prevent unnecessary re-renders
+  const pins = useMemo(() => rawPins, [rawPins.length, rawPins.map(p => `${p.id}-${p.updated_at}`).join(',')]);
+  
+  // Custom hooks
   const {
-    formData,
-    hasChanges,
-    originalFormData,
-    handleInputChange,
-    initializeForm,
-    resetForm,
-    createNewForm,
-    isFormValid,
-    getFormDataForSubmission
+    formData, hasChanges, originalFormData, handleInputChange, initializeForm,
+    resetForm, createNewForm, isFormValid, getFormDataForSubmission
   } = useFormState();
-
+  
   const { isLocating, locationError, getCurrentLocation, clearLocationError } = useGeolocation();
+  
   const {
-    showDeleteModal,
-    showEscModal,
-    pendingDeletePin,
-    showPhotoModal,
-    photoModalData,
-    coordsCopied,
-    setCoordsCopied,
-    openDeleteModal,
-    closeDeleteModal,
-    openEscModal,
-    closeEscModal,
-    confirmEscAction,
-    openPhotoModal,
-    closePhotoModal
+    showDeleteModal, showEscModal, pendingDeletePin, showPhotoModal, photoModalData,
+    coordsCopied, setCoordsCopied, openDeleteModal, closeDeleteModal, openEscModal,
+    closeEscModal, confirmEscAction, openPhotoModal, closePhotoModal
   } = useModalManager();
 
   // Form close handler (needed by popup manager hook)
@@ -135,65 +115,31 @@ const TravelPins = () => {
   }, [isLoggedIn, setShowLoginModal, createNewForm, setEditingPin, setShowForm]);
 
   const handleMapLoad = useCallback((mapInstance, markersById) => {
-    try { 
-      recolorMarkers(pins, mapInstance, markersById, assignedColorsRef.current);
-    } catch (error) {
-    }
-  }, []);  // Remove pins dependency to prevent recreation
+    try { recolorMarkers(pins, mapInstance, markersById, assignedColorsRef.current); } catch {}
+  }, []);
 
   const handleRecolorMarkers = useCallback((mapInstance, markersById) => {
-    try {
-      recolorMarkers(pins, mapInstance, markersById, assignedColorsRef.current);
-    } catch (error) {
-    }
-  }, []);  // Remove pins dependency to prevent recreation
+    try { recolorMarkers(pins, mapInstance, markersById, assignedColorsRef.current); } catch {}
+  }, []);
 
-  // Map management functionality
-  
+  // Map and popup management
   const {
-    mapContainer,
-    map,
-    markersRef,
-    markersByIdRef,
-    mapLoaded,
-    mapError,
-    flyTo,
-    getZoom,
-    addZoomHandlers
+    mapContainer, map, markersRef, markersByIdRef, mapLoaded, mapError,
+    flyTo, getZoom, addZoomHandlers
   } = useMapManager({
-    pins,
-    mapboxToken: token,
-    locale,
-    intl,
-    onMapClick: handleMapClick,
-    onMapLoad: handleMapLoad,
-    onRecolorMarkers: handleRecolorMarkers
+    pins, mapboxToken: token, locale, intl,
+    onMapClick: handleMapClick, onMapLoad: handleMapLoad, onRecolorMarkers: handleRecolorMarkers
   });
   
-  // Location listener functionality (mobile detection & navbar search)
   const { isMobile, searchHistory } = useLocationListener(mapLoaded ? map : null, flyTo);
-
-  // Color management functions (now that map is available)
-  const handleAssignColorsByScreen = useCallback((allPins) => {
-    if (map) {
-      assignColorsByScreen(allPins, map, assignedColorsRef.current);
-    }
-  }, [map]);
-
-  // Popup management functionality
-  const { 
-    openPopups, 
-    closeAllPopups, 
-    handlePopupOpen, 
-    handlePopupClose 
-  } = usePopupManager({
-    isMobile,
-    pins,
-    markersRef,
-    mapRef: { current: map },
-    showForm,
-    onCloseForm: handleCloseForm
+  const { openPopups, closeAllPopups, handlePopupOpen, handlePopupClose } = usePopupManager({
+    isMobile, pins, markersRef, mapRef: { current: map }, showForm, onCloseForm: handleCloseForm
   });
+
+  // Color management
+  const handleAssignColorsByScreen = useCallback((allPins) => {
+    if (map) assignColorsByScreen(allPins, map, assignedColorsRef.current);
+  }, [map]);
   
   // === PIN ACTION HANDLERS ===
   const handleEditPin = (pin) => {
@@ -280,9 +226,7 @@ const TravelPins = () => {
     closeDeleteModal();
   };
 
-  const cancelEscAction = () => {
-    closeEscModal();
-  };
+  const cancelEscAction = closeEscModal;
   
   
   // Mapbox modal detection
@@ -340,17 +284,12 @@ const TravelPins = () => {
 
 
 
-  // === LOCATION HANDLER ===
+  // Location and popup helpers
+  const getCurrentPinData = useCallback((pinId) => pins.find(p => p.id === pinId), [pins]);
+  
   const handleGetCurrentLocation = () => {
-    getCurrentLocation(({ latitude, longitude }) => {
-      flyTo([longitude, latitude], 14, 2500);
-    });
+    getCurrentLocation(({ latitude, longitude }) => flyTo([longitude, latitude], 14, 2500));
   };
-
-  // === POPUP & MARKER HELPERS ===
-  const getCurrentPinData = useCallback((pinId) => {
-    return pins.find(p => p.id === pinId);
-  }, [pins]);
 
   const createEnhancedPopupForPin = (pin) => {
     return createEnhancedPopup(pin, {
@@ -370,16 +309,10 @@ const TravelPins = () => {
     });
   };
 
-  const createMarkerForPinWithDeps = useCallback((pin, index, map) => {
-    return createMarkerForPin(
-      pin,
-      index,
-      map,
-      assignedColorsRef,
-      mapboxModalActiveRef,
-      createEnhancedPopupForPin
-    );
-  }, [createEnhancedPopupForPin]);
+  const createMarkerForPinWithDeps = useCallback((pin, index, map) => 
+    createMarkerForPin(pin, index, map, assignedColorsRef, mapboxModalActiveRef, createEnhancedPopupForPin),
+    [createEnhancedPopupForPin]
+  );
 
   // === EFFECTS ===
   // Marker lifecycle management
