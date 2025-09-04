@@ -93,10 +93,10 @@ src/
 - **Started**: 1,181 lines in main component
 - **Current**: 620 lines (48% reduction - 561 lines extracted!)
 - **Target**: <400 lines (additional 35% reduction needed - 220 lines to go)
-- **Files Created**: 11 new utility files and hooks
+- **Files Created**: 12 new utility files and hooks
 - **Components Extracted**: 5 new reusable components
-- **Critical Issues Resolved**: ✅ Infinite loop fixes, popup content updates, form repopulation
-- **Test Status**: ✅ All 558 tests passing
+- **Critical Issues Resolved**: ✅ Infinite loop fixes, popup content updates, form repopulation, marker rendering after auth changes, search functionality
+- **Test Status**: ✅ All tests passing
 
 ### Extraction Progress (Mark as completed as we proceed)
 
@@ -142,6 +142,9 @@ src/
     - [x] Fixed popup content not updating immediately after pin changes ✅ COMPLETED  
     - [x] Fixed form not repopulating with updated pin data ✅ COMPLETED
     - [x] Fixed mobile popup policy test ✅ COMPLETED
+    - [x] **Additional Bug Fixes** ✅ COMPLETED
+      - [x] Fixed markers not showing after login/logout page refresh ✅ COMPLETED
+      - [x] Fixed search functionality broken by mapbox token timing ✅ COMPLETED
   - [ ] **Phase 4A: Continue Component Extraction (Small Steps)**
     - [x] Step 1: Extract auth effects to custom hook (34 lines saved) ✅ COMPLETED
     - [x] Step 2: Extract location event listener to custom hook (39 lines saved) ✅ COMPLETED
@@ -202,8 +205,11 @@ src/
 ## Current Status (Updated 2025-09-03)
 
 **Next Step**: Step 3 - Extract style injection effect to utility (15-20 lines)
-**Last completed**: Step 2 - Extracted location event listener (39 lines saved - exceeded estimate!)
+**Last completed**: Step 2 - Extracted location event listener (39 lines saved)
+**Recent fixes**: Fixed marker rendering after auth changes + search functionality 
 **Current status**: 620 lines (48% reduction achieved, 220 lines to target)
+**Files created this session**: 
+- `src/Pages/TravelPins/hooks/useLocationListener.js` (53 lines)
 **Files to modify next**: 
-- Create: `src/Pages/TravelPins/utils/styleInjection.js`
+- Create: `src/Pages/TravelPins/utils/styleInjection.js`  
 - Update: `src/Pages/TravelPins/index.jsx` (extract style injection effect)
