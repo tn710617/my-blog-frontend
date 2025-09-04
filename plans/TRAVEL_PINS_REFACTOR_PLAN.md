@@ -91,10 +91,10 @@ src/
 
 ### Progress Summary
 - **Started**: 1,181 lines in main component
-- **Current**: 588 lines (50% reduction - 593 lines extracted!)
-- **Target**: <400 lines (additional 32% reduction needed - 188 lines to go)
+- **Current**: 569 lines (52% reduction - 612 lines extracted!)
+- **Target**: <400 lines (additional 30% reduction needed - 169 lines to go)
 - **Files Created**: 12 new utility files and hooks
-- **Components Extracted**: 7 new reusable components
+- **Components Extracted**: 9 new reusable components
 - **Critical Issues Resolved**: ✅ Infinite loop fixes, popup content updates, form repopulation, marker rendering after auth changes, search functionality
 - **Test Status**: ✅ All tests passing
 
@@ -155,8 +155,8 @@ src/
   - [ ] **Phase 4B: JSX Optimization (Small Steps)**
     - [x] Step 7: Extract loading indicator component (6 lines saved) ✅ COMPLETED
     - [x] Step 8: Extract error indicator component (10 lines saved) ✅ COMPLETED
-    - [ ] Step 9: Extract background overlay component (8-12 lines)
-    - [ ] Step 10: Consolidate modal rendering into single component
+    - [x] Step 9: Extract background overlay component (2 lines saved) ✅ COMPLETED
+    - [x] Step 10: Consolidate modal rendering into single component (17 lines saved) ✅ COMPLETED
   - [ ] **Phase 4C: Final Organization (Small Steps)**
     - [ ] Step 11: Group related functions and callbacks
     - [ ] Step 12: Optimize import statements and dependencies
@@ -205,15 +205,17 @@ src/
 
 ## Current Status (Updated 2025-09-03)
 
-**Next Step**: Step 9 - Extract background overlay component (8-12 lines)
-**Last completed**: Step 8 - Extract error indicator component (10 lines saved)
+**Next Step**: Step 11 - Group related functions and callbacks
+**Last completed**: Step 10 - Consolidate modal rendering into single component (17 lines saved)
 **Recent fixes**: Fixed search functionality + consolidated useEffect hooks for better organization
-**Current status**: 588 lines (50% reduction achieved, 188 lines to target)
+**Current status**: 569 lines (52% reduction achieved, 169 lines to target)
 **Files created this session**: 
 - `src/Pages/TravelPins/hooks/useLocationListener.js` (53 lines)
 - `src/Pages/TravelPins/utils/styleInjection.js` (25 lines)
 - `src/Pages/TravelPins/components/LoadingIndicator.jsx` (16 lines)
 - `src/Pages/TravelPins/components/ErrorIndicator.jsx` (17 lines)
+- `src/Pages/TravelPins/components/BackgroundOverlay.jsx` (14 lines)
+- `src/Pages/TravelPins/components/ModalManager.jsx` (54 lines)
 **Files to modify next**: 
-- Extract background overlay JSX to separate component
-- Update: `src/Pages/TravelPins/index.jsx` (extract background overlay)
+- Group related functions and callbacks for better organization
+- Update: `src/Pages/TravelPins/index.jsx` (group related code)

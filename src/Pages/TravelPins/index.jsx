@@ -6,13 +6,11 @@ import { useLocaleStore, useAuthStore, useLoginModalStore } from '../../stores';
 import { useTravelPins, useCreateTravelPin, useUpdateTravelPin, useDeleteTravelPin } from '../../APIs/travel-pins';
 import useBodyScrollLock from '../../hooks/useBodyScrollLock';
 import { buildPopupHTML } from './popupHtml';
-import PinForm from './components/PinForm';
-import DeleteConfirmationModal from './components/DeleteConfirmationModal';
-import PhotoLightbox from './components/PhotoLightbox';
 import OverlayControls from './components/OverlayControls';
-import EscConfirmationModal from './components/EscConfirmationModal';
 import LoadingIndicator from './components/LoadingIndicator';
 import ErrorIndicator from './components/ErrorIndicator';
+import BackgroundOverlay from './components/BackgroundOverlay';
+import ModalManager from './components/ModalManager';
 import { SKIN_SCHEMES, CONTRAST_SCHEMES } from './utils/palettes';
 import { renderMarkdownToHTML } from './utils/markdownUtils';
 import { assignColorsByScreen, recolorMarkers, createColorAssignmentRef } from './utils/colorManager';
@@ -528,26 +526,10 @@ const TravelPins = () => {
       <ErrorIndicator error={pinsError} />
 
       {/* Background overlay for display modal (popup) */}
-      {openPopups.size > 0 && !showForm && !showDeleteModal && !showEscModal && !showPhotoModal && (
-        <div
-          className="fixed inset-0 bg-black/40 backdrop-blur-sm"
-          style={{ zIndex: Z_INDEX.POPUP_BACKGROUND }}
-          onClick={closeAllPopups}
-        />
-      )}
-
-      {/* Refactored Pin Creation/Edit Form */}
-      {showForm && (
-        <PinForm
-          editing={!!editingPin}
-          t={t}
-          formData={formData}
-          setField={handleInputChange}
-          formatDate={formatDate}
-          onCancel={handleCloseForm}
-          onSubmit={handleSavePin}
-        />
-      )}
+      <BackgroundOverlay 
+        show={openPopups.size > 0 && !showForm && !showDeleteModal && !showEscModal && !showPhotoModal}
+        onClick={closeAllPopups}
+      />
 
       {/* Overlay Controls (GPS button and location error toast) */}
       <OverlayControls
@@ -557,28 +539,27 @@ const TravelPins = () => {
         onClearLocationError={clearLocationError}
       />
 
-      {/* Delete Confirmation Modal */}
-      {showDeleteModal && (
-        <DeleteConfirmationModal
-          open={showDeleteModal}
-          pin={pendingDeletePin}
-          onCancel={cancelDeletePin}
-          onConfirm={confirmDeletePin}
-          formatDate={formatDate}
-          t={t}
-        />
-      )}
-
-      {/* ESC Key Confirmation Modal */}
-      <EscConfirmationModal
-        open={showEscModal}
+      {/* All Modals */}
+      <ModalManager
+        showForm={showForm}
         editingPin={editingPin}
-        onCancel={cancelEscAction}
-        onConfirm={confirmEscAction}
+        formData={formData}
+        t={t}
+        formatDate={formatDate}
+        handleInputChange={handleInputChange}
+        handleCloseForm={handleCloseForm}
+        handleSavePin={handleSavePin}
+        showDeleteModal={showDeleteModal}
+        pendingDeletePin={pendingDeletePin}
+        cancelDeletePin={cancelDeletePin}
+        confirmDeletePin={confirmDeletePin}
+        showEscModal={showEscModal}
+        cancelEscAction={cancelEscAction}
+        confirmEscAction={confirmEscAction}
+        showPhotoModal={showPhotoModal}
+        photoModalData={photoModalData}
+        closePhotoModal={closePhotoModal}
       />
-
-      {/* Photo Modal/Lightbox */}
-      <PhotoLightbox open={showPhotoModal} data={photoModalData} onClose={closePhotoModal} />
 
 
     </div>
