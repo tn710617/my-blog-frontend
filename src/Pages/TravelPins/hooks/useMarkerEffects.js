@@ -26,6 +26,14 @@ export const useMarkerEffects = ({
   useEffect(() => {
     if (isUpdatingRef.current) return; // Prevent recursive updates
     if (!map || !mapLoaded || !map.loaded?.()) {
+      if (process.env.NODE_ENV === 'development') {
+        console.log('useMarkerEffects: skipping marker update', {
+          hasMap: !!map,
+          mapLoaded,
+          mapLoadedFunc: map?.loaded?.(),
+          pinsCount: pins.length
+        });
+      }
       return;
     }
 
@@ -64,6 +72,13 @@ export const useMarkerEffects = ({
         if (marker) {
           markersById.set(pin.id, marker);
           markersRef.current.push(marker);
+          if (process.env.NODE_ENV === 'development') {
+            console.log('useMarkerEffects: created new marker for pin', pin.id);
+          }
+        } else {
+          if (process.env.NODE_ENV === 'development') {
+            console.warn('useMarkerEffects: failed to create marker for pin', pin.id);
+          }
         }
       } else {
         try {

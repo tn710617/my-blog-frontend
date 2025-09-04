@@ -56,9 +56,18 @@ export const useMapManager = ({
       return;
     }
 
+    // Clear any existing map container content to prevent Mapbox warnings
+    if (mapContainer.current) {
+      mapContainer.current.innerHTML = '';
+    }
+
     mapboxgl.accessToken = mapboxToken;
 
     try {
+      if (process.env.NODE_ENV === 'development') {
+        console.log('useMapManager: Initializing new map instance');
+      }
+      
       const localeMessages = getLocaleMessages();
       
       map.current = new mapboxgl.Map({
@@ -233,6 +242,9 @@ export const useMapManager = ({
   const cleanup = useCallback(() => {
     if (map.current) {
       try {
+        if (process.env.NODE_ENV === 'development') {
+          console.log('useMapManager: Cleaning up map instance');
+        }
         // Clean up custom event handlers
         if (map.current._tpHandlers) {
           const { onMoveEnd, onZoomEnd } = map.current._tpHandlers;
@@ -262,6 +274,10 @@ export const useMapManager = ({
       }
     }
 
+    // Reset map state
+    setMapLoaded(false);
+    setMapError(null);
+
     // Clean up markers
     markersRef.current = [];
     markersByIdRef.current.clear();
@@ -274,6 +290,13 @@ export const useMapManager = ({
     // Cleanup on unmount
     return cleanup;
   }, [initializeMap, cleanup]);
+
+  // Trigger reinitialization when token becomes available 
+  useEffect(() => {
+    if (mapboxToken && !map.current) {
+      initializeMap();
+    }
+  }, [mapboxToken, initializeMap]);
 
   return {
     mapContainer,

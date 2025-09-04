@@ -31,24 +31,39 @@ export const createMarkerForPin = (
   if (process.env.NODE_ENV !== 'test') {
     const mapContainer = map.getContainer?.();
     if (!mapContainer || !mapContainer.parentNode) {
-      console.error('createMarkerForPin called but map container is not attached to DOM:', { 
+      console.warn('createMarkerForPin called but map container is not attached to DOM:', { 
         pin: pin.id, 
         hasContainer: !!mapContainer,
         hasParent: !!mapContainer?.parentNode 
       });
-      return null;
+      // Don't return null - allow marker creation to continue
     }
     
-    // Additional check: ensure map is actually loaded
-    if (!map.loaded?.()) {
-      console.error('createMarkerForPin called but map is not loaded:', { pin: pin.id });
-      return null;
+    // More lenient check: only fail if map is clearly not initialized
+    if (!map.loaded?.() && !map.isStyleLoaded?.()) {
+      console.warn('createMarkerForPin called but map may not be fully loaded:', { 
+        pin: pin.id,
+        mapLoaded: map.loaded?.(),
+        styleLoaded: map.isStyleLoaded?.()
+      });
+      // Don't return null - allow marker creation to continue
     }
   }
 
   // Create marker element
   const el = document.createElement('div');
   el.className = 'travel-pin-marker';
+  
+  // Debug logging for marker creation
+  if (process.env.NODE_ENV === 'development') {
+    console.log('Creating marker for pin:', {
+      pinId: pin.id,
+      coordinates: pin.coordinates,
+      mapContainer: !!map.getContainer?.(),
+      mapLoaded: map.loaded?.(),
+      styleLoaded: map.isStyleLoaded?.()
+    });
+  }
   
   // Choose assigned palette for this pin
   const assignment = assignedColorsRef.current.get(pin.id) || { palette: 'skin', idx: 1 };

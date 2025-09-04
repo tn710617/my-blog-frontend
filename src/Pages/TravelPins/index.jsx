@@ -27,6 +27,7 @@ import { useMarkerEffects } from './hooks/useMarkerEffects';
 import { useKeyboardHandlers } from './hooks/useKeyboardHandlers';
 import { useMapboxModalDetection } from './hooks/useMapboxModalDetection';
 import { useAuthEffects } from './hooks/useAuthEffects';
+import { useLocationListener } from './hooks/useLocationListener';
 import { handleCopyCoordinates } from './utils/coordinateUtils';
 
 
@@ -90,7 +91,6 @@ const TravelPins = () => {
   // Geolocation functionality
   const { isLocating, locationError, getCurrentLocation, clearLocationError } = useGeolocation();
 
-  const [isMobile, setIsMobile] = useState(window.innerWidth <= 768);
 
   // Modal state management
   const {
@@ -163,6 +163,9 @@ const TravelPins = () => {
     onMapLoad: handleMapLoad,
     onRecolorMarkers: handleRecolorMarkers
   });
+  
+  // Location listener functionality (mobile detection & navbar search)
+  const { isMobile, searchHistory } = useLocationListener(map, flyTo);
 
   // Color management functions (now that map is available)
   const handleAssignColorsByScreen = useCallback((allPins) => {
@@ -248,7 +251,6 @@ const TravelPins = () => {
     closeEscModal();
   };
   
-  const [searchHistory, setSearchHistory] = useState([]);
   
   // Mapbox modal detection
   const { mapboxModalActive, mapboxModalActiveRef } = useMapboxModalDetection();
@@ -278,18 +280,6 @@ const TravelPins = () => {
     };
   }, []);
 
-  // Mobile detection effect
-  useEffect(() => {
-    const handleResize = () => {
-      const newIsMobile = window.innerWidth <= 768;
-      setIsMobile(newIsMobile);
-    };
-
-    window.addEventListener('resize', handleResize);
-    return () => {
-      window.removeEventListener('resize', handleResize);
-    };
-  }, []);
 
 
   // Add zoom handlers for popup closing behavior
@@ -306,35 +296,6 @@ const TravelPins = () => {
     setToken(mapboxToken);
   }, []);
 
-  // Listen for location selection from navbar search
-  useEffect(() => {
-    const handleLocationFromNavbar = (event) => {
-      const location = event.detail;
-      
-      // Navigate to the location on the map
-      if (map && location.center) {
-        flyTo(location.center, 10, 2000);
-        
-        // Add to search history
-        const historyItem = {
-          id: Date.now(),
-          name: location.place_name,
-          coordinates: location.center,
-          timestamp: new Date()
-        };
-        
-        setSearchHistory(prev => {
-          const filtered = prev.filter(item => item.name !== historyItem.name);
-          return [historyItem, ...filtered].slice(0, 5);
-        });
-      }
-    };
-
-    window.addEventListener('travelPinsLocationSelect', handleLocationFromNavbar);
-    return () => {
-      window.removeEventListener('travelPinsLocationSelect', handleLocationFromNavbar);
-    };
-  }, [flyTo, map]);
 
   // Global functions for popup interactions
   useEffect(() => {
