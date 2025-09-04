@@ -1,22 +1,22 @@
+// React and external libraries
 import React, { useEffect, useRef, useState, useCallback, useMemo } from 'react';
 import mapboxgl from 'mapbox-gl';
 import 'mapbox-gl/dist/mapbox-gl.css';
 import { useIntl } from 'react-intl';
+
+// Global stores and APIs
 import { useLocaleStore, useAuthStore, useLoginModalStore } from '../../stores';
 import { useTravelPins, useCreateTravelPin, useUpdateTravelPin, useDeleteTravelPin } from '../../APIs/travel-pins';
 import useBodyScrollLock from '../../hooks/useBodyScrollLock';
-import { buildPopupHTML } from './popupHtml';
+
+// Local components
 import OverlayControls from './components/OverlayControls';
 import LoadingIndicator from './components/LoadingIndicator';
 import ErrorIndicator from './components/ErrorIndicator';
 import BackgroundOverlay from './components/BackgroundOverlay';
 import ModalManager from './components/ModalManager';
-import { SKIN_SCHEMES, CONTRAST_SCHEMES } from './utils/palettes';
-import { renderMarkdownToHTML } from './utils/markdownUtils';
-import { assignColorsByScreen, recolorMarkers, createColorAssignmentRef } from './utils/colorManager';
-import { Z_INDEX, Z_INDEX_CSS } from './utils/zIndex';
-import { createMarkerForPin } from './utils/markerFactory';
-import { createEnhancedPopup } from './utils/popupFactory';
+
+// Local hooks
 import { useFormState } from './hooks/useFormState';
 import { useGeolocation } from './hooks/useGeolocation';
 import { usePopupManager } from './hooks/usePopupManager';
@@ -27,6 +27,14 @@ import { useKeyboardHandlers } from './hooks/useKeyboardHandlers';
 import { useMapboxModalDetection } from './hooks/useMapboxModalDetection';
 import { useAuthEffects } from './hooks/useAuthEffects';
 import { useLocationListener } from './hooks/useLocationListener';
+
+// Local utilities
+import { buildPopupHTML } from './popupHtml';
+import { renderMarkdownToHTML } from './utils/markdownUtils';
+import { assignColorsByScreen, recolorMarkers, createColorAssignmentRef } from './utils/colorManager';
+import { Z_INDEX } from './utils/zIndex';
+import { createMarkerForPin } from './utils/markerFactory';
+import { createEnhancedPopup } from './utils/popupFactory';
 import { handleCopyCoordinates } from './utils/coordinateUtils';
 import { injectTravelPinsStyles } from './utils/styleInjection';
 
@@ -279,14 +287,12 @@ const TravelPins = () => {
   };
   
   
+  // === INITIALIZATION ===
   // Mapbox modal detection
   const { mapboxModalActive, mapboxModalActiveRef } = useMapboxModalDetection();
-  // Marker style: fixed to footprint
   
   // Assigned color index per pin id
   const assignedColorsRef = useRef(createColorAssignmentRef());
-
-  // Skin tone palette is defined globally as SKIN_SCHEMES
 
 
   // Initialize styles and token on mount
