@@ -29,10 +29,8 @@ import { useAuthEffects } from './hooks/useAuthEffects';
 import { useLocationListener } from './hooks/useLocationListener';
 
 // Local utilities
-import { buildPopupHTML } from './popupHtml';
 import { renderMarkdownToHTML } from './utils/markdownUtils';
 import { assignColorsByScreen, recolorMarkers, createColorAssignmentRef } from './utils/colorManager';
-import { Z_INDEX } from './utils/zIndex';
 import { createMarkerForPin } from './utils/markerFactory';
 import { createEnhancedPopup } from './utils/popupFactory';
 import { handleCopyCoordinates } from './utils/coordinateUtils';
@@ -131,7 +129,7 @@ const TravelPins = () => {
     onMapClick: handleMapClick, onMapLoad: handleMapLoad, onRecolorMarkers: handleRecolorMarkers
   });
   
-  const { isMobile, searchHistory } = useLocationListener(mapLoaded ? map : null, flyTo);
+  const { isMobile } = useLocationListener(mapLoaded ? map : null, flyTo);
   const { openPopups, closeAllPopups, handlePopupOpen, handlePopupClose } = usePopupManager({
     isMobile, pins, markersRef, mapRef: { current: map }, showForm, onCloseForm: handleCloseForm
   });
@@ -228,10 +226,8 @@ const TravelPins = () => {
 
   const cancelEscAction = closeEscModal;
   
-  
   // Mapbox modal detection
-  const { mapboxModalActive, mapboxModalActiveRef } = useMapboxModalDetection();
-
+  const { mapboxModalActiveRef } = useMapboxModalDetection();
 
   // Initialize styles and token on mount
   useEffect(() => {
@@ -250,12 +246,11 @@ const TravelPins = () => {
     return styleCleanup;
   }, []);
 
-  // Add zoom handlers for popup closing behavior
+  // Effects
   useEffect(() => {
-    if (!map || !mapLoaded || !addZoomHandlers) return;
-
-    const cleanup = addZoomHandlers(closeAllPopups);
-    return cleanup;
+    if (map && mapLoaded && addZoomHandlers) {
+      return addZoomHandlers(closeAllPopups);
+    }
   }, [mapLoaded, addZoomHandlers, closeAllPopups]);
 
 
@@ -276,13 +271,8 @@ const TravelPins = () => {
     markersRef
   });
 
-  // Body overflow control via hook
-  useBodyScrollLock(
-    showPhotoModal || (openPopups.size > 0 && !showForm && !showDeleteModal && !showEscModal && !showPhotoModal)
-  );
-
-
-
+  const shouldLockScroll = showPhotoModal || (openPopups.size > 0 && !showForm && !showDeleteModal && !showEscModal && !showPhotoModal);
+  useBodyScrollLock(shouldLockScroll);
 
   // Location and popup helpers
   const getCurrentPinData = useCallback((pinId) => pins.find(p => p.id === pinId), [pins]);
@@ -291,92 +281,49 @@ const TravelPins = () => {
     getCurrentLocation(({ latitude, longitude }) => flyTo([longitude, latitude], 14, 2500));
   };
 
-  const createEnhancedPopupForPin = (pin) => {
-    return createEnhancedPopup(pin, {
-      t,
-      formatDate,
-      isMobile,
-      isLoggedIn,
-      renderMarkdownToHTML,
-      handlePopupOpen,
-      handlePopupClose,
-      applyAuthButtonsVisibility,
-      handleDeletePin,
-      handleEditPin,
-      handleCopyCoordinates: (coords, pinId) => handleCopyCoordinates(coords, pinId, t, setCoordsCopied),
-      openPhotoModal,
-      getCurrentPinData
-    });
-  };
+  const createEnhancedPopupForPin = (pin) => createEnhancedPopup(pin, {
+    t, formatDate, isMobile, isLoggedIn, renderMarkdownToHTML,
+    handlePopupOpen, handlePopupClose, applyAuthButtonsVisibility,
+    handleDeletePin, handleEditPin, openPhotoModal, getCurrentPinData,
+    handleCopyCoordinates: (coords, pinId) => handleCopyCoordinates(coords, pinId, t, setCoordsCopied)
+  });
 
   const createMarkerForPinWithDeps = useCallback((pin, index, map) => 
     createMarkerForPin(pin, index, map, assignedColorsRef, mapboxModalActiveRef, createEnhancedPopupForPin),
     [createEnhancedPopupForPin]
   );
 
-  // === EFFECTS ===
   // Marker lifecycle management
   useMarkerEffects({
-    map,
-    mapLoaded,
-    pins,
-    assignedColorsRef,
-    markersRef,
-    markersByIdRef,
-    createMarkerForPinWithDeps,
-    handlePopupClose,
-    createEnhancedPopupForPin
+    map, mapLoaded, pins, assignedColorsRef, markersRef, markersByIdRef,
+    createMarkerForPinWithDeps, handlePopupClose, createEnhancedPopupForPin
   });
 
   // Update popup content when pins change
   useEffect(() => {
     updateOpenPopupContent({
-      pins,
-      map,
-      mapLoaded,
-      markersByIdRef,
-      t,
-      formatDate,
-      isMobile,
-      isLoggedIn,
-      renderMarkdownToHTML,
-      applyAuthButtonsVisibility,
-      handleDeletePin,
-      handleEditPin,
-      openPhotoModal,
-      setCoordsCopied
+      pins, map, mapLoaded, markersByIdRef, t, formatDate, isMobile, isLoggedIn,
+      renderMarkdownToHTML, applyAuthButtonsVisibility, handleDeletePin, handleEditPin,
+      openPhotoModal, setCoordsCopied
     });
   }, [pins.map(p => `${p.id}-${p.updated_at}-${p.title}-${p.note}`).join(','), map, mapLoaded, t, formatDate, isMobile, isLoggedIn, renderMarkdownToHTML, applyAuthButtonsVisibility, handleDeletePin, handleEditPin, openPhotoModal, setCoordsCopied]);
 
   
   return (
     <div className="w-full h-screen relative">
-      {/* Map Container */}
       <div ref={mapContainer} className="w-full h-full" />
-
-      {/* Marker Style Toggle removed: footprint only */}
-
-      {/* Loading indicator */}
       <LoadingIndicator isLoading={pinsLoading} />
-      
-      {/* Error indicator */}
       <ErrorIndicator error={pinsError} />
-
-      {/* Background overlay for display modal (popup) */}
       <BackgroundOverlay 
         show={openPopups.size > 0 && !showForm && !showDeleteModal && !showEscModal && !showPhotoModal}
         onClick={closeAllPopups}
       />
-
-      {/* Overlay Controls (GPS button and location error toast) */}
       <OverlayControls
         isLocating={isLocating}
         locationError={locationError}
         onGetCurrentLocation={handleGetCurrentLocation}
         onClearLocationError={clearLocationError}
       />
-
-      {/* All Modals */}
       <ModalManager
         showForm={showForm}
         editingPin={editingPin}
@@ -397,8 +344,6 @@ const TravelPins = () => {
         photoModalData={photoModalData}
         closePhotoModal={closePhotoModal}
       />
-
-
     </div>
   );
 };
