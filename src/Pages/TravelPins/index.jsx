@@ -37,19 +37,24 @@ import { createMarkerForPin } from './utils/markerFactory';
 import { createEnhancedPopup } from './utils/popupFactory';
 import { handleCopyCoordinates } from './utils/coordinateUtils';
 import { injectTravelPinsStyles } from './utils/styleInjection';
+import { updateOpenPopupContent } from './utils/popupUpdater';
 
 
 const TravelPins = () => {
-  
+  // Stores and utilities
   const intl = useIntl();
   const locale = useLocaleStore((state) => state.locale);
   const isLoggedIn = useAuthStore((state) => state.isLoggedIn);
   const setShowLoginModal = useLoginModalStore((state) => state.setShowLoginModal);
-  
-  
-  
-  // Authentication effects and button visibility management
   const { authRef, applyAuthButtonsVisibility } = useAuthEffects(isLoggedIn);
+  
+  // State management
+  const [showForm, setShowForm] = useState(false);
+  const [editingPin, setEditingPin] = useState(null);
+  const [token, setToken] = useState('');
+  
+  // Refs for color management
+  const assignedColorsRef = useRef(createColorAssignmentRef());
   
   // Helper function to get translated text for use in HTML strings
   const t = (key) => intl.formatMessage({id: key});
@@ -80,10 +85,7 @@ const TravelPins = () => {
   const updatePinMutation = useUpdateTravelPin();
   const deletePinMutation = useDeleteTravelPin();
   
-  const [showForm, setShowForm] = useState(false);
-  const [editingPin, setEditingPin] = useState(null);
-  const [token, setToken] = useState('');
-  // Form state management
+  // Hook-based state management
   const {
     formData,
     hasChanges,
@@ -96,11 +98,7 @@ const TravelPins = () => {
     getFormDataForSubmission
   } = useFormState();
 
-  // Geolocation functionality
   const { isLocating, locationError, getCurrentLocation, clearLocationError } = useGeolocation();
-
-
-  // Modal state management
   const {
     showDeleteModal,
     showEscModal,
@@ -287,12 +285,8 @@ const TravelPins = () => {
   };
   
   
-  // === INITIALIZATION ===
   // Mapbox modal detection
   const { mapboxModalActive, mapboxModalActiveRef } = useMapboxModalDetection();
-  
-  // Assigned color index per pin id
-  const assignedColorsRef = useRef(createColorAssignmentRef());
 
 
   // Initialize styles and token on mount
@@ -403,76 +397,21 @@ const TravelPins = () => {
 
   // Update popup content when pins change
   useEffect(() => {
-    if (!map || !mapLoaded || !pins.length) return;
-
-    // Update popup content for existing markers when pin data changes
-    pins.forEach(pin => {
-      const marker = markersByIdRef.current.get(pin.id);
-      if (marker) {
-        const popup = marker.getPopup();
-        if (popup && popup.isOpen && popup.isOpen()) {
-          // Only update if popup is currently open
-          // Get the popup container and update its content directly
-          const popupElement = popup.getElement();
-          if (popupElement) {
-            // Find the content container and update it
-            const contentContainer = popupElement.querySelector(`#popup-${pin.id}`);
-            if (contentContainer) {
-              // Clean up old event handlers first
-              if (contentContainer.__tp_onClick) {
-                contentContainer.removeEventListener('click', contentContainer.__tp_onClick);
-                delete contentContainer.__tp_onClick;
-              }
-              
-              // Update the content without recreating the entire popup
-              contentContainer.innerHTML = buildPopupHTML(pin, { 
-                t, 
-                formatDate, 
-                isMobile, 
-                isLoggedIn, 
-                popupId: `popup-${pin.id}`, 
-                renderMarkdownToHTML 
-              }).match(/<div[^>]*id="popup-[^"]*"[^>]*>([\s\S]*)<\/div>/)[1];
-              
-              // Reapply auth button visibility
-              applyAuthButtonsVisibility(contentContainer);
-              
-              // Re-attach event handlers with current pin data
-              const onContainerClick = (e) => {
-                const actionEl = e.target.closest('[data-action]');
-                if (!actionEl || !contentContainer.contains(actionEl)) return;
-                e.stopPropagation();
-                const action = actionEl.getAttribute('data-action');
-                switch (action) {
-                  case 'delete':
-                    handleDeletePin(pin);
-                    break;
-                  case 'edit':
-                    // Use current pin data from pins array
-                    const currentPin = pins.find(p => p.id === pin.id);
-                    handleEditPin(currentPin || pin);
-                    break;
-                  case 'copy':
-                    handleCopyCoordinates(pin.coordinates, pin.id, t, setCoordsCopied);
-                    break;
-                  case 'open-photo':
-                    if (pin.photo_url) openPhotoModal(pin.photo_url, pin.title);
-                    break;
-                  case 'close':
-                    try { popup.remove(); } catch {}
-                    break;
-                  default:
-                    break;
-                }
-              };
-              
-              // Save handler reference for cleanup and attach it
-              contentContainer.__tp_onClick = onContainerClick;
-              contentContainer.addEventListener('click', onContainerClick);
-            }
-          }
-        }
-      }
+    updateOpenPopupContent({
+      pins,
+      map,
+      mapLoaded,
+      markersByIdRef,
+      t,
+      formatDate,
+      isMobile,
+      isLoggedIn,
+      renderMarkdownToHTML,
+      applyAuthButtonsVisibility,
+      handleDeletePin,
+      handleEditPin,
+      openPhotoModal,
+      setCoordsCopied
     });
   }, [pins.map(p => `${p.id}-${p.updated_at}-${p.title}-${p.note}`).join(','), map, mapLoaded, t, formatDate, isMobile, isLoggedIn, renderMarkdownToHTML, applyAuthButtonsVisibility, handleDeletePin, handleEditPin, openPhotoModal, setCoordsCopied]);
 
