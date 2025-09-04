@@ -12,6 +12,7 @@ import PhotoLightbox from './components/PhotoLightbox';
 import OverlayControls from './components/OverlayControls';
 import EscConfirmationModal from './components/EscConfirmationModal';
 import LoadingIndicator from './components/LoadingIndicator';
+import ErrorIndicator from './components/ErrorIndicator';
 import { SKIN_SCHEMES, CONTRAST_SCHEMES } from './utils/palettes';
 import { renderMarkdownToHTML } from './utils/markdownUtils';
 import { assignColorsByScreen, recolorMarkers, createColorAssignmentRef } from './utils/colorManager';
@@ -524,18 +525,7 @@ const TravelPins = () => {
       <LoadingIndicator isLoading={pinsLoading} />
       
       {/* Error indicator */}
-      {pinsError && (
-        <div className="absolute top-4 left-4 bg-red-50 border border-red-200 rounded-lg px-4 py-2 shadow-lg z-10">
-          <div className="flex items-center gap-2 text-red-700">
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-              <circle cx="12" cy="12" r="10"></circle>
-              <line x1="15" y1="9" x2="9" y2="15"></line>
-              <line x1="9" y1="9" x2="15" y2="15"></line>
-            </svg>
-            <span className="text-sm font-medium">Failed to load pins</span>
-          </div>
-        </div>
-      )}
+      <ErrorIndicator error={pinsError} />
 
       {/* Background overlay for display modal (popup) */}
       {openPopups.size > 0 && !showForm && !showDeleteModal && !showEscModal && !showPhotoModal && (

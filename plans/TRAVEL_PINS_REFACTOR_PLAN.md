@@ -91,10 +91,10 @@ src/
 
 ### Progress Summary
 - **Started**: 1,181 lines in main component
-- **Current**: 598 lines (49% reduction - 583 lines extracted!)
-- **Target**: <400 lines (additional 33% reduction needed - 198 lines to go)
+- **Current**: 588 lines (50% reduction - 593 lines extracted!)
+- **Target**: <400 lines (additional 32% reduction needed - 188 lines to go)
 - **Files Created**: 12 new utility files and hooks
-- **Components Extracted**: 6 new reusable components
+- **Components Extracted**: 7 new reusable components
 - **Critical Issues Resolved**: ✅ Infinite loop fixes, popup content updates, form repopulation, marker rendering after auth changes, search functionality
 - **Test Status**: ✅ All tests passing
 
@@ -154,7 +154,7 @@ src/
     - [x] Step 6: Simplify remaining useEffect consolidation (6 lines saved) ✅ COMPLETED
   - [ ] **Phase 4B: JSX Optimization (Small Steps)**
     - [x] Step 7: Extract loading indicator component (6 lines saved) ✅ COMPLETED
-    - [ ] Step 8: Extract error indicator component (10-15 lines)
+    - [x] Step 8: Extract error indicator component (10 lines saved) ✅ COMPLETED
     - [ ] Step 9: Extract background overlay component (8-12 lines)
     - [ ] Step 10: Consolidate modal rendering into single component
   - [ ] **Phase 4C: Final Organization (Small Steps)**
@@ -205,14 +205,15 @@ src/
 
 ## Current Status (Updated 2025-09-03)
 
-**Next Step**: Step 8 - Extract error indicator component (10-15 lines)
-**Last completed**: Step 7 - Extract loading indicator component (6 lines saved)
+**Next Step**: Step 9 - Extract background overlay component (8-12 lines)
+**Last completed**: Step 8 - Extract error indicator component (10 lines saved)
 **Recent fixes**: Fixed search functionality + consolidated useEffect hooks for better organization
-**Current status**: 598 lines (49% reduction achieved, 198 lines to target)
+**Current status**: 588 lines (50% reduction achieved, 188 lines to target)
 **Files created this session**: 
 - `src/Pages/TravelPins/hooks/useLocationListener.js` (53 lines)
 - `src/Pages/TravelPins/utils/styleInjection.js` (25 lines)
 - `src/Pages/TravelPins/components/LoadingIndicator.jsx` (16 lines)
+- `src/Pages/TravelPins/components/ErrorIndicator.jsx` (17 lines)
 **Files to modify next**: 
-- Extract error indicator JSX to separate component
-- Update: `src/Pages/TravelPins/index.jsx` (extract error indicator)
+- Extract background overlay JSX to separate component
+- Update: `src/Pages/TravelPins/index.jsx` (extract background overlay)
