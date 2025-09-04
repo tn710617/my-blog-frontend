@@ -294,6 +294,10 @@ const TravelPins = () => {
   useEffect(() => {
     const mapboxToken = import.meta.env.VITE_MAPBOX_TOKEN;
     setToken(mapboxToken);
+    // Also set the global mapbox token for search functionality
+    if (mapboxToken) {
+      mapboxgl.accessToken = mapboxToken;
+    }
   }, []);
 
 
