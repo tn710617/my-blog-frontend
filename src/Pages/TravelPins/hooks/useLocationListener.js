@@ -33,8 +33,13 @@ export function useLocationListener(map, flyTo) {
     const handleLocationFromNavbar = (event) => {
       const location = event.detail;
       
+      console.log('🔍 Location selected from navbar:', location);
+      console.log('📍 Map instance available:', !!map);
+      console.log('🎯 Location center:', location.center);
+      
       // Navigate to the location on the map
       if (map && location.center) {
+        console.log('🚀 Calling flyTo with coordinates:', location.center);
         flyTo(location.center, 10, 2000);
         
         // Add to search history
@@ -49,6 +54,8 @@ export function useLocationListener(map, flyTo) {
           const filtered = prev.filter(item => item.name !== historyItem.name);
           return [historyItem, ...filtered].slice(0, 5);
         });
+      } else {
+        console.log('❌ Cannot navigate: map=' + !!map + ', location.center=' + !!location.center);
       }
     };
 

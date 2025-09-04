@@ -165,7 +165,7 @@ const TravelPins = () => {
   });
   
   // Location listener functionality (mobile detection & navbar search)
-  const { isMobile, searchHistory } = useLocationListener(map, flyTo);
+  const { isMobile, searchHistory } = useLocationListener(mapLoaded ? map : null, flyTo);
 
   // Color management functions (now that map is available)
   const handleAssignColorsByScreen = useCallback((allPins) => {

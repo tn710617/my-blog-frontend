@@ -159,12 +159,17 @@ export const useMapManager = ({
    * Fly to a specific location
    */
   const flyTo = useCallback((center, zoom = 10, duration = 2500) => {
+    console.log('🛸 flyTo called with:', { center, zoom, duration });
+    console.log('🗺️ map.current exists:', !!map.current);
     if (map.current) {
+      console.log('✈️ Executing map.flyTo');
       map.current.flyTo({
         center,
         zoom,
         duration
       });
+    } else {
+      console.log('❌ Cannot flyTo: map.current is null/undefined');
     }
   }, []);
 
