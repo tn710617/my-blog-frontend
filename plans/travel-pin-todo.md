@@ -114,19 +114,41 @@
 - 座標欄位：Create 送出使用 `draft.coordinates`；Update 使用 `pin.coordinates`；在表單編輯期間會保留 `draft.coordinates` 不被覆蓋。
   - 依賴：T1.*、T2.*、T4.*
 
-## Phase 6 — 背景遮罩與互動規則（跨元件）
-- [T6.1] 規範 Overlay 顯示條件（阻塞型 Modal、或 Popup 開啟）
-- [T6.2] 定義 Overlay 點擊行為（關閉/取消/不動作）
-- [T6.3] 手機上 Overlay 吞掉滾動/手勢（避免觸發地圖）
+## Phase 6 — 背景遮罩與互動規則（跨元件）✅ DONE
+- [✅T6.1] 規範 Overlay 顯示條件（阻塞型 Modal、或 Popup 開啟）
+- [✅T6.2] 定義 Overlay 點擊行為（關閉/取消/不動作）
+- [✅T6.3] 手機上 Overlay 吞掉滾動/手勢（避免觸發地圖）
   - 依賴：T5.*、T4.6
 
-## Phase 7 — 深連結（Deep-link）
+**完成摘要：**
+- Overlay 顯示條件：透過 `hasAnyModalOpen()` 判斷，包含所有阻塞型 modal 與 display popup
+- 點擊行為矩陣：delete modal 返回 display popup；form + confirmOpen 僅關確認層；photo modal 關閉保留 display popup；其他關閉 popup + modal
+- 手機互動攔截：scroll lock (`overflow: hidden`) + 停用所有 Mapbox 互動 (keyboard/dragPan/scrollZoom/boxZoom/doubleClickZoom/touchZoomRotate/dragRotate)
+- Portal 渲染：掛載至地圖容器保持 stacking context 一致；backdrop-filter 模糊地圖但不影響 popup (z-index 分層)
+
+**實作位置：**
+- `src/Pages/TravelPinsNew/components/BackgroundOverlay.jsx`：完整 overlay 邏輯與互動處理
+- `src/Pages/TravelPinsNew/stores/modalStore.js`：modal 狀態管理與 `hasAnyModalOpen()` 判斷
+- `src/Pages/TravelPinsNew/utils/displayPopupController.js`：跨元件 popup 開關控制
+
+## Phase 7 — 深連結（Deep-link）✅ DONE
 - [✅T7.1] Copy Link 構造 URL（Popup 內按鈕）
 - [✅T7.2] 進頁辨識 `?pin=<id>`
 - [✅T7.3] 置中相機 `easeTo({ center })`（設定合適 zoom）
 - [✅T7.4] `moveend`（或 timeout 後備）自動開啟顯示視窗
-- [T7.5] 桌機/手機穩定性驗證
+- [✅T7.5] 桌機/手機穩定性驗證
   - 依賴：T4.*、T3.*
+
+**完成摘要：**
+- URL 解析：`getPinIdFromUrl()` 從 URL 參數解析 pin ID，支援數字與字母數字格式
+- 相機定位：`easeTo({ center, zoom })` 平滑移動至目標位置，zoom 至少 4.5 確保可見性
+- 自動開啟 popup：`moveend` 事件觸發 + 950ms timeout 後備，修復競態條件（`popupOpened` 旗標避免重複開啟）
+- 穩定性：支援桌機/手機，尊重既有 mobile padding 設置，無需額外 padding 處理
+- 錯誤處理：多層 try-catch 確保任何步驟失敗都有後備處理
+
+**實作位置：**
+- `src/Pages/TravelPinsNew/utils/urlUtils.js`：URL 生成、解析、剪貼簿複製
+- `src/Pages/TravelPinsNew/components/SymbolsManager.jsx:350-377`：深連結觸發與 popup 開啟邏輯
 
 ## Phase 8 — 權限與登入（橫切需求）
 - [T8.1] 未登入：建立/編輯/刪除需先登入或提示

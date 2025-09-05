@@ -359,10 +359,18 @@ const SymbolsManager = () => {
     try {
       const targetZoom = Math.max(mapInstance.getZoom?.() ?? 2, 4.5);
       mapInstance.easeTo({ center: pin.coordinates, zoom: targetZoom, duration: 900 });
-      const once = () => { openPinPopup(mapInstance, pin); };
-      mapInstance.once('moveend', once);
+      
+      // 確保只執行一次開啟動作，避免 moveend 和 timeout 競態
+      let popupOpened = false;
+      const openOnce = () => {
+        if (popupOpened) return;
+        popupOpened = true;
+        try { openPinPopup(mapInstance, pin); } catch {}
+      };
+      
+      mapInstance.once('moveend', openOnce);
       // 後備：若 moveend 未觸發，0.95s 後也嘗試開啟
-      setTimeout(() => { try { openPinPopup(mapInstance, pin); } catch {} }, 950);
+      setTimeout(openOnce, 950);
     } catch {
       try { openPinPopup(mapInstance, pin); } catch {}
     }
