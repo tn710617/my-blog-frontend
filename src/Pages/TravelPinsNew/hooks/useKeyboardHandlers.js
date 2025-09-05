@@ -37,6 +37,18 @@ export const useKeyboardHandlers = () => {
         return;
       }
 
+      if (activeModal === 'form') {
+        // Close edit form and restore display popup
+        const pin = modalData?.pin;
+        closeModal();
+        if (pin) {
+          setTimeout(() => {
+            try { openModal('display', { id: pin.id }); } catch {}
+          }, 0);
+        }
+        return;
+      }
+
       if (activeModal === 'display') {
         // Close display popup and its overlay
         try { closeDisplayPopup(); } catch {}

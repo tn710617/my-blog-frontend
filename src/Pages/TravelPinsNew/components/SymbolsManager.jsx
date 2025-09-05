@@ -142,6 +142,11 @@ const SymbolsManager = () => {
         } catch {}
       },
       onCopyLink: async () => { await copyPinUrlToClipboard(pin.id); },
+      onEdit: () => {
+        // 關閉目前 popup，開啟編輯表單
+        try { if (openPopupRef.current) openPopupRef.current.remove(); } catch {}
+        try { openModal('form', { pin }); } catch (e) { console.error(e); }
+      },
       onDelete: () => {
         // 先關閉顯示視窗，再開啟刪除確認，避免 onPopupClose 關掉新 modal
         try { if (openPopupRef.current) openPopupRef.current.remove(); } catch {}

@@ -7,6 +7,7 @@ import SymbolsManager from './components/SymbolsManager';
 import BackgroundOverlay from './components/BackgroundOverlay';
 import DeleteConfirmationModal from './components/Modals/DeleteConfirmationModal';
 import PhotoModal from './components/Modals/PhotoModal';
+import EditPinModal from './components/Modals/EditPinModal';
 import { useKeyboardHandlers } from './hooks/useKeyboardHandlers';
 import { handleResize } from './utils/cameraHelpers';
 
@@ -40,6 +41,7 @@ const TravelPinsNew = () => {
         <BackgroundOverlay />
         <DeleteConfirmationModal />
         <PhotoModal />
+        <EditPinModal />
       </div>
       
       {/* TODO: Phase 4 - Display Popup */}
