@@ -1,4 +1,5 @@
 import mapboxgl from 'mapbox-gl';
+// Use TravelPinsNew's own popup templates and styles (no cross-imports)
 import { buildPopupHTML } from './popupHtml';
 import { injectPopupStyles } from './popupStyles';
 import { markdownToHtml } from './markdownUtils';
@@ -17,9 +18,9 @@ let stylesInjected = false;
  * @returns {mapboxgl.Popup}
  */
 export function createPopup(pin, handlers) {
-  // Inject styles once
+  // Inject TravelPinsNew popup styles once
   if (!stylesInjected) {
-    injectPopupStyles();
+    try { injectPopupStyles(); } catch {}
     stylesInjected = true;
   }
 
@@ -49,9 +50,11 @@ export function createPopup(pin, handlers) {
   const popupId = `popup-${pin.id}`;
 
   // Build HTML
+  const isMobile = typeof window !== 'undefined' ? window.innerWidth <= 768 : false;
   const html = buildPopupHTML(pin, {
     t,
     formatDate,
+    isMobile,
     isLoggedIn,
     popupId,
     renderMarkdownToHTML: renderMarkdownToHTML || markdownToHtml
@@ -161,9 +164,11 @@ export function updatePopup(popup, pin, handlers) {
   const popupId = `popup-${pin.id}`;
   
   // Rebuild HTML
+  const isMobile = typeof window !== 'undefined' ? window.innerWidth <= 768 : false;
   const html = buildPopupHTML(pin, {
     t,
     formatDate,
+    isMobile,
     isLoggedIn,
     popupId,
     renderMarkdownToHTML

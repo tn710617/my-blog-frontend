@@ -3,6 +3,9 @@ import { useMapStore } from '../stores/mapStore';
 import { useTravelPins } from '../hooks/useTravelPinsApi';
 import { assignColorsByScreen } from '../utils/colorManager';
 import { SKIN_SCHEMES, CONTRAST_SCHEMES } from '../utils/palettes';
+import { createPopup, updatePopup } from '../utils/popupFactory';
+import { copyPinUrlToClipboard } from '../utils/urlUtils';
+import { useAuthStore } from '../../../stores';
 
 const SOURCE_ID = 'travel-pins-source';
 const LAYER_ID = 'travel-pins-layer';
@@ -113,6 +116,9 @@ const SymbolsManager = () => {
   const { data: pins = [], isLoading } = useTravelPins();
   const assignedColorsRef = React.useRef(new Map());
   const hoverIdRef = React.useRef(null);
+  const openPopupRef = React.useRef(null);
+  const openPinRef = React.useRef(null);
+  const isLoggedIn = useAuthStore((s) => s.isLoggedIn);
 
   React.useEffect(() => {
     if (!isMapReady || !mapInstance || isLoading) return;
@@ -199,7 +205,22 @@ const SymbolsManager = () => {
         const onClick = (e) => {
           const f = e.features?.[0];
           if (!f) return;
-          console.log('Symbol pin clicked:', f.properties?.title || f.id);
+          const pinId = f.id;
+          const pin = pins.find((p) => String(p.id) === String(pinId));
+          if (!pin) return;
+
+          // 關閉現有 popup
+          try { if (openPopupRef.current) openPopupRef.current.remove(); } catch {}
+
+          const popup = createPopup(pin, {
+            isLoggedIn,
+            onPopupOpen: () => {},
+            onPopupClose: () => { openPopupRef.current = null; openPinRef.current = null; },
+            onCopyLink: async () => { await copyPinUrlToClipboard(pin.id); },
+          });
+          popup.setLngLat(pin.coordinates).addTo(map);
+          openPopupRef.current = popup;
+          openPinRef.current = pin;
         };
         map.on('click', LAYER_ID, onClick);
         map.on('click', HOVER_LAYER_ID, onClick);
@@ -228,11 +249,26 @@ const SymbolsManager = () => {
       map.off('zoom', handleViewChange);
       map.off('rotate', handleViewChange);
       map.off('pitch', handleViewChange);
+      try { if (openPopupRef.current) openPopupRef.current.remove(); } catch {}
       if (map.getLayer(HOVER_LAYER_ID)) map.removeLayer(HOVER_LAYER_ID);
       if (map.getLayer(LAYER_ID)) map.removeLayer(LAYER_ID);
       if (map.getSource(SOURCE_ID)) map.removeSource(SOURCE_ID);
     };
-  }, [isMapReady, mapInstance, isLoading, pins]);
+  }, [isMapReady, mapInstance, isLoading, pins, isLoggedIn]);
+
+  // 登入狀態變更時，若已有開啟的 popup，更新其內容（顯示/隱藏編輯與刪除按鈕）
+  React.useEffect(() => {
+    if (!openPopupRef.current || !openPinRef.current) return;
+    try {
+      const pin = openPinRef.current;
+      const popup = openPopupRef.current;
+      // 以最新 isLoggedIn 重繪內容
+      const t = (key) => key;
+      const formatDate = (date) => new Date(date).toLocaleDateString();
+      const handlers = { t, formatDate, isLoggedIn };
+      updatePopup(popup, pin, handlers);
+    } catch {}
+  }, [isLoggedIn]);
 
   return null;
 };
