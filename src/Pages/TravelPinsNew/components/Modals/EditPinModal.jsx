@@ -20,6 +20,7 @@ const EditPinModal = () => {
   const activeModal = useModalStore((s) => s.activeModal);
   const modalData = useModalStore((s) => s.modalData);
   const closeModal = useModalStore((s) => s.closeModal);
+  const updateModalData = useModalStore((s) => s.updateModalData);
 
   const isOpen = activeModal === 'form';
   const editingPin = modalData?.pin || null;
@@ -28,6 +29,12 @@ const EditPinModal = () => {
   const [note, setNote] = useState(editingPin?.note || '');
   const [visitedAt, setVisitedAt] = useState(toDateInput(editingPin?.visited_at));
   const [photoUrl, setPhotoUrl] = useState(editingPin?.photo_url || '');
+  const initialRef = useMemo(() => ({
+    title: editingPin?.title || '',
+    note: editingPin?.note || '',
+    visited_at: toDateInput(editingPin?.visited_at),
+    photo_url: editingPin?.photo_url || '',
+  }), [editingPin?.id]);
 
   const createMutation = useCreateTravelPin();
   const updateMutation = useUpdateTravelPin();
@@ -35,11 +42,25 @@ const EditPinModal = () => {
   // Reset fields when target pin changes
   React.useEffect(() => {
     if (!isOpen) return;
-    setTitle(editingPin?.title || '');
-    setNote(editingPin?.note || '');
-    setVisitedAt(toDateInput(editingPin?.visited_at));
-    setPhotoUrl(editingPin?.photo_url || '');
+    const draft = modalData?.draft;
+    setTitle((draft?.title ?? editingPin?.title) || '');
+    setNote((draft?.note ?? editingPin?.note) || '');
+    setVisitedAt(draft?.visited_at ?? toDateInput(editingPin?.visited_at));
+    setPhotoUrl((draft?.photo_url ?? editingPin?.photo_url) || '');
+    updateModalData({ dirty: false, pin: editingPin || null });
   }, [isOpen, editingPin?.id]);
+
+  // Track dirty state and expose到 modalData，供集中 ESC 判斷
+  React.useEffect(() => {
+    if (!isOpen) return;
+    const dirty = (
+      title !== initialRef.title ||
+      note !== initialRef.note ||
+      visitedAt !== initialRef.visited_at ||
+      photoUrl !== initialRef.photo_url
+    );
+    updateModalData({ dirty, draft: { title, note, visited_at: visitedAt, photo_url: photoUrl } });
+  }, [isOpen, title, note, visitedAt, photoUrl, initialRef, updateModalData]);
 
   if (!isOpen) return null;
 

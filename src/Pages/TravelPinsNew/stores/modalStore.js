@@ -25,6 +25,12 @@ export const useModalStore = create((set, get) => ({
     });
   },
   
+  // Update current modal data (non-destructive)
+  updateModalData: (updates) => {
+    const current = get().modalData || {};
+    set({ modalData: { ...current, ...updates } });
+  },
+  
   // Check if a specific modal is open
   isModalOpen: (modalType) => {
     return get().activeModal === modalType;

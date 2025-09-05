@@ -28,23 +28,42 @@ export const useKeyboardHandlers = () => {
       }
 
       if (activeModal === 'photo') {
-        // Close photo modal then restore display overlay state
+        // Close photo modal then restore display popup
         closeModal();
         const pin = modalData?.pin;
-        setTimeout(() => {
-          try { openModal('display', pin ? { id: pin.id } : null); } catch {}
-        }, 0);
+        if (pin) {
+          setTimeout(() => { try { openDisplayPopup(pin); } catch {} }, 0);
+        }
         return;
       }
 
       if (activeModal === 'form') {
-        // Close edit form and restore display popup
         const pin = modalData?.pin;
+        const isDirty = !!modalData?.dirty;
+        if (isDirty) {
+          // Open confirm modal instead of closing directly
+          const onConfirm = () => {
+            // User confirms to discard changes → close esc-confirm and restore display popup
+            const { closeModal: _close } = useModalStore.getState();
+            _close(); // close esc-confirm
+            if (pin) setTimeout(() => { try { openDisplayPopup(pin); } catch {} }, 0);
+          };
+          openModal('esc-confirm', { onConfirm, pin, draft: modalData?.draft });
+          return;
+        }
+        // Not dirty → close directly and restore display
+        closeModal();
+        if (pin) setTimeout(() => { try { openDisplayPopup(pin); } catch {} }, 0);
+        return;
+      }
+
+      if (activeModal === 'esc-confirm') {
+        // ESC on confirm modal = cancel → back to edit form
+        const pin = modalData?.pin;
+        const draft = modalData?.draft;
         closeModal();
         if (pin) {
-          setTimeout(() => {
-            try { openModal('display', { id: pin.id }); } catch {}
-          }, 0);
+          try { openModal('form', { pin, draft }); } catch {}
         }
         return;
       }
