@@ -9,7 +9,7 @@ import {
   useDeleteTravelPin,
   useOptimisticTravelPinUpdate,
   TRAVEL_PINS_QUERY_KEYS
-} from '../../APIs/travel-pins';
+} from '../../../APIs/travel-pins';
 
 // Re-export all API hooks
 export {

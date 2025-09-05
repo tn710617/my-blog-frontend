@@ -3,7 +3,7 @@ import { useMapStore } from './stores/mapStore';
 import MapContainer from './components/MapContainer';
 import MapLoadingIndicator from './components/MapLoadingIndicator';
 import MobileGestureToggle from './components/MobileGestureToggle';
-import MarkersManager from './components/MarkersManager';
+import SymbolsManager from './components/SymbolsManager';
 import { handleResize } from './utils/cameraHelpers';
 
 // Travel Pins New - Main Component
@@ -29,8 +29,8 @@ const TravelPinsNew = () => {
         <MapLoadingIndicator />
         <MobileGestureToggle />
         
-        {/* Phase 3 - Markers Manager */}
-        <MarkersManager />
+        {/* SymbolLayer-based pins (no backside flicker) */}
+        <SymbolsManager />
       </div>
       
       {/* TODO: Phase 4 - Display Popup */}

@@ -29,6 +29,9 @@ export const createMarkerElement = (pin, colorAssignment = { palette: 'skin', id
     cursor: pointer; 
     z-index: ${Z_INDEX.MARKERS}; 
     opacity: 1;
+    /* Start hidden to avoid any initial back-side flicker; manager reveals correctly */
+    visibility: hidden;
+    pointer-events: none;
   `;
 
   return el;

@@ -24,9 +24,11 @@ export const useMarkerManager = () => {
   // Keep track of markers and color assignments (using existing pattern)
   const markersRef = useRef(new Map()); // pinId -> marker instance
   const colorAssignmentsRef = useRef(createColorAssignmentRef()); // pinId -> color assignment
+  const addedMarkersRef = useRef(new Set()); // pinIds currently added to map
   
   // Marker visibility state
   const [hiddenMarkers, setHiddenMarkers] = useState(new Set());
+  const initialVisibilityDoneRef = useRef(false);
 
   // Create/update markers when pins or map changes
   useEffect(() => {
@@ -43,23 +45,44 @@ export const useMarkerManager = () => {
       createMarkerForPin(pin);
     });
 
-    // Set up map event listeners for visibility and color updates
+    // Defer all visibility until first idle frame to avoid transient camera state
     const handleMapMove = () => {
+      if (!initialVisibilityDoneRef.current) return;
       updateMarkerVisibility();
-      // Update colors based on screen proximity when map moves/zooms
       recolorMarkers(pins, mapInstance, markersRef, colorAssignmentsRef);
     };
-    
-    mapInstance.on('move', handleMapMove);
-    mapInstance.on('zoom', handleMapMove);
-    mapInstance.on('rotate', handleMapMove);
-    mapInstance.on('pitch', handleMapMove);
 
-    return () => {
+    const attachRuntimeListeners = () => {
+      mapInstance.on('move', handleMapMove);
+      mapInstance.on('zoom', handleMapMove);
+      mapInstance.on('rotate', handleMapMove);
+      mapInstance.on('pitch', handleMapMove);
+    };
+
+    const detachRuntimeListeners = () => {
       mapInstance.off('move', handleMapMove);
-      mapInstance.off('zoom', handleMapMove);  
+      mapInstance.off('zoom', handleMapMove);
       mapInstance.off('rotate', handleMapMove);
       mapInstance.off('pitch', handleMapMove);
+    };
+
+    try {
+      mapInstance.once('idle', () => {
+        updateMarkerVisibility();
+        initialVisibilityDoneRef.current = true;
+        attachRuntimeListeners();
+      });
+    } catch {
+      // Fallback: run once after a tick
+      setTimeout(() => {
+        updateMarkerVisibility();
+        initialVisibilityDoneRef.current = true;
+        attachRuntimeListeners();
+      }, 0);
+    }
+
+    return () => {
+      detachRuntimeListeners();
     };
   }, [pins, isMapReady, mapInstance, isLoading]);
 
@@ -83,29 +106,14 @@ export const useMarkerManager = () => {
         console.log('Marker clicked:', pin.title); // TODO: Phase 4 - Open popup
       });
 
-      // Initial hemisphere visibility check (avoid showing back-side markers at first paint)
-      try {
-        const center = mapInstance.getCenter();
-        const zoom = mapInstance.getZoom();
-        const pitch = mapInstance.getPitch();
-        if (center && typeof zoom === 'number' && typeof pitch === 'number') {
-          const hidden = !isMarkerVisible(pin.coordinates, center, zoom, pitch);
-          if (hidden) {
-            el.style.visibility = 'hidden';
-            el.style.pointerEvents = 'none';
-          }
-        }
-      } catch (error) {
-        // Silently handle errors to prevent disrupting user experience
-      }
+      // Start hidden by default; visibility is managed centrally
 
-      // Create Mapbox marker
+      // Create Mapbox marker (do not add to map yet; visibility manager controls this)
       const marker = new mapboxgl.Marker({
         element: el,
         anchor: 'center'
       })
-        .setLngLat(pin.coordinates)
-        .addTo(mapInstance);
+        .setLngLat(pin.coordinates);
 
       // Store marker reference
       markersRef.current.set(pin.id, marker);
@@ -132,9 +140,19 @@ export const useMarkerManager = () => {
       const markerElement = marker.getElement();
 
       if (shouldBeVisible) {
+        if (!addedMarkersRef.current.has(pinId)) {
+          try {
+            marker.addTo(mapInstance);
+            addedMarkersRef.current.add(pinId);
+          } catch {}
+        }
         markerElement.style.visibility = 'visible';
         markerElement.style.pointerEvents = 'auto';
       } else {
+        if (addedMarkersRef.current.has(pinId)) {
+          try { marker.remove(); } catch {}
+          addedMarkersRef.current.delete(pinId);
+        }
         markerElement.style.visibility = 'hidden';
         markerElement.style.pointerEvents = 'none';
         newHiddenMarkers.add(pinId);
@@ -147,9 +165,10 @@ export const useMarkerManager = () => {
   // Clear all markers from map
   const clearAllMarkers = () => {
     markersRef.current.forEach((marker) => {
-      marker.remove();
+      try { marker.remove(); } catch {}
     });
     markersRef.current.clear();
+    addedMarkersRef.current.clear();
   };
 
   // Add a new marker (for when pins are created)
@@ -170,9 +189,10 @@ export const useMarkerManager = () => {
   const removeMarker = (pinId) => {
     const marker = markersRef.current.get(pinId);
     if (marker) {
-      marker.remove();
+      try { marker.remove(); } catch {}
       markersRef.current.delete(pinId);
       colorAssignmentsRef.current.delete(pinId);
+      addedMarkersRef.current.delete(pinId);
       
       // Recalculate colors for remaining markers since removing one might affect proximity
       const remainingPins = pins.filter(p => p.id !== pinId);

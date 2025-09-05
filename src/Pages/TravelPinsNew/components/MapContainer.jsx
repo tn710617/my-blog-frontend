@@ -33,6 +33,8 @@ const MapContainer = () => {
         center: center,
         zoom: 2, // Start at zoom 2 like original
         projection: 'globe', // 3D globe projection
+        // Prevent duplicate world copies which can briefly show back-side markers
+        renderWorldCopies: false,
         attributionControl: false,
         logoPosition: 'bottom-right',
         doubleClickZoom: true,

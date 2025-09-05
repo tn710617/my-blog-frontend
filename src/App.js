@@ -8,7 +8,7 @@ import ProtectedRoute from "./Components/ProtectedRoute";
 import EditPost from "./Pages/EditPost";
 import About from "./Pages/About";
 import TravelPins from "./Pages/TravelPins";
-import TravelPinsNew from "./TravelPinsNew";
+import TravelPinsNew from "./Pages/TravelPinsNew";
 
 function App() {
     return (
