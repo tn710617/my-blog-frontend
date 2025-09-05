@@ -150,16 +150,49 @@
 - `src/Pages/TravelPinsNew/utils/urlUtils.js`：URL 生成、解析、剪貼簿複製
 - `src/Pages/TravelPinsNew/components/SymbolsManager.jsx:350-377`：深連結觸發與 popup 開啟邏輯
 
-## Phase 8 — 權限與登入（橫切需求）
-- [T8.1] 未登入：建立/編輯/刪除需先登入或提示
-- [T8.2] Popup 內按鈕依登入狀態顯示/隱藏
-- [T8.3] 已登入可完整操作
+## Phase 8 — 權限與登入（橫切需求）✅ DONE
+- [✅T8.1] 未登入：建立/編輯/刪除需先登入或提示
+- [✅T8.2] Popup 內按鈕依登入狀態顯示/隱藏
+- [✅T8.3] 已登入可完整操作
   - 依賴：T1.*、T5.1/5.2、T4.*
 
-## Phase 9 — 國際化（i18n）
-- [T9.1] 文案抽離為多語 key（Popup、Modals、按鈕、錯誤訊息）
-- [T9.2] 日期本地化格式（依語系顯示）
+**完成摘要：**
+- 建立釘點權限：地圖背景點擊時檢查 `isLoggedIn`，未登入顯示登入 Modal (`setShowLoginModal(true)`)
+- 編輯/刪除權限：Popup 按鈕基於 `isLoggedIn` 條件渲染，未登入時完全隱藏
+- 登入狀態整合：使用 `useAuthStore((s) => s.isLoggedIn)` 與既有認證系統整合
+- 權限一致性：所有需要權限的操作 (create/edit/delete) 都有適當的登入檢查
+
+**實作位置：**
+- `src/Pages/TravelPinsNew/components/SymbolsManager.jsx:289-292`：地圖點擊創建釘點的登入檢查
+- `src/Pages/TravelPinsNew/utils/popupHtml.js:43-59`：編輯/刪除按鈕的條件渲染
+- `src/Pages/TravelPinsNew/components/SymbolsManager.jsx:123-124`：認證狀態與登入 Modal 整合
+
+## Phase 9 — 國際化（i18n）✅ DONE
+- [✅T9.1] 文案抽離為多語 key（Popup、Modals、按鈕、錯誤訊息）
+- [✅T9.2] 日期本地化格式（依語系顯示）
   - 依賴：T0.3
+
+**完成摘要：**
+- 文案完整國際化：所有 UI 文字使用 `travel_pins.*` 翻譯鍵值，涵蓋 popup、modals、按鈕、錯誤訊息
+- 翻譯鍵對齊：修復 popup HTML 使用的鍵值，新增 `travel_pins.popup.copy_link` 鍵（EN/ZH-TW）
+- 日期本地化：使用 `toLocaleDateString()` 自動根據瀏覽器/使用者語系格式化日期
+- React Intl 整合：已整合 `useIntl` hook，支援完整的 i18n 生態系統
+- 雙語支援：完整的英文 (en.json) 與繁體中文 (zh-TW.json) 翻譯
+
+**實作位置：**
+- `src/locales/en.json`：英文翻譯（89-150 行 travel_pins 相關鍵值）
+- `src/locales/zh-TW.json`：中文翻譯（90-151 行 travel_pins 相關鍵值）
+- `src/Pages/TravelPinsNew/utils/popupHtml.js`：popup 文字國際化
+- `src/Pages/TravelPinsNew/components/Modals/EditPinModal.jsx`：編輯表單完整國際化
+- `src/Pages/TravelPinsNew/components/Modals/DeleteConfirmationModal.jsx`：刪除確認對話框國際化
+- `src/Pages/TravelPinsNew/components/Modals/EscConfirmModal.jsx`：未儲存變更確認對話框國際化
+- `src/Pages/TravelPinsNew/components/MobileGestureToggle.jsx`：React Intl 整合範例
+
+**修復項目（補完）：**
+- 新增 `travel_pins.popup.copy_link` 翻譯鍵（EN/ZH-TW）
+- 修復 popup HTML 使用正確的翻譯鍵（`travel_pins.popup.edit_button`, `delete_button`）
+- 移除所有 modal 中的硬編碼中文文字，改用 `intl.formatMessage()` 
+- popup 中 "Notes" 改用 `travel_pins.popup.travel_notes` 翻譯鍵
 
 ## Phase 10 — 非功能性（NFR）
 - [ ] 性能：

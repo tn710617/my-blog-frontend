@@ -18,8 +18,10 @@ const getMessages = (locale) => {
 export default function SetLocale({children}) {
     const locale = useLocaleStore((state) => state.locale)
 
+    // 移除 key={locale}，避免切換語系時整個應用樹被強制卸載/重掛
+    // React-Intl 會根據 locale 與 messages 變更觸發重新渲染即可
     return (
-        <IntlProvider locale={locale} key={locale} messages={getMessages(locale)}>
+        <IntlProvider locale={locale} messages={getMessages(locale)}>
             {children}
         </IntlProvider>
     )

@@ -67,9 +67,13 @@ const MapContainer = () => {
       // NOTE: Pins are rendered via SymbolLayer (SymbolsManager)
       // TODO: Popup interactions are handled in SymbolsManager
 
-      // Cleanup function
+      // Cleanup: remove map and clear store instance to avoid stale references
       return () => {
-        map.remove();
+        try {
+          map.remove();
+        } catch {}
+        // Ensure downstream effects (e.g., SymbolsManager) don't act on a removed map
+        try { setMapInstance(null); } catch {}
       };
     } catch (error) {
       console.error('Failed to initialize map:', error);

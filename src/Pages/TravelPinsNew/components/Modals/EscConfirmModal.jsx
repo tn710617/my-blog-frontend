@@ -1,8 +1,10 @@
 import React from 'react';
+import { useIntl } from 'react-intl';
 import { useModalStore } from '../../stores/modalStore';
 import { Z_INDEX } from '../../utils/zIndex';
 
 const EscConfirmModal = () => {
+  const intl = useIntl();
   const activeModal = useModalStore((s) => s.activeModal);
   const modalData = useModalStore((s) => s.modalData);
   const closeModal = useModalStore((s) => s.closeModal);
@@ -38,14 +40,18 @@ const EscConfirmModal = () => {
         pointerEvents: 'auto', overflow: 'hidden'
       }}>
         <div style={{ background: '#0ea5e9', color: 'white', padding: '12px 14px' }}>
-          <strong>確認離開</strong>
+          <strong>{intl.formatMessage({id: 'travel_pins.unsaved_modal.title'})}</strong>
         </div>
         <div style={{ padding: 16, color: '#334155', fontSize: 14 }}>
-          你有尚未儲存的變更，確定要放棄嗎？
+          {intl.formatMessage({id: 'travel_pins.unsaved_modal.question'})}
         </div>
         <div style={{ display: 'flex', gap: 10, justifyContent: 'flex-end', padding: 14, borderTop: '1px solid #f1f5f9' }}>
-          <button onClick={onCancel} style={{ padding: '8px 14px', borderRadius: 8, border: '1px solid #e2e8f0', background: 'white', cursor: 'pointer' }}>取消</button>
-          <button onClick={onConfirm} style={{ padding: '8px 14px', borderRadius: 8, border: '1px solid transparent', background: '#ef4444', color: 'white', cursor: 'pointer' }}>放棄變更</button>
+          <button onClick={onCancel} style={{ padding: '8px 14px', borderRadius: 8, border: '1px solid #e2e8f0', background: 'white', cursor: 'pointer' }}>
+            {intl.formatMessage({id: 'travel_pins.form.cancel_button'})}
+          </button>
+          <button onClick={onConfirm} style={{ padding: '8px 14px', borderRadius: 8, border: '1px solid transparent', background: '#ef4444', color: 'white', cursor: 'pointer' }}>
+            {intl.formatMessage({id: 'travel_pins.unsaved_modal.discard_button'})}
+          </button>
         </div>
       </div>
     </div>

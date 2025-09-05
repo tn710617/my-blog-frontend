@@ -1,4 +1,5 @@
 import React, { useMemo, useState } from 'react';
+import { useIntl } from 'react-intl';
 import { useModalStore } from '../../stores/modalStore';
 import { useCreateTravelPin, useUpdateTravelPin } from '../../hooks/useTravelPinsApi';
 import { openDisplayPopup } from '../../utils/displayPopupController';
@@ -17,6 +18,7 @@ const toDateInput = (iso) => {
   const fromDateInput = (val) => (val && String(val)) || null;
 
 const EditPinModal = () => {
+  const intl = useIntl();
   const activeModal = useModalStore((s) => s.activeModal);
   const modalData = useModalStore((s) => s.modalData);
   const closeModal = useModalStore((s) => s.closeModal);
@@ -130,43 +132,47 @@ const EditPinModal = () => {
         <div style={{
           background: 'linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%)', color: 'white', padding: '16px 18px'
         }}>
-          <h3 style={{ margin: 0, fontSize: 16, fontWeight: 700 }}>{editingPin ? '編輯釘點' : '新增釘點'}</h3>
+          <h3 style={{ margin: 0, fontSize: 16, fontWeight: 700 }}>
+            {editingPin ? intl.formatMessage({id: 'travel_pins.form.edit_title'}) : intl.formatMessage({id: 'travel_pins.form.add_title'})}
+          </h3>
         </div>
         <div style={{ padding: 16, display: 'grid', gap: 12 }}>
           <label style={{ display: 'grid', gap: 6 }}>
-            <span style={{ fontSize: 13, color: '#334155' }}>標題（必填）</span>
-            <input value={title} onChange={(e) => setTitle(e.target.value)} required placeholder="輸入標題"
+            <span style={{ fontSize: 13, color: '#334155' }}>{intl.formatMessage({id: 'travel_pins.form.title_label'})}</span>
+            <input value={title} onChange={(e) => setTitle(e.target.value)} required 
+                   placeholder={intl.formatMessage({id: 'travel_pins.form.title_placeholder'})}
                    style={{ border: '1px solid #e2e8f0', borderRadius: 8, padding: '10px 12px' }}/>
           </label>
           <label style={{ display: 'grid', gap: 6 }}>
-            <span style={{ fontSize: 13, color: '#334155' }}>備註（Markdown 可用）</span>
+            <span style={{ fontSize: 13, color: '#334155' }}>{intl.formatMessage({id: 'travel_pins.form.travel_notes_label'})}</span>
             <textarea value={note} onChange={(e) => setNote(e.target.value)} rows={6}
-                      placeholder="旅遊記事..."
+                      placeholder={intl.formatMessage({id: 'travel_pins.form.travel_notes_placeholder'})}
                       style={{ border: '1px solid #e2e8f0', borderRadius: 8, padding: 12 }}/>
           </label>
           <label style={{ display: 'grid', gap: 6 }}>
-            <span style={{ fontSize: 13, color: '#334155' }}>造訪日期</span>
+            <span style={{ fontSize: 13, color: '#334155' }}>{intl.formatMessage({id: 'travel_pins.form.visit_date_label'})}</span>
             <input type="date" value={visitedAt} onChange={(e) => setVisitedAt(e.target.value)}
                    style={{ border: '1px solid #e2e8f0', borderRadius: 8, padding: '10px 12px' }}/>
           </label>
           <label style={{ display: 'grid', gap: 6 }}>
-            <span style={{ fontSize: 13, color: '#334155' }}>照片 URL</span>
-            <input value={photoUrl} onChange={(e) => setPhotoUrl(e.target.value)} placeholder="https://..."
+            <span style={{ fontSize: 13, color: '#334155' }}>{intl.formatMessage({id: 'travel_pins.form.photo_url_label'})}</span>
+            <input value={photoUrl} onChange={(e) => setPhotoUrl(e.target.value)} 
+                   placeholder={intl.formatMessage({id: 'travel_pins.form.photo_url_placeholder'})}
                    style={{ border: '1px solid #e2e8f0', borderRadius: 8, padding: '10px 12px' }}/>
           </label>
           {editingPin?.coordinates && (
             <div style={{ fontSize: 12, color: '#64748b' }}>
-              座標：{editingPin.coordinates[0].toFixed(6)}, {editingPin.coordinates[1].toFixed(6)}
+              {intl.formatMessage({id: 'travel_pins.form.coordinates_label'})}: {editingPin.coordinates[0].toFixed(6)}, {editingPin.coordinates[1].toFixed(6)}
             </div>
           )}
         </div>
         <div style={{ display: 'flex', gap: 10, justifyContent: 'flex-end', padding: 16, borderTop: '1px solid #f1f5f9' }}>
           <button type="button" onClick={onCancel} style={{
             padding: '10px 16px', borderRadius: 10, border: '1px solid #e2e8f0', background: 'white', cursor: 'pointer'
-          }}>取消</button>
+          }}>{intl.formatMessage({id: 'travel_pins.form.cancel_button'})}</button>
           <button type="submit" style={{
             padding: '10px 16px', borderRadius: 10, border: '1px solid transparent', background: '#3b82f6', color: 'white', cursor: 'pointer'
-          }}>{editingPin ? '儲存' : '建立'}</button>
+          }}>{editingPin ? intl.formatMessage({id: 'travel_pins.form.update_button'}) : intl.formatMessage({id: 'travel_pins.form.save_button'})}</button>
         </div>
       </form>
     </div>

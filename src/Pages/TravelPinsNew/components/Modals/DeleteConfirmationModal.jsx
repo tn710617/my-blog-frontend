@@ -1,10 +1,12 @@
 import React from 'react';
+import { useIntl } from 'react-intl';
 import { useModalStore } from '../../stores/modalStore';
 import { useDeleteTravelPin } from '../../hooks/useTravelPinsApi';
 import { closeDisplayPopup, openDisplayPopup } from '../../utils/displayPopupController';
 import { Z_INDEX } from '../../utils/zIndex';
 
 const DeleteConfirmationModal = () => {
+  const intl = useIntl();
   const activeModal = useModalStore((s) => s.activeModal);
   const modalData = useModalStore((s) => s.modalData);
   const closeModal = useModalStore((s) => s.closeModal);
@@ -64,18 +66,18 @@ const DeleteConfirmationModal = () => {
           display: 'flex', alignItems: 'center', gap: 10
         }}>
           <span style={{ fontSize: 18 }}>⚠️</span>
-          <h3 style={{ margin: 0, fontSize: 16, fontWeight: 700 }}>刪除確認</h3>
+          <h3 style={{ margin: 0, fontSize: 16, fontWeight: 700 }}>{intl.formatMessage({id: 'travel_pins.delete_modal.title'})}</h3>
         </div>
         <p style={{ marginTop: 0, color: '#475569' }}>
-          確定要刪除「{pin.title || pin.id}」嗎？此動作無法復原。
+          {intl.formatMessage({id: 'travel_pins.delete_modal.confirmation_text'})}
         </p>
         <div style={{ display: 'flex', gap: 12, justifyContent: 'flex-end', marginTop: 20 }}>
           <button onClick={onCancel} style={{
             padding: '10px 16px', borderRadius: 10, border: '1px solid #e2e8f0', background: 'white', cursor: 'pointer'
-          }}>取消</button>
+          }}>{intl.formatMessage({id: 'travel_pins.delete_modal.cancel_button'})}</button>
           <button onClick={onConfirm} style={{
             padding: '10px 16px', borderRadius: 10, border: '1px solid transparent', background: '#ef4444', color: 'white', cursor: 'pointer'
-          }}>刪除</button>
+          }}>{intl.formatMessage({id: 'travel_pins.delete_modal.delete_button'})}</button>
         </div>
       </div>
     </div>

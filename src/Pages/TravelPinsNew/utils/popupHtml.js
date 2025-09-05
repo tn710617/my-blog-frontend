@@ -26,7 +26,7 @@ export function buildPopupHTML(pin, ctx) {
 
       <!-- Content -->
       <div class="popup-content">
-        ${buildNotesSection(pin, renderMarkdownToHTML)}
+        ${buildNotesSection(pin, renderMarkdownToHTML, t)}
         ${buildPhotoSection(pin)}
       </div>
 
@@ -46,7 +46,7 @@ export function buildPopupHTML(pin, ctx) {
               <path d="M12 20h9"></path>
               <path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"></path>
             </svg>
-            ${t('travel_pins.popup.edit')}
+            ${t('travel_pins.popup.edit_button')}
           </button>
           
           <button data-action="delete" class="popup-btn popup-btn-danger">
@@ -54,7 +54,7 @@ export function buildPopupHTML(pin, ctx) {
               <polyline points="3,6 5,6 21,6"></polyline>
               <path d="m19,6v14a2,2 0,0 1,-2,2H7a2,2 0,0 1,-2,-2V6m3,0V4a2,2 0,0 1,2,-2h4a2,2 0,0 1,2,2V6"></path>
             </svg>
-            ${t('travel_pins.popup.delete')}
+            ${t('travel_pins.popup.delete_button')}
           </button>
         ` : ''}
       </footer>
@@ -62,14 +62,14 @@ export function buildPopupHTML(pin, ctx) {
   `;
 }
 
-function buildNotesSection(pin, renderMarkdownToHTML) {
+function buildNotesSection(pin, renderMarkdownToHTML, t) {
   if (!pin.note) return '';
   
   return `
     <section class="popup-section">
       <h4 class="popup-section-title">
         <span class="popup-section-icon">📝</span>
-        Notes
+        ${t('travel_pins.popup.travel_notes')}
       </h4>
       <div class="popup-notes">
         ${renderMarkdownToHTML(pin.note)}

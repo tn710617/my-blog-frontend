@@ -50,32 +50,72 @@ const loadedImages = new Set();
 
 const loadIconImage = (map, name, color) => {
   return new Promise((resolve, reject) => {
-    if (loadedImages.has(name) || map.hasImage(name)) {
-      loadedImages.add(name);
-      resolve();
-      return;
+    // 檢查地圖是否仍然有效
+    if (!map || !map.addImage || typeof map.addImage !== 'function') {
+      return resolve(); // 靜默失敗，避免阻塞
     }
+    
+    try {
+      if (loadedImages.has(name) || (map.hasImage && map.hasImage(name))) {
+        loadedImages.add(name);
+        resolve();
+        return;
+      }
+    } catch (e) {
+      // hasImage 可能失敗，忽略並繼續載入
+    }
+    
     const svg = buildFootprintSVG(color);
     const img = new Image();
     img.onload = () => {
       try {
-        map.addImage(name, img, { pixelRatio: 2 });
-        loadedImages.add(name);
+        // 再次檢查地圖是否有效
+        if (map.addImage && typeof map.addImage === 'function') {
+          map.addImage(name, img, { pixelRatio: 2 });
+          loadedImages.add(name);
+        }
         resolve();
       } catch (e) {
-        resolve();
+        console.warn(`Failed to add image ${name}:`, e.message);
+        resolve(); // 不 reject，避免阻塞其他圖片
       }
     };
-    img.onerror = reject;
+    img.onerror = (e) => {
+      console.warn(`Failed to load image ${name}`);
+      resolve(); // 改為 resolve 而不是 reject
+    };
     img.src = `data:image/svg+xml;charset=utf-8,${encodeURIComponent(svg)}`;
   });
 };
 
 const ensureAllPaletteImages = async (map) => {
+  // 確保地圖仍然有效
+  if (!map || !map.getCanvas || !map.getCanvas()) {
+    console.warn('Map invalid during image loading');
+    return;
+  }
+  
+  try {
+    if (!map.isStyleLoaded()) {
+      console.warn('Map style not ready for image loading');
+      return;
+    }
+  } catch {
+    console.warn('Cannot check map style status');
+    return;
+  }
+  
   const tasks = [];
   SKIN_SCHEMES.forEach((s, idx) => tasks.push(loadIconImage(map, `fp-skin-${idx}`, s.main)));
   CONTRAST_SCHEMES.forEach((s, idx) => tasks.push(loadIconImage(map, `fp-contrast-${idx}`, s.main)));
-  await Promise.allSettled(tasks);
+  
+  const results = await Promise.allSettled(tasks);
+  
+  // 檢查載入失敗的圖片
+  const failed = results.filter(r => r.status === 'rejected').length;
+  if (failed > 0) {
+    console.warn(`${failed} images failed to load`);
+  }
 };
 
 const hashToIdx = (id, modulo) => {
@@ -171,7 +211,56 @@ const SymbolsManager = () => {
     if (!isMapReady || !mapInstance || isLoading) return;
 
     const map = mapInstance;
-    let source = map.getSource(SOURCE_ID);
+    
+    // 強化地圖實例有效性檢查 - 使用更可靠的檢查方式
+    if (!map || typeof map.getCanvas !== 'function') {
+      console.warn('Map instance invalid - canvas method not available');
+      return;
+    }
+    
+    const canvas = map.getCanvas();
+    // 在 StrictMode 或 locale 重新掛載過程中，可能短暫拿不到 canvas；此時直接安靜返回，等下一輪依賴變更再初始化
+    if (!canvas || (canvas && !canvas.isConnected)) {
+      return;
+    }
+    
+    // 確保地圖樣式已載入
+    const waitForStyleLoad = () => {
+      try {
+        // 在 MapContainer 的 'load' 後才會設置 mapInstance，因此一般情況下此處應已載入完成
+        // 仍保險檢查一次；若尚未完成，使用一次性事件監聽
+        if (map.isStyleLoaded && map.isStyleLoaded()) {
+          // 使用 rAF 等到下一個 frame，避開 StrictMode 的雙次副作用時序
+          requestAnimationFrame(() => {
+            if (map.getCanvas && map.getCanvas()) initializeMapSymbols();
+          });
+          return;
+        }
+        // 後備：等待首次完整載入
+        const onStyleLoaded = () => {
+          map.off('style.load', onStyleLoaded);
+          requestAnimationFrame(() => {
+            if (map.getCanvas && map.getCanvas()) initializeMapSymbols();
+          });
+        };
+        map.on('style.load', onStyleLoaded);
+      } catch {
+        // 若檢查失敗（例如地圖已被移除），安靜略過，等待下一輪依賴變更
+      }
+    };
+    
+    const initializeMapSymbols = () => {
+    
+    // 如果這是一個新的地圖實例，清除圖片快取以確保重新載入
+    loadedImages.clear();
+    
+    let source;
+    try {
+      source = map.getSource ? map.getSource(SOURCE_ID) : null;
+    } catch (error) {
+      console.warn('Failed to get source, map may be invalid:', error);
+      return;
+    }
 
     const setup = async () => {
       // 確保圖示已註冊
@@ -298,16 +387,48 @@ const SymbolsManager = () => {
     map.on('click', onMapBackgroundClick);
 
     return () => {
-      map.off('move', handleViewChange);
-      map.off('zoom', handleViewChange);
-      map.off('rotate', handleViewChange);
-      map.off('pitch', handleViewChange);
-      map.off('click', onMapBackgroundClick);
-      try { if (openPopupRef.current) openPopupRef.current.remove(); } catch {}
-      if (map.getLayer(HOVER_LAYER_ID)) map.removeLayer(HOVER_LAYER_ID);
-      if (map.getLayer(LAYER_ID)) map.removeLayer(LAYER_ID);
-      if (map.getSource(SOURCE_ID)) map.removeSource(SOURCE_ID);
+      // 更強的地圖實例有效性檢查
+      if (!map || !map.getCanvas || !map.getCanvas()) return;
+      
+      // 進一步檢查地圖是否還在 DOM 中且未被移除
+      try {
+        if (map.isStyleLoaded && !map.isStyleLoaded()) return;
+      } catch {
+        // 如果 isStyleLoaded 本身拋錯，說明地圖已經無效
+        return;
+      }
+      
+      try {
+        // 移除事件監聽器
+        if (typeof map.off === 'function') {
+          map.off('move', handleViewChange);
+          map.off('zoom', handleViewChange);
+          map.off('rotate', handleViewChange);
+          map.off('pitch', handleViewChange);
+          map.off('click', onMapBackgroundClick);
+        }
+        
+        // 安全移除 popup
+        if (openPopupRef.current && typeof openPopupRef.current.remove === 'function') {
+          openPopupRef.current.remove();
+        }
+        
+        // 安全移除圖層和來源 - 檢查每個方法是否存在
+        if (typeof map.getLayer === 'function' && typeof map.removeLayer === 'function') {
+          if (map.getLayer(HOVER_LAYER_ID)) map.removeLayer(HOVER_LAYER_ID);
+          if (map.getLayer(LAYER_ID)) map.removeLayer(LAYER_ID);
+        }
+        if (typeof map.getSource === 'function' && typeof map.removeSource === 'function') {
+          if (map.getSource(SOURCE_ID)) map.removeSource(SOURCE_ID);
+        }
+      } catch (error) {
+        console.warn('SymbolsManager cleanup error:', error);
+      }
     };
+    };
+    
+    // 開始初始化流程
+    waitForStyleLoad();
   }, [isMapReady, mapInstance, isLoading, pins, isLoggedIn, setShowLoginModal]);
 
   // 登入狀態變更時，若已有開啟的 popup，更新其內容（顯示/隱藏編輯與刪除按鈕）
@@ -323,6 +444,24 @@ const SymbolsManager = () => {
       updatePopup(popup, pin, handlers);
     } catch {}
   }, [isLoggedIn]);
+
+  // 補強：直接訂閱 Auth Store 的變化，確保在 React 不重渲染的邊界情況也能即時同步 popup 內容
+  React.useEffect(() => {
+    const unsubscribe = useAuthStore.subscribe(
+      (s) => s.isLoggedIn,
+      (loggedIn) => {
+        try {
+          if (!openPopupRef.current || !openPinRef.current) return;
+          const popup = openPopupRef.current;
+          const pin = openPinRef.current;
+          const t = (key) => key;
+          const formatDate = (date) => new Date(date).toLocaleDateString();
+          updatePopup(popup, pin, { t, formatDate, isLoggedIn: loggedIn });
+        } catch {}
+      }
+    );
+    return () => unsubscribe?.();
+  }, []);
 
   // 當 pins 資料更新時，如果有開啟的 popup，同步內容（例如標題、備註、照片）
   React.useEffect(() => {
