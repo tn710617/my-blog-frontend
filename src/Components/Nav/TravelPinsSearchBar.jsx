@@ -15,6 +15,42 @@ const debounce = (func, delay) => {
   };
 };
 
+// Coordinate parsing utility
+const parseCoordinates = (query) => {
+  const cleanQuery = query.trim();
+  
+  // Pattern 1: "lng,lat" or "lat,lng" (comma or space separated)
+  const coordPattern = /^(-?\d+\.?\d*)[,\s]+(-?\d+\.?\d*)$/;
+  const match = cleanQuery.match(coordPattern);
+  
+  if (match) {
+    const num1 = parseFloat(match[1]);
+    const num2 = parseFloat(match[2]);
+    
+    // Validate ranges
+    const isValidLat = (n) => n >= -90 && n <= 90;
+    const isValidLng = (n) => n >= -180 && n <= 180;
+    
+    if (!isValidLat(num1) && !isValidLat(num2)) return null;
+    if (!isValidLng(num1) && !isValidLng(num2)) return null;
+    
+    // Smart detection: if first number > 90, assume it's longitude
+    // Default priority: lng,lat (Mapbox standard)
+    const isFirstLng = Math.abs(num1) > 90;
+    const [lng, lat] = isFirstLng ? [num1, num2] : [num2, num1];
+    
+    return {
+      center: [lng, lat],
+      place_name: `${lat.toFixed(4)}, ${lng.toFixed(4)}`,
+      text: `${lat.toFixed(4)}, ${lng.toFixed(4)}`,
+      place_type: ['coordinate'],
+      id: `coordinate-${lat}-${lng}`
+    };
+  }
+  
+  return null;
+};
+
 export default function TravelPinsSearchBar({ onLocationSelect }) {
   const intl = useIntl();
   const [searchQuery, setSearchQuery] = useState('');
@@ -40,6 +76,16 @@ export default function TravelPinsSearchBar({ onLocationSelect }) {
 
       setIsSearching(true);
       try {
+        // First, try to parse as coordinates
+        const coordinateResult = parseCoordinates(query);
+        if (coordinateResult) {
+          setSearchSuggestions([coordinateResult]);
+          setShowSuggestions(true);
+          setIsSearching(false);
+          return;
+        }
+
+        // If not coordinates, search via Mapbox Geocoding API
         const response = await fetch(
           `https://api.mapbox.com/geocoding/v5/mapbox.places/${encodeURIComponent(query)}.json?` +
           `access_token=${mapboxgl.accessToken}&` +
@@ -175,6 +221,7 @@ export default function TravelPinsSearchBar({ onLocationSelect }) {
           {/* Input Field */}
           <input
             ref={searchInputRef}
+            id="location-search-input"
             type="text"
             value={searchQuery}
             onChange={handleInputChange}
@@ -215,7 +262,9 @@ export default function TravelPinsSearchBar({ onLocationSelect }) {
           <div className="px-4 py-3 border-b border-gray-100 bg-gradient-to-r from-gray-50 to-white">
             <div className="flex items-center justify-between">
               <span className="text-xs font-semibold text-gray-500 uppercase tracking-wide">
-                {t('travel_pins.search.countries')}
+                {searchSuggestions.some(s => s.place_type?.includes('coordinate')) 
+                  ? 'Search Results' 
+                  : t('travel_pins.search.countries')}
               </span>
               <span className="text-xs text-gray-400">
                 {searchSuggestions.length} results
@@ -241,7 +290,8 @@ export default function TravelPinsSearchBar({ onLocationSelect }) {
                     ? 'bg-blue-100 text-blue-600'
                     : 'bg-gray-100 text-gray-500'
                 }`}>
-                  {suggestion.place_type?.includes('country') ? '🌍' : '📍'}
+                  {suggestion.place_type?.includes('coordinate') ? '🎯' : 
+                   suggestion.place_type?.includes('country') ? '🌍' : '📍'}
                 </div>
 
                 {/* Location Info */}

@@ -10,6 +10,7 @@ import PhotoModal from './components/Modals/PhotoModal';
 import EditPinModal from './components/Modals/EditPinModal';
 import EscConfirmModal from './components/Modals/EscConfirmModal';
 import { useKeyboardHandlers } from './hooks/useKeyboardHandlers';
+import { useLocationListener } from './hooks/useLocationListener';
 import { handleResize } from './utils/cameraHelpers';
 
 // Travel Pins New - Main Component
@@ -18,6 +19,9 @@ const TravelPinsNew = () => {
   const { mapInstance } = useMapStore();
   // Centralized ESC handling (delete/photo/display)
   useKeyboardHandlers();
+  
+  // Listen for location selection from navbar search
+  useLocationListener();
 
   // Handle window resize for map responsiveness
   React.useEffect(() => {

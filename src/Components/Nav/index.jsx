@@ -32,8 +32,8 @@ export default function Nav() {
     const scrollDirection = useScrollDirection()
     const indexCategories = useCategories()
     
-    // Check if current page is travel-pins
-    const isOnTravelPinsPage = location.pathname === '/travel-pins'
+    // Check if current page is travel-pins or travel-pins-new
+    const isOnTravelPinsPage = location.pathname === '/travel-pins' || location.pathname === '/travel-pins-new'
 
     const handleSearchBoxButtonClick = () => {
         setShowSearchBoxComponent(!showSearchBoxComponent)

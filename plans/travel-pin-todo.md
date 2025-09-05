@@ -236,13 +236,30 @@
 - [✅] 統一 z-index 常數並套用：`utils/zIndex.js`（POPUP 1400／OVERLAY 1200／MODAL 1600），`popupStyles.js` 直接引用常數
 - [✅] Overlay 以 portal 掛載至地圖容器（同一 stacking context），使用 `backdrop-filter: blur(2px)`，不遮擋 Popup
 
-## Phase 13 — 搜尋功能（地名/座標）
-- [T13.1] 置頂搜尋欄（常駐）：地名/座標雙模式
-- [T13.2] 地名搜尋：顯示建議清單、鍵盤上下選取、Enter 確認
-- [T13.3] 座標搜尋：解析多格式（lng,lat / lat,lng / 空白分隔）與度分秒轉換
-- [T13.4] 選取建議後：地圖置中 + 合適 zoom；維持當前 popup 狀態
-- [T13.5] 快捷鍵 Ctrl/Cmd+F 聚焦搜尋欄；ESC 取消聚焦並關閉建議
-- [T13.6] 行動裝置支援：虛擬鍵盤彈出時不跳動版面
+## Phase 13 — 搜尋功能（地名/座標）🔄 IN PROGRESS
+- [T13.1] 複用現有搜尋組件，整合至 TravelPinsNew 頁面：
+  - 修改 NavBar 邏輯：當頁面為 `travel-pins-new` 時顯示 `TravelPinsSearchBar` 
+  - 保持組件位置在 `src/Components/Nav/TravelPinsSearchBar.jsx`（沿用現有架構）
+  - 修改 `onLocationSelect` 回調，支援 TravelPinsNew 地圖實例
+  - 樣式與位置完全沿用現有 TravelPins 設定
+- [T13.2] 地名搜尋功能驗證：現有功能已完整，僅需整合測試
+- [T13.3] 座標搜尋解析功能：
+  - 支援 lng,lat 格式（預設優先順序）
+  - 支援多種分隔符（逗號、空白）
+  - 智慧判斷 lng/lat 順序（基於數值範圍）
+- [T13.5] 快捷鍵整合：
+  - 先評估現有 `TravelPinsSearchBar` 快捷鍵邏輯複雜度
+  - 如邏輯簡單則沿用現有實作
+  - 如邏輯複雜則重構為共用 hook
+
+**實作決策：**
+- ✅ 複用現有 `TravelPinsSearchBar` 組件（功能完整、UI 現代化）
+- ✅ 保持在 `src/Components/Nav/` 位置（符合通用 UI 組件原則）
+- ❌ 不實作搜尋歷史功能（localStorage）
+- ❌ 不整合 GPS 定位按鈕（將於 Phase 14 獨立實作）
+- ✅ 舊版 travel-pins 頁面將被移除，最終邏輯僅需支援 travel-pins-new
+
+**依賴：** Phase 2（地圖實例）、現有 NavBar 架構
 
 ## Phase 14 — 工具與動作（定位/控制）
 - [T14.1] 取得使用者位置按鈕（定位成功置中、失敗提示錯誤）

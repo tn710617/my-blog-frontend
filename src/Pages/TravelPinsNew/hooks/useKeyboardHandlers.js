@@ -9,6 +9,10 @@ export const useKeyboardHandlers = () => {
   useEffect(() => {
     const onKeyDownCapture = (e) => {
       if (e.key !== 'Escape') return;
+      
+      // Don't handle ESC if search box is focused (let search bar handle it)
+      if (document.activeElement?.id === 'location-search-input') return;
+      
       const store = useModalStore.getState();
       const { activeModal, modalData, closeModal, openModal, updateModalData } = store;
 
