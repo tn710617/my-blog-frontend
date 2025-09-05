@@ -133,6 +133,16 @@ src/Pages/TravelPinsNew/
 - 不再需要的邏輯：
   - HTML Marker 半球遮蔽與初幀時序控制邏輯（`isBehindGlobe`、初幀隱藏/顯示）均可移除於新路線。
 
+### Legacy Cleanup（已執行，維持）
+- 已移除 HTML Marker 路線檔案，禁止新增引用：
+  - `components/MarkersManager.jsx`
+  - `hooks/useMarkerManager.js`
+  - `utils/markerUtils.js`
+  - `utils/hemisphereCulling.js`
+  - `utils/footprintIcon.js`
+- `utils/colorManager.js` 僅保留顏色分配邏輯；不再提供 DOM 直改的 `recolorMarkers`。
+- z-index 統一由 `utils/zIndex.js` 管理；樣式檔須透過常數插入層級（例如 `.mapboxgl-popup`）。
+
 ### 效能與穩定性建議（新增）
 - 視圖事件節流：`move/zoom/rotate/pitch` 事件觸發頻繁，`assignColorsByScreen` + `setData` 建議加 16–32ms 節流。
 - 來源更新策略：若 pin 數量大，可僅更新變動 features（拆分 source 或以多層處理）。

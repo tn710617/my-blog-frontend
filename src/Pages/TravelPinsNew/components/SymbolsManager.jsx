@@ -5,8 +5,8 @@ import { assignColorsByScreen } from '../utils/colorManager';
 import { SKIN_SCHEMES, CONTRAST_SCHEMES } from '../utils/palettes';
 import { createPopup, updatePopup } from '../utils/popupFactory';
 import { useModalStore } from '../stores/modalStore';
-import { setDisplayPopupCloser, clearDisplayPopupCloser } from '../utils/displayPopupController';
-import { copyPinUrlToClipboard } from '../utils/urlUtils';
+import { setDisplayPopupCloser, clearDisplayPopupCloser, setDisplayPopupOpener } from '../utils/displayPopupController';
+import { copyPinUrlToClipboard, getPinIdFromUrl } from '../utils/urlUtils';
 import { useAuthStore } from '../../../stores';
 
 const SOURCE_ID = 'travel-pins-source';
@@ -123,6 +123,43 @@ const SymbolsManager = () => {
   const isLoggedIn = useAuthStore((s) => s.isLoggedIn);
   const openModal = useModalStore((s) => s.openModal);
   const closeModal = useModalStore((s) => s.closeModal);
+  const deepLinkHandledRef = React.useRef(false);
+
+  const openPinPopup = React.useCallback((map, pin) => {
+    if (!map || !pin) return;
+    try { if (openPopupRef.current) openPopupRef.current.remove(); } catch {}
+    const popup = createPopup(pin, {
+      isLoggedIn,
+      onPopupOpen: () => {},
+      onPopupClose: () => { 
+        openPopupRef.current = null; 
+        openPinRef.current = null; 
+        clearDisplayPopupCloser();
+        // 僅在 activeModal 是 'display' 時才關閉，避免刪除流程誤關閉其他 modal
+        try {
+          const current = useModalStore.getState().activeModal;
+          if (current === 'display') closeModal();
+        } catch {}
+      },
+      onCopyLink: async () => { await copyPinUrlToClipboard(pin.id); },
+      onDelete: () => {
+        // 先關閉顯示視窗，再開啟刪除確認，避免 onPopupClose 關掉新 modal
+        try { if (openPopupRef.current) openPopupRef.current.remove(); } catch {}
+        try { openModal('delete', { pin }); } catch (e) { console.error(e); }
+      },
+      onPhotoView: () => {
+        if (!pin.photo_url) return;
+        try { openModal('photo', { url: pin.photo_url, title: pin.title, pin }); } catch (e) { console.error(e); }
+      },
+    });
+    popup.setLngLat(pin.coordinates).addTo(map);
+    openPopupRef.current = popup;
+    openPinRef.current = pin;
+    setDisplayPopupCloser(() => {
+      try { popup.remove(); } catch {}
+    });
+    try { openModal('display', { id: pin.id }); } catch {}
+  }, [isLoggedIn, openModal, closeModal]);
 
   React.useEffect(() => {
     if (!isMapReady || !mapInstance || isLoading) return;
@@ -212,28 +249,7 @@ const SymbolsManager = () => {
           const pinId = f.id;
           const pin = pins.find((p) => String(p.id) === String(pinId));
           if (!pin) return;
-
-          // 關閉現有 popup
-          try { if (openPopupRef.current) openPopupRef.current.remove(); } catch {}
-
-          const popup = createPopup(pin, {
-            isLoggedIn,
-            onPopupOpen: () => {},
-            onPopupClose: () => { 
-              openPopupRef.current = null; 
-              openPinRef.current = null; 
-              clearDisplayPopupCloser();
-              try { closeModal(); } catch {}
-            },
-            onCopyLink: async () => { await copyPinUrlToClipboard(pin.id); },
-          });
-          popup.setLngLat(pin.coordinates).addTo(map);
-          openPopupRef.current = popup;
-          openPinRef.current = pin;
-          setDisplayPopupCloser(() => {
-            try { popup.remove(); } catch {}
-          });
-          try { openModal('display', { id: pin.id }); } catch {}
+          openPinPopup(map, pin);
         };
         map.on('click', LAYER_ID, onClick);
         map.on('click', HOVER_LAYER_ID, onClick);
@@ -298,6 +314,34 @@ const SymbolsManager = () => {
       updatePopup(popup, updated, handlers);
     } catch {}
   }, [pins, isLoggedIn]);
+
+  // 註冊開啟顯示視窗的入口，供 Delete Modal 取消後回到顯示視窗
+  React.useEffect(() => {
+    if (!isMapReady || !mapInstance) return;
+    setDisplayPopupOpener((pin) => openPinPopup(mapInstance, pin));
+    return () => setDisplayPopupOpener(null);
+  }, [isMapReady, mapInstance, openPinPopup]);
+
+  // Deep-link：在載入完成後，若 URL 有 ?pin=<id>，自動置中並開啟該 pin 的 popup
+  React.useEffect(() => {
+    if (!isMapReady || !mapInstance || !pins?.length || deepLinkHandledRef.current) return;
+    const idFromUrl = getPinIdFromUrl?.();
+    if (!idFromUrl) return;
+    const pin = pins.find((p) => String(p.id) === String(idFromUrl));
+    if (!pin) return;
+    deepLinkHandledRef.current = true;
+
+    try {
+      const targetZoom = Math.max(mapInstance.getZoom?.() ?? 2, 4.5);
+      mapInstance.easeTo({ center: pin.coordinates, zoom: targetZoom, duration: 900 });
+      const once = () => { openPinPopup(mapInstance, pin); };
+      mapInstance.once('moveend', once);
+      // 後備：若 moveend 未觸發，0.95s 後也嘗試開啟
+      setTimeout(() => { try { openPinPopup(mapInstance, pin); } catch {} }, 950);
+    } catch {
+      try { openPinPopup(mapInstance, pin); } catch {}
+    }
+  }, [isMapReady, mapInstance, pins, openPinPopup]);
 
   return null;
 };

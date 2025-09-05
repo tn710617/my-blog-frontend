@@ -1,0 +1,53 @@
+import { useEffect } from 'react';
+import { useModalStore } from '../stores/modalStore';
+import { openDisplayPopup, closeDisplayPopup } from '../utils/displayPopupController';
+
+// Centralized ESC handling for TravelPinsNew
+// Capture at document level to avoid Mapbox/default handlers interfering.
+export const useKeyboardHandlers = () => {
+  useEffect(() => {
+    const onKeyDownCapture = (e) => {
+      if (e.key !== 'Escape') return;
+      const store = useModalStore.getState();
+      const { activeModal, modalData, closeModal, openModal } = store;
+
+      // Always handle ESC ourselves; block further handlers
+      e.preventDefault();
+      if (typeof e.stopImmediatePropagation === 'function') e.stopImmediatePropagation();
+      e.stopPropagation();
+
+      // Priority: delete modal -> photo modal -> display popup
+      if (activeModal === 'delete' && modalData?.pin) {
+        // Close delete modal and restore display popup
+        closeModal();
+        // Defer re-open to next tick to avoid same-event keyup side effects
+        setTimeout(() => {
+          try { openDisplayPopup(modalData.pin); } catch {}
+        }, 0);
+        return;
+      }
+
+      if (activeModal === 'photo') {
+        // Close photo modal then restore display overlay state
+        closeModal();
+        const pin = modalData?.pin;
+        setTimeout(() => {
+          try { openModal('display', pin ? { id: pin.id } : null); } catch {}
+        }, 0);
+        return;
+      }
+
+      if (activeModal === 'display') {
+        // Close display popup and its overlay
+        try { closeDisplayPopup(); } catch {}
+        closeModal();
+        return;
+      }
+
+      // Otherwise, ignore ESC (no global action)
+    };
+
+    document.addEventListener('keydown', onKeyDownCapture, true);
+    return () => document.removeEventListener('keydown', onKeyDownCapture, true);
+  }, []);
+};

@@ -86,11 +86,19 @@
 
 ## Phase 5 — React Modals（表單/刪除/ESC/照片）
 - [T5.1] 表單 Modal（Create/Edit）：欄位/驗證/送出/登入要求
-- [T5.2] 刪除確認 Modal：摘要/確認/取消/刪除 API 同步
+- [✅T5.2] 刪除確認 Modal：摘要/確認/取消/刪除 API 同步
 - [T5.3] ESC 確認 Modal：未存變更提示
-- [T5.4] 照片 Modal：全螢幕檢視
-- [T5.5] Overlay 與 scroll lock：開啟任一阻塞型 Modal 時鎖住背景
-- [T5.6] Modal 開啟時停用地圖互動（關閉後恢復）
+- [✅T5.4] 照片 Modal：全螢幕檢視
+- [✅T5.5] Overlay 與 scroll lock：開啟任一阻塞型 Modal 時鎖住背景
+- [⏭T5.6] Modal 開啟時停用地圖互動（關閉後恢復）— 延到最後（Overlay 已足夠攔截）
+
+**完成摘要（新增）**
+- 集中 ESC 處理：新增 `useKeyboardHandlers` 於頁面層集中管理 ESC，避免分散在 Overlay/其他處造成競態。
+- ESC 行為矩陣：
+  - delete modal：ESC 視同取消 → 關閉 delete modal → 回到 display popup（延遲一個 tick 重開，避開 key 事件競態）。
+  - photo modal：ESC 僅關閉 photo modal → 回到 display popup，並維持 overlay（activeModal 恢復為 display）。
+  - display popup：ESC 關閉 display popup 與 overlay。
+- Overlay 行為：維持 blur 與攔截互動；顯示期間暫停 Mapbox 互動（keyboard/drag/zoom/touch 等），關閉時恢復。
   - 依賴：T1.*、T2.*、T4.*
 
 ## Phase 6 — 背景遮罩與互動規則（跨元件）
@@ -100,10 +108,10 @@
   - 依賴：T5.*、T4.6
 
 ## Phase 7 — 深連結（Deep-link）
-- [T7.1] Copy Link 構造 URL（Popup 內按鈕）
-- [T7.2] 進頁辨識 `?pin=<id>`，等待對應 Marker
-- [T7.3] 置中相機 `easeTo({ center })`，避免改變 zoom 觸發自動關閉
-- [T7.4] `moveend`（或 timeout 後備）開啟對應顯示視窗
+- [✅T7.1] Copy Link 構造 URL（Popup 內按鈕）
+- [✅T7.2] 進頁辨識 `?pin=<id>`
+- [✅T7.3] 置中相機 `easeTo({ center })`（設定合適 zoom）
+- [✅T7.4] `moveend`（或 timeout 後備）自動開啟顯示視窗
 - [T7.5] 桌機/手機穩定性驗證
   - 依賴：T4.*、T3.*
 
@@ -144,6 +152,17 @@
 - [ ] 在桌機與行動裝置上均表現穩定
 
 ---
+## Phase 12 — 清理與移除舊路線 ✅ DONE
+- [✅] 移除 HTML Marker 路線相關檔案（已改為 SymbolLayer）：
+  - `src/Pages/TravelPinsNew/components/MarkersManager.jsx`
+  - `src/Pages/TravelPinsNew/hooks/useMarkerManager.js`
+  - `src/Pages/TravelPinsNew/utils/markerUtils.js`
+  - `src/Pages/TravelPinsNew/utils/hemisphereCulling.js`
+  - `src/Pages/TravelPinsNew/utils/footprintIcon.js`
+- [✅] 調整 `colorManager.js`：保留 `assignColorsByScreen`/`getColorAssignment`/`createColorAssignmentRef`，移除僅供 HTML Marker 使用的 `recolorMarkers`
+- [✅] 統一 z-index 常數並套用：`utils/zIndex.js`（POPUP 1400／OVERLAY 1200／MODAL 1600），`popupStyles.js` 直接引用常數
+- [✅] Overlay 以 portal 掛載至地圖容器（同一 stacking context），使用 `backdrop-filter: blur(2px)`，不遮擋 Popup
+
 ### 執行順序建議（摘要）
 1) Phase 0 → 1（基礎 + 資料）
 2) Phase 2（地圖）
@@ -159,3 +178,10 @@
 
 ---
 > 註：此 TODO 專注在「需求」層級，不綁定現有實作；實作時可按新技術棧調整細節，但需滿足需求與驗收條目。
+
+---
+### 備註（Overlay 互動行為現況）
+- 目前 Overlay 以 portal 掛載於地圖容器上層，會攔截滑鼠/觸控/滾輪事件，足以確保「無法與地圖互動」。
+- Popup 的 z-index 高於 Overlay，確保不被遮擋或模糊，互動正常。
+- 可選加強（選擇性，最後階段再做）：在 Overlay 顯示時呼叫下列 API 暫停地圖互動，關閉時恢復：
+  - `map.dragPan.disable()/enable()`、`map.scrollZoom.disable()/enable()`、`map.boxZoom.disable()/enable()`、`map.keyboard.disable()/enable()`、`map.doubleClickZoom.disable()/enable()`、`map.touchZoomRotate.disable()/enable()`。
