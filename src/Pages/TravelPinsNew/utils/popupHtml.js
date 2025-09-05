@@ -27,7 +27,7 @@ export function buildPopupHTML(pin, ctx) {
       <!-- Content -->
       <div class="popup-content">
         ${buildNotesSection(pin, renderMarkdownToHTML, t)}
-        ${buildPhotoSection(pin)}
+        ${buildPhotoSection(pin, t)}
       </div>
 
       <!-- Actions -->
@@ -78,14 +78,14 @@ function buildNotesSection(pin, renderMarkdownToHTML, t) {
   `;
 }
 
-function buildPhotoSection(pin) {
+function buildPhotoSection(pin, t) {
   if (!pin.photo_url) return '';
   
   return `
     <section class="popup-section">
       <h4 class="popup-section-title">
         <span class="popup-section-icon">📷</span>
-        Photo
+        ${t('travel_pins.popup.photo')}
       </h4>
       <div class="popup-photo">
         <button data-action="photo" class="popup-photo-btn" aria-label="View photo">

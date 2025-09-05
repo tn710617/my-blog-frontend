@@ -193,6 +193,11 @@
 - 修復 popup HTML 使用正確的翻譯鍵（`travel_pins.popup.edit_button`, `delete_button`）
 - 移除所有 modal 中的硬編碼中文文字，改用 `intl.formatMessage()` 
 - popup 中 "Notes" 改用 `travel_pins.popup.travel_notes` 翻譯鍵
+- **修復顯示彈出窗口按鈕翻譯問題（2024-12-19）：**
+  - 問題：SymbolsManager 使用回退翻譯函數 `t = (key) => key` 導致按鈕顯示原始鍵值
+  - 解決：在 SymbolsManager 中導入 `useIntl` hook，建立正確的翻譯函數 `t` 和 `formatDate`
+  - 修復：硬編碼的 "Photo" 和 "Copied!" 文字改用翻譯鍵 `travel_pins.popup.photo` 和 `travel_pins.popup.copied`
+  - 結果：所有 popup 按鈕現在正確顯示本地化文字 (Copy Link/複製連結, Edit/編輯, Delete/刪除)
 
 ## Phase 10 — 非功能性（NFR）
 - [ ] 性能：

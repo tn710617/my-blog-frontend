@@ -1,4 +1,5 @@
 import React from 'react';
+import { useIntl } from 'react-intl';
 import { useMapStore } from '../stores/mapStore';
 import { useTravelPins } from '../hooks/useTravelPinsApi';
 import { assignColorsByScreen } from '../utils/colorManager';
@@ -154,6 +155,7 @@ const buildFeatureCollection = (pins, map, assignedColorsRef) => {
 };
 
 const SymbolsManager = () => {
+  const intl = useIntl();
   const { mapInstance, isMapReady } = useMapStore();
   const { data: pins = [], isLoading } = useTravelPins();
   const assignedColorsRef = React.useRef(new Map());
@@ -165,11 +167,17 @@ const SymbolsManager = () => {
   const openModal = useModalStore((s) => s.openModal);
   const closeModal = useModalStore((s) => s.closeModal);
   const deepLinkHandledRef = React.useRef(false);
+  
+  // Create proper translation function
+  const t = React.useCallback((key) => intl.formatMessage({ id: key }), [intl]);
+  const formatDate = React.useCallback((date) => intl.formatDate(new Date(date)), [intl]);
 
   const openPinPopup = React.useCallback((map, pin) => {
     if (!map || !pin) return;
     try { if (openPopupRef.current) openPopupRef.current.remove(); } catch {}
     const popup = createPopup(pin, {
+      t,
+      formatDate,
       isLoggedIn,
       onPopupOpen: () => {},
       onPopupClose: () => { 
@@ -205,7 +213,7 @@ const SymbolsManager = () => {
       try { popup.remove(); } catch {}
     });
     try { openModal('display', { id: pin.id }); } catch {}
-  }, [isLoggedIn, openModal, closeModal]);
+  }, [t, formatDate, isLoggedIn, openModal, closeModal]);
 
   React.useEffect(() => {
     if (!isMapReady || !mapInstance || isLoading) return;
@@ -438,12 +446,10 @@ const SymbolsManager = () => {
       const pin = openPinRef.current;
       const popup = openPopupRef.current;
       // 以最新 isLoggedIn 重繪內容
-      const t = (key) => key;
-      const formatDate = (date) => new Date(date).toLocaleDateString();
       const handlers = { t, formatDate, isLoggedIn };
       updatePopup(popup, pin, handlers);
     } catch {}
-  }, [isLoggedIn]);
+  }, [t, formatDate, isLoggedIn]);
 
   // 補強：直接訂閱 Auth Store 的變化，確保在 React 不重渲染的邊界情況也能即時同步 popup 內容
   React.useEffect(() => {
@@ -454,14 +460,12 @@ const SymbolsManager = () => {
           if (!openPopupRef.current || !openPinRef.current) return;
           const popup = openPopupRef.current;
           const pin = openPinRef.current;
-          const t = (key) => key;
-          const formatDate = (date) => new Date(date).toLocaleDateString();
           updatePopup(popup, pin, { t, formatDate, isLoggedIn: loggedIn });
         } catch {}
       }
     );
     return () => unsubscribe?.();
-  }, []);
+  }, [t, formatDate]);
 
   // 當 pins 資料更新時，如果有開啟的 popup，同步內容（例如標題、備註、照片）
   React.useEffect(() => {
@@ -471,13 +475,11 @@ const SymbolsManager = () => {
     if (!updated) return;
     try {
       const popup = openPopupRef.current;
-      const t = (key) => key;
-      const formatDate = (date) => new Date(date).toLocaleDateString();
       const handlers = { t, formatDate, isLoggedIn };
       openPinRef.current = updated;
       updatePopup(popup, updated, handlers);
     } catch {}
-  }, [pins, isLoggedIn]);
+  }, [pins, t, formatDate, isLoggedIn]);
 
   // 註冊開啟顯示視窗的入口，供 Delete Modal 取消後回到顯示視窗
   React.useEffect(() => {

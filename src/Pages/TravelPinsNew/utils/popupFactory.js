@@ -107,7 +107,7 @@ function setupPopupInteractions(popup, pin, handlers) {
       case 'copy':
         if (onCopyLink) {
           onCopyLink(pin);
-          showCopyFeedback(button);
+          showCopyFeedback(button, handlers.t);
         }
         break;
       
@@ -129,13 +129,13 @@ function setupPopupInteractions(popup, pin, handlers) {
 /**
  * Show visual feedback for copy action
  */
-function showCopyFeedback(button) {
+function showCopyFeedback(button, t = (key) => key) {
   const originalText = button.innerHTML;
   button.innerHTML = `
     <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
       <polyline points="20,6 9,17 4,12"></polyline>
     </svg>
-    Copied!
+    ${t('travel_pins.popup.copied')}
   `;
   button.style.background = '#10b981';
   
