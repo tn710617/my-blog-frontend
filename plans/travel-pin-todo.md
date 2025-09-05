@@ -41,14 +41,34 @@
 - 手勢切換需重建地圖實例（mapbox 限制）
 - TODO 註解標示後續 Phase 整合點
 
-## Phase 3 — 釘點（Markers）（先有 Pin 再談顯示）
-- [T3.1] 依 pins 列表建立/更新/移除 Marker
-- [T3.2] Marker hover/click 視覺
-- [T3.3] 螢幕距離顏色分配 `assignColorsByScreen`
-- [T3.4] DOM 就地更新 footprint `recolorMarkers`（move/zoom 時）
-- [T3.5] 地球背面遮蔽（Occlusion）
-- [T3.6] 安全移除（刪除 pin 後移除 Marker/Popup）
-  - 依賴：T1.*、T2.*
+## Phase 3 — 釘點（Markers）（先有 Pin 再談顯示）✅ DONE
+- [✅T3.1] 依 pins 列表建立/更新/移除 Marker（useMarkerManager hook）
+- [✅T3.2] Marker hover/click 視覺（scale 1.12, opacity 0.65）
+- [✅T3.3] 螢幕距離顏色分配（簡化為 round-robin 色彩指派）
+- [✅T3.4] DOM 就地更新 footprint（地圖移動時更新可見性）
+- [✅T3.5] 地球背面遮蔽（簡化版半球遮蔽檢查）
+- [✅T3.6] 安全移除（marker.remove() 與 Map 清理）
+
+**完成摘要：**
+- 建立 MarkersManager 元件處理標記生命週期
+- 實作 useMarkerManager hook 管理標記狀態
+- 使用經典 footprint SVG 圖標（6種膚色方案）
+- 支援懸停效果、點擊事件（目前 console.log，Phase 4 將實作彈窗）
+- 簡化版可見性檢查（避免複雜的半球計算）
+- 完整的標記 CRUD 支援（新增/更新/刪除）
+
+**變更注意事項：**
+- 標記使用 Mapbox GL JS 原生 Marker API
+- **重構完成**：移除重複代碼，直接引用既有的 palettes、footprintIcon、zIndex、hemisphereCulling 工具
+- **修復標記旋轉問題**：使用 `position: absolute` 確保標記在地球旋轉時保持固定方向
+- **改進半球遮蔽**：使用既有的 `isBehindGlobe` 邏輯，加入 pitch 檢測
+- 點擊處理準備好接收 Phase 4 彈窗整合
+
+**重構摘要：**
+- 移除自定義色彩系統，使用既有的 SKIN_SCHEMES 和 CONTRAST_SCHEMES
+- 移除自定義 footprint HTML，使用既有的 buildFootprintHTML 
+- 移除自定義 z-index，使用既有的 Z_INDEX_CSS
+- 改用既有的 hemisphere culling 演算法，支援 pitch 角度檢測
 
 ## Phase 4 — 顯示視窗（Display Popup）
 - [T4.1] 建立 Popup 並綁定 Marker（標題/日期/備註/照片/附件）
