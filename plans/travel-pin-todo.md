@@ -65,20 +65,23 @@
 - 點擊處理準備好接收 Phase 4 彈窗整合
 
 **重構摘要：**
-- 移除自定義色彩系統，使用既有的 SKIN_SCHEMES 和 CONTRAST_SCHEMES
-- 移除自定義 footprint HTML，使用既有的 buildFootprintHTML 
-- 移除自定義 z-index，使用既有的 Z_INDEX_CSS
-- 改用既有的 hemisphere culling 演算法，支援 pitch 角度檢測
+- **重新實作專屬工具**：建立 TravelPinsNew 目錄下的 palettes、footprintIcon、hemisphereCulling、colorManager、markdownUtils 等工具，避免依賴舊實作
+- **保留必要複雜度**：根據需求確認，proximity color management 和 hemisphere culling 為必要功能，非過度設計
+- **修復顏色管理時序問題**：移動 `assignColorsByScreen` 到標記建立之前
+- **移除內建地圖控制項**：移除 NavigationControl 和 GeolocateControl 避免 touchmove passive event 警告
+- **修復 Z_INDEX 匯出問題**：統一使用 Z_INDEX 而非 Z_INDEX_CSS
 
-## Phase 4 — 顯示視窗（Display Popup）
-- [T4.1] 建立 Popup 並綁定 Marker（標題/日期/備註/照片/附件）
-- [T4.2] 互動：Copy Link（`/travel-pins?pin=<id>`）
-- [T4.3] 互動：Edit → 觸發編輯 Modal
-- [T4.4] 互動：Delete → 觸發刪除確認 Modal
-- [T4.5] 互動：點照片 → 開啟照片 Modal
-- [T4.6] `open/close` 回報管理層（互斥/遮罩控制）
-- [T4.7] pins 變動時更新已開啟 Popup 內容（避免重建）
-- [T4.8] 樣式覆寫（命名空間選擇器，避免汙染）
+## Phase 4 — 顯示視窗（Display Popup）🚧 進行中
+- [✅T4.0] 更新需求文件，確認近距離標記需不同顏色（requirements.md）
+- [✅T4.1] 建立現代化 Popup HTML 結構（popupHtml.js）
+- [✅T4.2] 建立現代化 Popup 樣式系統（popupStyles.js）
+- [✅T4.3] 建立 Popup Factory 與事件處理（popupFactory.js）
+- [✅T4.4] 修復工具匯入錯誤（Z_INDEX_CSS → Z_INDEX）
+- [🚧T4.5] 整合 Popup 到 Marker 點擊處理
+- [ T4.6] 整合 Auth 狀態控制按鈕顯示
+- [ T4.7] 實作 Copy Link 功能與視覺回饋
+- [ T4.8] 實作背景遮罩與聚焦效果
+- [ T4.9] Pins 變動時更新已開啟 Popup 內容
   - 依賴：T3.*、T1.4（Markdown 安全）
 
 ## Phase 5 — React Modals（表單/刪除/ESC/照片）

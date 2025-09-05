@@ -13,7 +13,9 @@ import {
   recolorMarkers, 
   createColorAssignmentRef,
   getColorAssignment
-} from '../../Pages/TravelPins/utils/colorManager';
+} from '../utils/colorManager';
+import { createPopup, updatePopup } from '../utils/popupFactory';
+import { markdownToHtml } from '../utils/markdownUtils';
 
 export const useMarkerManager = () => {
   const { mapInstance, isMapReady } = useMapStore();

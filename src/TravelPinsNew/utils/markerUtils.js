@@ -1,10 +1,10 @@
 // Marker utilities for Travel Pins New
 // Refactored to use existing utilities and fix rotation issues
 
-import { Z_INDEX_CSS } from '../../Pages/TravelPins/utils/zIndex';
-import { SKIN_SCHEMES, CONTRAST_SCHEMES } from '../../Pages/TravelPins/utils/palettes';
-import { buildFootprintHTML } from '../../Pages/TravelPins/utils/footprintIcon';
-import { isBehindGlobe } from '../../Pages/TravelPins/utils/hemisphereCulling';
+import { Z_INDEX } from './zIndex';
+import { SKIN_SCHEMES, CONTRAST_SCHEMES } from './palettes';
+import { buildFootprintHTML } from './footprintIcon';
+import { isBehindGlobe } from './hemisphereCulling';
 
 // Create marker HTML element (reusing existing pattern)
 export const createMarkerElement = (pin, colorAssignment = { palette: 'skin', idx: 1 }) => {
@@ -27,7 +27,7 @@ export const createMarkerElement = (pin, colorAssignment = { palette: 'skin', id
     position: absolute; 
     pointer-events: auto; 
     cursor: pointer; 
-    z-index: ${Z_INDEX_CSS.MAP_MARKER_DEFAULT}; 
+    z-index: ${Z_INDEX.MARKERS}; 
     opacity: 1;
   `;
 
@@ -43,14 +43,14 @@ export const addMarkerHoverEffects = (el, isDisabled = false) => {
   el.addEventListener('mouseenter', () => {
     const container = getContainer();
     if (container) container.style.transform = 'scale(1.12)';
-    el.style.zIndex = Z_INDEX_CSS.MAP_MARKER_HOVER;
+    el.style.zIndex = Z_INDEX.MARKER_HOVER;
     el.style.opacity = '0.65';
   });
 
   el.addEventListener('mouseleave', () => {
     const container = getContainer();
     if (container) container.style.transform = 'scale(1)';
-    el.style.zIndex = Z_INDEX_CSS.MAP_MARKER_DEFAULT;
+    el.style.zIndex = Z_INDEX.MARKERS;
     el.style.opacity = '1';
   });
 };
