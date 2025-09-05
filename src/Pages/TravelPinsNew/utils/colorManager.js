@@ -1,5 +1,4 @@
 import { SKIN_SCHEMES, CONTRAST_SCHEMES } from './palettes';
-import { buildFootprintHTML } from './footprintIcon';
 
 /**
  * Color Management System for Travel Pins New
@@ -80,37 +79,7 @@ export const assignColorsByScreen = (allPins, map, assignedColorsRef) => {
  * @param {Map} markersByIdRef - Reference map of markers by ID
  * @param {Map} assignedColorsRef - Reference map of color assignments
  */
-export const recolorMarkers = (pins, map, markersByIdRef, assignedColorsRef) => {
-  if (!map) return;
-  
-  try {
-    assignColorsByScreen(pins, map, assignedColorsRef);
-    
-    pins.forEach((pin) => {
-      const marker = markersByIdRef.get(pin.id);
-      if (!marker) return;
-      
-      const el = marker.getElement?.();
-      if (!el) return;
-      
-      const assignment = assignedColorsRef.get(pin.id) || { palette: 'skin', idx: 1 };
-      const curIdx = Number(el.dataset.colorIdx ?? -1);
-      const curPalette = el.dataset.palette || '';
-      const newPalette = assignment.palette;
-      const idx = assignment.idx;
-      
-      if (idx === curIdx && curPalette === newPalette) return;
-      
-      el.dataset.colorIdx = String(idx);
-      el.dataset.palette = newPalette;
-      const schemeList = newPalette === 'contrast' ? CONTRAST_SCHEMES : SKIN_SCHEMES;
-      const scheme = schemeList[idx] || schemeList[0];
-      el.innerHTML = buildFootprintHTML(scheme);
-    });
-  } catch (error) {
-    // Silently handle errors to prevent disrupting user experience
-  }
-};
+// HTML Marker 路線已移除；不再提供 recolorMarkers（改由 SymbolLayer 的 icon 切換達成）
 
 /**
  * Get color assignment for a specific pin

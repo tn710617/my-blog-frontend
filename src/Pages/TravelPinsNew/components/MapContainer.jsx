@@ -64,8 +64,8 @@ const MapContainer = () => {
       // non-passive touchmove event warnings. The original implementation uses
       // custom overlay controls instead (Phase 12 - Search controls overlay)
 
-      // NOTE: Phase 3 - Markers are managed by MarkersManager component
-      // TODO: Phase 4 - Set up popup event listeners (map.on('click'))
+      // NOTE: Pins are rendered via SymbolLayer (SymbolsManager)
+      // TODO: Popup interactions are handled in SymbolsManager
 
       // Cleanup function
       return () => {
