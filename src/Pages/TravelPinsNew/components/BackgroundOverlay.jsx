@@ -10,6 +10,7 @@ const BackgroundOverlay = () => {
   const activeModal = useModalStore((s) => s.activeModal);
   const modalData = useModalStore((s) => s.modalData);
   const closeModal = useModalStore((s) => s.closeModal);
+  const updateModalData = useModalStore((s) => s.updateModalData);
   const mapRootEl = useMapStore((s) => s.mapRootEl);
   const mapInstance = useMapStore((s) => s.mapInstance);
 
@@ -19,6 +20,11 @@ const BackgroundOverlay = () => {
       closeModal();
       // 避免同一次鍵盤事件（尤其 keyup）關掉剛重開的 popup，延後至下一輪事件循環
       setTimeout(() => { try { openDisplayPopup(modalData.pin); } catch {} }, 0);
+      return;
+    }
+    // form + confirmOpen：只關閉確認層，保留編輯表單
+    if (activeModal === 'form' && modalData?.confirmOpen) {
+      updateModalData({ confirmOpen: false });
       return;
     }
     // photo：ESC/點 overlay 僅關閉 photo modal，保留 display popup

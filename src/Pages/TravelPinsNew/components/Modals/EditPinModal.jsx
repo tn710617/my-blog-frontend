@@ -43,11 +43,16 @@ const EditPinModal = () => {
   React.useEffect(() => {
     if (!isOpen) return;
     const draft = modalData?.draft;
+    const today = new Date();
+    const todayStr = today.toISOString().slice(0, 10);
     setTitle((draft?.title ?? editingPin?.title) || '');
     setNote((draft?.note ?? editingPin?.note) || '');
-    setVisitedAt(draft?.visited_at ?? toDateInput(editingPin?.visited_at));
+    const initialVisited = draft?.visited_at ?? toDateInput(editingPin?.visited_at) ?? todayStr;
+    setVisitedAt(initialVisited);
     setPhotoUrl((draft?.photo_url ?? editingPin?.photo_url) || '');
-    updateModalData({ dirty: false, pin: editingPin || null });
+    // 初始化時，把現有座標也補在 draft 以便建立流程保存
+    const coords = draft?.coordinates || editingPin?.coordinates || null;
+    updateModalData({ dirty: false, pin: editingPin || null, draft: { ...(draft || {}), coordinates: coords } });
   }, [isOpen, editingPin?.id]);
 
   // Track dirty state and expose到 modalData，供集中 ESC 判斷
@@ -59,7 +64,9 @@ const EditPinModal = () => {
       visitedAt !== initialRef.visited_at ||
       photoUrl !== initialRef.photo_url
     );
-    updateModalData({ dirty, draft: { title, note, visited_at: visitedAt, photo_url: photoUrl } });
+    // 保留現有座標（草稿或 pin）
+    const coords = (modalData?.draft && modalData.draft.coordinates) || editingPin?.coordinates || null;
+    updateModalData({ dirty, draft: { title, note, visited_at: visitedAt, photo_url: photoUrl, coordinates: coords } });
   }, [isOpen, title, note, visitedAt, photoUrl, initialRef, updateModalData]);
 
   if (!isOpen) return null;
@@ -79,7 +86,7 @@ const EditPinModal = () => {
         await updateMutation.mutateAsync({ id: editingPin.id, pinData: {
           title: title.trim(),
           note,
-          visited_at: fromDateInput(visitedAt) || editingPin.visited_at || null,
+          visited_at: fromDateInput(visitedAt) || new Date().toISOString().slice(0,10),
           photo_url: photoUrl || null,
           coordinates: editingPin.coordinates,
         }});
@@ -87,12 +94,17 @@ const EditPinModal = () => {
         setTimeout(() => { try { openDisplayPopup({ ...editingPin, title, note, visited_at: fromDateInput(visitedAt) || editingPin.visited_at, photo_url: photoUrl }); } catch {} }, 0);
       } else if (modalData?.draft) {
         const draft = modalData.draft;
+        const coords = draft.coordinates;
+        if (!coords || coords.length !== 2) {
+          // 沒有座標，不送出；可改為顯示 inline 錯誤
+          return;
+        }
         const created = await createMutation.mutateAsync({
           title: title.trim(),
           note,
-          visited_at: fromDateInput(visitedAt) || null,
+          visited_at: fromDateInput(visitedAt) || new Date().toISOString().slice(0,10),
           photo_url: photoUrl || null,
-          coordinates: draft.coordinates,
+          coordinates: coords,
         });
         closeModal();
         // Reopen display for created pin (best-effort)

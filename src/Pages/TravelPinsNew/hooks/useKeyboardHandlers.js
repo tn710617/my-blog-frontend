@@ -1,15 +1,16 @@
-import { useEffect } from 'react';
+import { useEffect, useRef } from 'react';
 import { useModalStore } from '../stores/modalStore';
 import { openDisplayPopup, closeDisplayPopup } from '../utils/displayPopupController';
 
 // Centralized ESC handling for TravelPinsNew
 // Capture at document level to avoid Mapbox/default handlers interfering.
 export const useKeyboardHandlers = () => {
+  const suppressFormEscUntilRef = useRef(0);
   useEffect(() => {
     const onKeyDownCapture = (e) => {
       if (e.key !== 'Escape') return;
       const store = useModalStore.getState();
-      const { activeModal, modalData, closeModal, openModal } = store;
+      const { activeModal, modalData, closeModal, openModal, updateModalData } = store;
 
       // Always handle ESC ourselves; block further handlers
       e.preventDefault();
@@ -38,17 +39,21 @@ export const useKeyboardHandlers = () => {
       }
 
       if (activeModal === 'form') {
+        // Avoid immediately closing form when just returned from esc-confirm
+        if (Date.now() < suppressFormEscUntilRef.current) {
+          return;
+        }
         const pin = modalData?.pin;
+        const confirmOpen = !!modalData?.confirmOpen;
         const isDirty = !!modalData?.dirty;
+        // If confirm dialog is open over form, ESC acts as cancel -> just close confirm
+        if (confirmOpen) {
+          updateModalData({ confirmOpen: false });
+          return;
+        }
         if (isDirty) {
-          // Open confirm modal instead of closing directly
-          const onConfirm = () => {
-            // User confirms to discard changes → close esc-confirm and restore display popup
-            const { closeModal: _close } = useModalStore.getState();
-            _close(); // close esc-confirm
-            if (pin) setTimeout(() => { try { openDisplayPopup(pin); } catch {} }, 0);
-          };
-          openModal('esc-confirm', { onConfirm, pin, draft: modalData?.draft });
+          // Open confirm inline (keep form mounted)
+          updateModalData({ confirmOpen: true });
           return;
         }
         // Not dirty → close directly and restore display
@@ -57,16 +62,7 @@ export const useKeyboardHandlers = () => {
         return;
       }
 
-      if (activeModal === 'esc-confirm') {
-        // ESC on confirm modal = cancel → back to edit form
-        const pin = modalData?.pin;
-        const draft = modalData?.draft;
-        closeModal();
-        if (pin) {
-          try { openModal('form', { pin, draft }); } catch {}
-        }
-        return;
-      }
+      // No standalone esc-confirm modal anymore
 
       if (activeModal === 'display') {
         // Close display popup and its overlay

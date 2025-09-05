@@ -7,19 +7,23 @@ const EscConfirmModal = () => {
   const modalData = useModalStore((s) => s.modalData);
   const closeModal = useModalStore((s) => s.closeModal);
 
-  if (activeModal !== 'esc-confirm') return null;
+  // Render as inline confirm when edit form is active
+  if (!(activeModal === 'form' && modalData?.confirmOpen)) return null;
 
   const onCancel = () => {
-    // 回到編輯表單
-    const pin = modalData?.pin;
-    const draft = modalData?.draft;
-    closeModal();
-    if (pin) {
-      try { useModalStore.getState().openModal('form', { pin, draft }); } catch {}
-    }
+    // 只關閉確認層，保留編輯表單
+    try { useModalStore.getState().updateModalData({ confirmOpen: false }); } catch {}
   };
   const onConfirm = () => {
-    // 交由上層提供的 onConfirm 關閉 esc-confirm 與打開 display popup
+    // 關閉確認層並放棄變更：關閉表單並回到顯示視窗
+    try { useModalStore.getState().updateModalData({ confirmOpen: false }); } catch {}
+    const pin = modalData?.pin;
+    try { useModalStore.getState().closeModal(); } catch {}
+    if (pin) {
+      // 在這裡不直接調 openDisplayPopup，交由集中 ESC 或上層控制
+      // 為保持一致，也可以直接開：
+      // setTimeout(() => { try { openDisplayPopup(pin) } catch {} }, 0)
+    }
     if (modalData?.onConfirm) modalData.onConfirm();
   };
 

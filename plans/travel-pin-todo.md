@@ -85,9 +85,9 @@
   - 依賴：T3.*、T1.4（Markdown 安全）
 
 ## Phase 5 — React Modals（表單/刪除/ESC/照片）
-- [T5.1] 表單 Modal（Create/Edit）：欄位/驗證/送出/登入要求
+- [✅T5.1] 表單 Modal（Create/Edit）：欄位/驗證/送出/登入要求
 - [✅T5.2] 刪除確認 Modal：摘要/確認/取消/刪除 API 同步
-- [T5.3] ESC 確認 Modal：未存變更提示
+- [✅T5.3] ESC 確認 Modal：未存變更提示
 - [✅T5.4] 照片 Modal：全螢幕檢視
 - [✅T5.5] Overlay 與 scroll lock：開啟任一阻塞型 Modal 時鎖住背景
 - [⏭T5.6] Modal 開啟時停用地圖互動（關閉後恢復）— 延到最後（Overlay 已足夠攔截）
@@ -96,9 +96,22 @@
 - 集中 ESC 處理：新增 `useKeyboardHandlers` 於頁面層集中管理 ESC，避免分散在 Overlay/其他處造成競態。
 - ESC 行為矩陣：
   - delete modal：ESC 視同取消 → 關閉 delete modal → 回到 display popup（延遲一個 tick 重開，避開 key 事件競態）。
-  - photo modal：ESC 僅關閉 photo modal → 回到 display popup，並維持 overlay（activeModal 恢復為 display）。
+  - photo modal：ESC 僅關閉 photo modal → 回到 display popup（使用 openDisplayPopup），保持一致行為。
+  - form（Edit）modal：
+    - 無變更：ESC 關閉 form → 回到 display popup。
+    - 有變更：ESC 開啟 EscConfirmModal（未儲存確認）；
+      - 取消/ESC：關閉確認 → 回 edit modal，並保留草稿。
+      - 放棄變更：關閉確認 → 回 display popup。
   - display popup：ESC 關閉 display popup 與 overlay。
 - Overlay 行為：維持 blur 與攔截互動；顯示期間暫停 Mapbox 互動（keyboard/drag/zoom/touch 等），關閉時恢復。
+- Edit 草稿暫存：利用 `useModalStore.modalData.draft` 保留使用者輸入，從 EscConfirm 取消/ESC 返回 edit modal 時欄位不丟失。
+
+**補充（行為細化）**
+- EscConfirm 內嵌於表單：不再使用獨立 `esc-confirm` modal；activeModal 維持 `form`，以 `modalData.confirmOpen` 控制確認層顯示。
+- 鍵盤：`form + confirmOpen` 時 ESC 視為「取消確認」→ 只關確認層，不關表單；`form + dirty` 時第一次 ESC 開確認層；`form + 非 dirty` 時 ESC 關表單並回 popup。
+- Overlay 點擊：`form + confirmOpen` 僅關確認層；`delete` 回 popup；`photo` 關自身；`display` 關 popup。
+- 預設欄位：visited_at 預設當天（yyyy-mm-dd）；送出時若空自動補今日。
+- 座標欄位：Create 送出使用 `draft.coordinates`；Update 使用 `pin.coordinates`；在表單編輯期間會保留 `draft.coordinates` 不被覆蓋。
   - 依賴：T1.*、T2.*、T4.*
 
 ## Phase 6 — 背景遮罩與互動規則（跨元件）
@@ -162,6 +175,19 @@
 - [✅] 調整 `colorManager.js`：保留 `assignColorsByScreen`/`getColorAssignment`/`createColorAssignmentRef`，移除僅供 HTML Marker 使用的 `recolorMarkers`
 - [✅] 統一 z-index 常數並套用：`utils/zIndex.js`（POPUP 1400／OVERLAY 1200／MODAL 1600），`popupStyles.js` 直接引用常數
 - [✅] Overlay 以 portal 掛載至地圖容器（同一 stacking context），使用 `backdrop-filter: blur(2px)`，不遮擋 Popup
+
+## Phase 13 — 搜尋功能（地名/座標）
+- [T13.1] 置頂搜尋欄（常駐）：地名/座標雙模式
+- [T13.2] 地名搜尋：顯示建議清單、鍵盤上下選取、Enter 確認
+- [T13.3] 座標搜尋：解析多格式（lng,lat / lat,lng / 空白分隔）與度分秒轉換
+- [T13.4] 選取建議後：地圖置中 + 合適 zoom；維持當前 popup 狀態
+- [T13.5] 快捷鍵 Ctrl/Cmd+F 聚焦搜尋欄；ESC 取消聚焦並關閉建議
+- [T13.6] 行動裝置支援：虛擬鍵盤彈出時不跳動版面
+
+## Phase 14 — 工具與動作（定位/控制）
+- [T14.1] 取得使用者位置按鈕（定位成功置中、失敗提示錯誤）
+- [T14.2] 定位時顯示 loading 與錯誤 UI（如權限拒絕/逾時）
+- [T14.3] 搜尋/定位與 SymbolLayer 不互斥（維持 hover/click）
 
 ### 執行順序建議（摘要）
 1) Phase 0 → 1（基礎 + 資料）

@@ -7,7 +7,7 @@ import { createPopup, updatePopup } from '../utils/popupFactory';
 import { useModalStore } from '../stores/modalStore';
 import { setDisplayPopupCloser, clearDisplayPopupCloser, setDisplayPopupOpener } from '../utils/displayPopupController';
 import { copyPinUrlToClipboard, getPinIdFromUrl } from '../utils/urlUtils';
-import { useAuthStore } from '../../../stores';
+import { useAuthStore, useLoginModalStore } from '../../../stores';
 
 const SOURCE_ID = 'travel-pins-source';
 const LAYER_ID = 'travel-pins-layer';
@@ -121,6 +121,7 @@ const SymbolsManager = () => {
   const openPopupRef = React.useRef(null);
   const openPinRef = React.useRef(null);
   const isLoggedIn = useAuthStore((s) => s.isLoggedIn);
+  const setShowLoginModal = useLoginModalStore((s) => s.setShowLoginModal);
   const openModal = useModalStore((s) => s.openModal);
   const closeModal = useModalStore((s) => s.closeModal);
   const deepLinkHandledRef = React.useRef(false);
@@ -278,17 +279,36 @@ const SymbolsManager = () => {
     map.on('rotate', handleViewChange);
     map.on('pitch', handleViewChange);
 
+    // Map background click to create new pin (avoid when clicking on symbols)
+    const onMapBackgroundClick = (e) => {
+      try {
+        const hits = map.queryRenderedFeatures(e.point, { layers: [LAYER_ID, HOVER_LAYER_ID] });
+        if (hits && hits.length) return; // symbol click handled elsewhere
+      } catch {}
+
+      if (!isLoggedIn) {
+        try { setShowLoginModal(true); } catch {}
+        return;
+      }
+      // Close current popup if any, then open form modal with draft at clicked coords
+      try { if (openPopupRef.current) openPopupRef.current.remove(); } catch {}
+      const draft = { coordinates: [e.lngLat.lng, e.lngLat.lat] };
+      try { openModal('form', { draft }); } catch (err) { console.error(err); }
+    };
+    map.on('click', onMapBackgroundClick);
+
     return () => {
       map.off('move', handleViewChange);
       map.off('zoom', handleViewChange);
       map.off('rotate', handleViewChange);
       map.off('pitch', handleViewChange);
+      map.off('click', onMapBackgroundClick);
       try { if (openPopupRef.current) openPopupRef.current.remove(); } catch {}
       if (map.getLayer(HOVER_LAYER_ID)) map.removeLayer(HOVER_LAYER_ID);
       if (map.getLayer(LAYER_ID)) map.removeLayer(LAYER_ID);
       if (map.getSource(SOURCE_ID)) map.removeSource(SOURCE_ID);
     };
-  }, [isMapReady, mapInstance, isLoading, pins, isLoggedIn]);
+  }, [isMapReady, mapInstance, isLoading, pins, isLoggedIn, setShowLoginModal]);
 
   // 登入狀態變更時，若已有開啟的 popup，更新其內容（顯示/隱藏編輯與刪除按鈕）
   React.useEffect(() => {
