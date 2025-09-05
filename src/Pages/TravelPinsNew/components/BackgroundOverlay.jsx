@@ -3,7 +3,7 @@ import ReactDOM from 'react-dom';
 import { useModalStore } from '../stores/modalStore';
 import { useMapStore } from '../stores/mapStore';
 import { closeDisplayPopup, openDisplayPopup } from '../utils/displayPopupController';
-import { Z_INDEX } from '../utils/zIndex';
+import { Z_INDEX } from '../utils';
 
 const BackgroundOverlay = () => {
   const hasAnyModalOpen = useModalStore((s) => s.hasAnyModalOpen());
@@ -33,25 +33,6 @@ const BackgroundOverlay = () => {
 
   useEffect(() => {
     if (!hasAnyModalOpen) return;
-    const onKeyDown = (e) => {
-      if (e.key === 'Escape') {
-        e.preventDefault();
-        // 阻止 Mapbox 或其他全域 ESC handler 關閉 Popup
-        if (typeof e.stopImmediatePropagation === 'function') e.stopImmediatePropagation();
-        e.stopPropagation();
-        handleClose();
-      }
-    };
-    const onKeyUp = (e) => {
-      if (e.key === 'Escape') {
-        e.preventDefault();
-        if (typeof e.stopImmediatePropagation === 'function') e.stopImmediatePropagation();
-        e.stopPropagation();
-      }
-    };
-    // Capture 階段先攔截 ESC（keydown/keyup），避免後續 listener 先行處理
-    document.addEventListener('keydown', onKeyDown, true);
-    document.addEventListener('keyup', onKeyUp, true);
     // scroll lock
     const prevOverflow = document.body.style.overflow;
     document.body.style.overflow = 'hidden';
@@ -69,8 +50,6 @@ const BackgroundOverlay = () => {
       if (m?.dragRotate?.isEnabled && m.dragRotate.isEnabled()) { m.dragRotate.disable(); restore.push(() => m.dragRotate.enable()); }
     } catch {}
     return () => {
-      document.removeEventListener('keydown', onKeyDown, true);
-      document.removeEventListener('keyup', onKeyUp, true);
       document.body.style.overflow = prevOverflow;
       try { restore.reverse().forEach((fn) => fn && fn()); } catch {}
     };
