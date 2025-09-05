@@ -4,6 +4,8 @@ import { useTravelPins } from '../hooks/useTravelPinsApi';
 import { assignColorsByScreen } from '../utils/colorManager';
 import { SKIN_SCHEMES, CONTRAST_SCHEMES } from '../utils/palettes';
 import { createPopup, updatePopup } from '../utils/popupFactory';
+import { useModalStore } from '../stores/modalStore';
+import { setDisplayPopupCloser, clearDisplayPopupCloser } from '../utils/displayPopupController';
 import { copyPinUrlToClipboard } from '../utils/urlUtils';
 import { useAuthStore } from '../../../stores';
 
@@ -119,6 +121,8 @@ const SymbolsManager = () => {
   const openPopupRef = React.useRef(null);
   const openPinRef = React.useRef(null);
   const isLoggedIn = useAuthStore((s) => s.isLoggedIn);
+  const openModal = useModalStore((s) => s.openModal);
+  const closeModal = useModalStore((s) => s.closeModal);
 
   React.useEffect(() => {
     if (!isMapReady || !mapInstance || isLoading) return;
@@ -215,12 +219,21 @@ const SymbolsManager = () => {
           const popup = createPopup(pin, {
             isLoggedIn,
             onPopupOpen: () => {},
-            onPopupClose: () => { openPopupRef.current = null; openPinRef.current = null; },
+            onPopupClose: () => { 
+              openPopupRef.current = null; 
+              openPinRef.current = null; 
+              clearDisplayPopupCloser();
+              try { closeModal(); } catch {}
+            },
             onCopyLink: async () => { await copyPinUrlToClipboard(pin.id); },
           });
           popup.setLngLat(pin.coordinates).addTo(map);
           openPopupRef.current = popup;
           openPinRef.current = pin;
+          setDisplayPopupCloser(() => {
+            try { popup.remove(); } catch {}
+          });
+          try { openModal('display', { id: pin.id }); } catch {}
         };
         map.on('click', LAYER_ID, onClick);
         map.on('click', HOVER_LAYER_ID, onClick);
@@ -269,6 +282,22 @@ const SymbolsManager = () => {
       updatePopup(popup, pin, handlers);
     } catch {}
   }, [isLoggedIn]);
+
+  // 當 pins 資料更新時，如果有開啟的 popup，同步內容（例如標題、備註、照片）
+  React.useEffect(() => {
+    if (!openPopupRef.current || !openPinRef.current) return;
+    const id = openPinRef.current.id;
+    const updated = pins.find((p) => String(p.id) === String(id));
+    if (!updated) return;
+    try {
+      const popup = openPopupRef.current;
+      const t = (key) => key;
+      const formatDate = (date) => new Date(date).toLocaleDateString();
+      const handlers = { t, formatDate, isLoggedIn };
+      openPinRef.current = updated;
+      updatePopup(popup, updated, handlers);
+    } catch {}
+  }, [pins, isLoggedIn]);
 
   return null;
 };

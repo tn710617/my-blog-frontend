@@ -7,6 +7,7 @@ export const useMapStore = create(
     (set, get) => ({
       // Map instance reference (not persisted)
       mapInstance: null,
+      mapRootEl: null,
       
       // Map initialization state (not persisted)
       isMapReady: false,
@@ -29,6 +30,11 @@ export const useMapStore = create(
           isMapReady: !!map,
           mapError: null
         });
+      },
+
+      // Set the root element containing the map (for portals like overlay)
+      setMapRootEl: (el) => {
+        set({ mapRootEl: el || null });
       },
       
       // Set map error

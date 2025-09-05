@@ -4,6 +4,7 @@ import MapContainer from './components/MapContainer';
 import MapLoadingIndicator from './components/MapLoadingIndicator';
 import MobileGestureToggle from './components/MobileGestureToggle';
 import SymbolsManager from './components/SymbolsManager';
+import BackgroundOverlay from './components/BackgroundOverlay';
 import { handleResize } from './utils/cameraHelpers';
 
 // Travel Pins New - Main Component
@@ -31,6 +32,7 @@ const TravelPinsNew = () => {
         
         {/* SymbolLayer-based pins (no backside flicker) */}
         <SymbolsManager />
+        <BackgroundOverlay />
       </div>
       
       {/* TODO: Phase 4 - Display Popup */}

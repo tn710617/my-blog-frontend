@@ -10,13 +10,13 @@ export const Z_INDEX = {
   MARKER_HOVER: 110,
   
   // Popups (display windows)
-  POPUP: 200,
+  POPUP: 1400,
   
   // Background overlay (modal backdrop)
-  OVERLAY: 900,
+  OVERLAY: 1200,
   
   // Modals (forms, confirmations, photo viewer)
-  MODAL: 1000,
+  MODAL: 1600,
   
   // Mobile gesture notifications/warnings
   GESTURE_WARNING: 1100,

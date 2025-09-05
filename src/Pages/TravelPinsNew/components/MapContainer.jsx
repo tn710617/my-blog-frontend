@@ -11,7 +11,8 @@ const MapContainer = () => {
   const { 
     setMapInstance, 
     setMapError,
-    isMobileGestureMode
+    isMobileGestureMode,
+    setMapRootEl,
   } = useMapStore();
 
   useEffect(() => {
@@ -76,11 +77,17 @@ const MapContainer = () => {
     }
   }, [setMapInstance, setMapError, isMobileGestureMode]);
 
+  // Expose root element for portals like overlay
+  useEffect(() => {
+    if (mapContainerRef.current) setMapRootEl(mapContainerRef.current);
+    return () => setMapRootEl(null);
+  }, [setMapRootEl]);
+
   return (
     <div 
       ref={mapContainerRef}
       className="relative w-full h-full"
-      style={{ zIndex: Z_INDEX.MAP }}
+      style={{ zIndex: Z_INDEX.MAP, position: 'relative' }}
     >
       {/* TODO: Phase 12 - Custom overlay controls (GPS location button, etc.)
           Following original pattern to avoid touchmove passive event warnings */}

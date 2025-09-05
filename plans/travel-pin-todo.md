@@ -41,7 +41,7 @@
 - 手勢切換需重建地圖實例（mapbox 限制）
 - TODO 註解標示後續 Phase 整合點
 
-## Phase 3 — 釘點（Markers）（先有 Pin 再談顯示）✅ DONE
+## Phase 3 — 釘點（Symbols / Markers）（先有 Pin 再談顯示）✅ DONE
 - [✅T3.1] 依 pins 列表建立/更新/移除 Marker（useMarkerManager hook）
 - [✅T3.2] Marker hover/click 視覺（scale 1.12, opacity 0.65）
 - [✅T3.3] 螢幕距離顏色分配（簡化為 round-robin 色彩指派）
@@ -50,19 +50,15 @@
 - [✅T3.6] 安全移除（marker.remove() 與 Map 清理）
 
 **完成摘要：**
-- 建立 MarkersManager 元件處理標記生命週期
-- 實作 useMarkerManager hook 管理標記狀態
-- 使用經典 footprint SVG 圖標（6種膚色方案）
-- 支援懸停效果、點擊事件（目前 console.log，Phase 4 將實作彈窗）
-- 簡化版可見性檢查（避免複雜的半球計算）
-- 完整的標記 CRUD 支援（新增/更新/刪除）
+- 採用 Mapbox SymbolLayer 呈現釘點（GeoJSON source + 基底層 + hover 層），GPU 直接遮擋背面，無初幀閃爍。
+- `SymbolsManager` 管理釘點生命週期與互動；hover 以第二層 `setFilter()` 實現（避免在 layout 使用 feature-state）。
+- footprint 圖示放大（base 1.3、hover 1.5），使用高對比色盤；螢幕鄰近分色，孤立點用 id 雜湊穩定挑色。
+- 點擊事件已在 Phase 4 串接 Popup。
 
 **變更注意事項：**
-- 標記使用 Mapbox GL JS 原生 Marker API
-- **重構完成**：移除重複代碼，直接引用既有的 palettes、footprintIcon、zIndex、hemisphereCulling 工具
-- **修復標記旋轉問題**：使用 `position: absolute` 確保標記在地球旋轉時保持固定方向
-- **改進半球遮蔽**：使用既有的 `isBehindGlobe` 邏輯，加入 pitch 檢測
-- 點擊處理準備好接收 Phase 4 彈窗整合
+- 取代原 HTML Marker API；不再需要半球遮蔽與初幀時序控制邏輯。
+- 不引用舊頁任何檔案，維持 TravelPinsNew 內聚。
+- `renderWorldCopies: false` 避免世界拷貝重影。
 
 **重構摘要：**
 - **重新實作專屬工具**：建立 TravelPinsNew 目錄下的 palettes、footprintIcon、hemisphereCulling、colorManager、markdownUtils 等工具，避免依賴舊實作
@@ -71,17 +67,21 @@
 - **移除內建地圖控制項**：移除 NavigationControl 和 GeolocateControl 避免 touchmove passive event 警告
 - **修復 Z_INDEX 匯出問題**：統一使用 Z_INDEX 而非 Z_INDEX_CSS
 
-## Phase 4 — 顯示視窗（Display Popup）🚧 進行中
+## Phase 4 — 顯示視窗（Display Popup）✅ DONE
 - [✅T4.0] 更新需求文件，確認近距離標記需不同顏色（requirements.md）
-- [✅T4.1] 建立現代化 Popup HTML 結構（popupHtml.js）
-- [✅T4.2] 建立現代化 Popup 樣式系統（popupStyles.js）
+- [✅T4.1] 建立 Popup HTML 結構（popupHtml.js）
+- [✅T4.2] 建立 Popup 樣式系統（popupStyles.js）
 - [✅T4.3] 建立 Popup Factory 與事件處理（popupFactory.js）
 - [✅T4.4] 修復工具匯入錯誤（Z_INDEX_CSS → Z_INDEX）
-- [🚧T4.5] 整合 Popup 到 Marker 點擊處理
-- [ T4.6] 整合 Auth 狀態控制按鈕顯示
-- [ T4.7] 實作 Copy Link 功能與視覺回饋
-- [ T4.8] 實作背景遮罩與聚焦效果
-- [ T4.9] Pins 變動時更新已開啟 Popup 內容
+- [✅T4.5] 圖層點擊整合 Popup（`SymbolsManager` 開關單一實例）
+- [✅T4.6] 權限顯示/隱藏（登入/登出即時刷新 Popup 內容）
+- [✅T4.7] 複製連結（含按鈕視覺回饋）
+- [✅T4.8] 背景遮罩與聚焦效果（Overlay 以 portal 掛載於 map 容器；有 blur，不遮住 Popup）
+- [✅T4.9] Pins 變動時即時更新已開啟 Popup 內容
+
+**變更摘要：**
+- Overlay 採 portal 渲染進地圖容器（同一 stacking context），並統一 z-index 於 `utils/zIndex.js`（POPUP 1400、OVERLAY 1200、MODAL 1600）。
+- `.mapboxgl-popup` 的 z-index 由樣式以常數注入，確保永遠在 Overlay 之上；Overlay 使用 `backdrop-filter: blur(2px)` 只模糊地圖，不影響 Popup。
   - 依賴：T3.*、T1.4（Markdown 安全）
 
 ## Phase 5 — React Modals（表單/刪除/ESC/照片）

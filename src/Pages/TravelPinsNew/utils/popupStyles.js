@@ -3,8 +3,11 @@
  * Clean, minimal design with CSS-in-JS approach
  */
 
+import { Z_INDEX } from './zIndex';
+
 export const POPUP_STYLES = `
   /* Modern Travel Pin Popup Styles */
+  .mapboxgl-popup { z-index: ${Z_INDEX.POPUP} !important; }
   .travel-pin-popup-modern {
     width: clamp(320px, 90vw, 420px);
     background: white;
