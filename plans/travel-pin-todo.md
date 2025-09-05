@@ -2,26 +2,44 @@
 
 > 目標：依據 plans/travel-pin-requirement.md 的「需求」在新環境重建功能。以下清單將工作拆解為可執行的任務與驗收點。
 
-## Phase 0 — 規劃與基礎設置（起點）
-- [T0.1] 選定地圖技術（Mapbox GL JS 或等價 3D/Globe 能力）
-- [T0.2] 設定環境變數（地圖 Token、API Base URL 等）
-- [T0.3] 建立 i18n 架構（至少支援現有語言與日期本地化）
-- [T0.4] 規劃權限/登入流程（未登入時的指引與阻擋策略）
-- [T0.5] 制定 z-index 與疊層規則（地圖、標記、Popup、Overlay、Modal、手勢告警）
+## Phase 0 — 規劃與基礎設置（起點）✅ DONE
+- [✅T0.1] 選定地圖技術（直接使用 Mapbox GL JS，3D Globe 投影）
+- [✅T0.2] 設定環境變數（VITE_MAPBOX_TOKEN 已存在於 .env.production）
+- [✅T0.3] 建立 i18n 架構（travel_pins.* 鍵值已存在，可直接使用 React Intl）
+- [✅T0.4] 規劃權限/登入流程（沿用既有 auth store 與 API 結構）
+- [✅T0.5] 制定 z-index 與疊層規則（src/TravelPinsNew/utils/zIndex.js）
 
-## Phase 1 — 資料模型與 API（先於地圖展示）
-- [T1.1] 定義 Pin 資料模型（id、title、note、visited_at、coordinates、photo_url、photos）
-- [T1.2] 確認/設計 API 端點（CRUD、列表、單筆）
-- [T1.3] 決定深連結 URL 規格 `/travel-pins?pin=<id>`（或等價路徑）
-- [T1.4] 決定 Markdown→HTML 的安全策略（XSS 過濾/白名單）
-  - 依賴：T0.2、T0.3
+**完成摘要：**
+- 建立目錄結構 `src/TravelPinsNew/{components,hooks,utils,stores}/`
+- 使用 Zustand persist 模式處理 localStorage
+- 更新執行指引加入技術規範
 
-## Phase 2 — 地圖與鏡頭（基礎顯示）
-- [T2.1] 初始化單一地圖實例（cooperative gestures、locale、錯誤處理）
-- [T2.2] 建立相機輔助：`flyTo(center, zoom, duration)`、`easeTo({center, duration})`、`getZoom()`
-- [T2.3] 偵測並處理 Mapbox 手勢教學/警示（教學期間禁止標記 hover/click）
-- [T2.4] 行動裝置垂直 padding（`setPadding`）讓地球視覺上移
-  - 依賴：T0.*
+## Phase 1 — 資料模型與 API（先於地圖展示）✅ DONE
+- [✅T1.1] 定義 Pin 資料模型（src/TravelPinsNew/utils/dataModels.js，含驗證與轉換）
+- [✅T1.2] 確認 API 端點（沿用既有 src/APIs/travel-pins.js，功能完整）
+- [✅T1.3] 決定深連結 URL 規格（`/travel-pins-new?pin=<id>`，src/TravelPinsNew/utils/urlUtils.js）
+- [✅T1.4] 決定 Markdown→HTML 的安全策略（基於既有實作改良，加強 XSS 防護）
+
+**完成摘要：**
+- 資料驗證、URL 處理、安全的 Markdown 轉換
+- API 整合 hooks 重新匯出，保持一致性
+
+## Phase 2 — 地圖與鏡頭（基礎顯示）✅ DONE
+- [✅T2.1] 初始化單一地圖實例（直接 mapboxgl，globe 投影，錯誤處理）
+- [✅T2.2] 建立相機輔助（src/TravelPinsNew/utils/cameraHelpers.js）
+- [✅T2.3] Mapbox 手勢控制（cooperative gestures 支援手機模式）
+- [✅T2.4] 行動裝置垂直 padding（setPadding bottom: 100 於手機）
+
+**完成摘要：**
+- MapContainer 使用直接 mapboxgl（避免 react-map-gl 導入問題）
+- 載入指示器、錯誤處理、手機手勢切換按鈕
+- 地圖控制項：導航、定位
+- 響應式處理與視窗調整
+
+**變更注意事項：**
+- 從 react-map-gl 改為直接 mapboxgl 以保持與現有代碼一致
+- 手勢切換需重建地圖實例（mapbox 限制）
+- TODO 註解標示後續 Phase 整合點
 
 ## Phase 3 — 釘點（Markers）（先有 Pin 再談顯示）
 - [T3.1] 依 pins 列表建立/更新/移除 Marker

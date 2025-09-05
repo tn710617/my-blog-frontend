@@ -55,6 +55,14 @@
 - 權限：受限操作（新建/編輯/刪除）需檢查登入狀態並導向登入或提示。
 - 安全：Markdown→HTML 需經基本防護；不在前端存敏感資訊。
 
+## 技術規範（Technical Guidelines）
+- **狀態管理**：使用 Zustand 配合 persist 中間件處理 localStorage，遵循現有專案模式。
+  - 僅持久化用戶偏好設定（如手勢模式），不持久化運行狀態（如地圖實例、錯誤狀態）。
+  - 使用 `partialize` 選擇需持久化的狀態欄位。
+- **共用資源**：可直接引用 `src/APIs/*`、`src/stores/*` 中的 auth 與 locale 相關功能。
+- **環境變數**：Mapbox Token 已配置於 `.env.production`，使用 `VITE_MAPBOX_TOKEN`。
+- **i18n 鍵值**：travel_pins.* 相關的多語言鍵值已存在，可直接使用。
+
 ## 常見情境對照（範例）
 - 完成「T3.1 建立/更新/移除 Marker」後：
   - 更新 TODO：T3.1 → Done，附上「支援新增/刪除即時反映」等摘要。

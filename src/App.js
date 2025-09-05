@@ -8,6 +8,7 @@ import ProtectedRoute from "./Components/ProtectedRoute";
 import EditPost from "./Pages/EditPost";
 import About from "./Pages/About";
 import TravelPins from "./Pages/TravelPins";
+import TravelPinsNew from "./TravelPinsNew";
 
 function App() {
     return (
@@ -16,6 +17,7 @@ function App() {
                 <Route path={"/"} element={<Posts/>}/>
                 <Route path={"/about"} element={<About/>}/>
                 <Route path={"/travel-pins"} element={<TravelPins/>}/>
+                <Route path={"/travel-pins-new"} element={<TravelPinsNew/>}/>
                 <Route element={<ProtectedRoute/>}>
                     <Route path={"/create-post"} element={<CreatePost/>}/>
                     <Route path={"/edit-post"} element={<EditPost/>}/>
