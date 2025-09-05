@@ -32,7 +32,7 @@ import {useMobileToggle} from './hooks/useMobileToggle';
 
 // Local utilities
 import {renderMarkdownToHTML} from './utils/markdownUtils';
-import {assignColorsByScreen, recolorMarkers, createColorAssignmentRef} from './utils/colorManager';
+import {recolorMarkers, createColorAssignmentRef} from './utils/colorManager';
 import {updateMarkerHemisphereVisibility} from './utils/hemisphereCulling';
 import {createMarkerForPin} from './utils/markerFactory';
 import {createEnhancedPopup} from './utils/popupFactory';
@@ -134,7 +134,7 @@ const TravelPins = () => {
         mapContainer, map, markersRef, markersByIdRef, mapLoaded, mapError,
         flyTo, getZoom, addZoomHandlers
     } = useMapManager({
-        onMapClick: handleMapClick, onMapLoad: handleMapLoad, onRecolorMarkers: handleRecolorMarkers, intl: intl
+        onMapClick: handleMapClick, onMapLoad: handleMapLoad, onRecolorMarkers: handleRecolorMarkers
     });
 
     const {isMobile} = useLocationListener(mapLoaded ? map : null, flyTo);
@@ -142,11 +142,6 @@ const TravelPins = () => {
     const {openPopups, closeAllPopups, handlePopupOpen, handlePopupClose} = usePopupManager({
         isMobile, pins, markersRef, mapRef: {current: map}, showForm, onCloseForm: handleCloseForm
     });
-
-    // Color management
-    const handleAssignColorsByScreen = useCallback((allPins) => {
-        if (map) assignColorsByScreen(allPins, map, assignedColorsRef.current);
-    }, [map]);
 
     // === PIN ACTION HANDLERS ===
     const handleEditPin = (pin) => {
