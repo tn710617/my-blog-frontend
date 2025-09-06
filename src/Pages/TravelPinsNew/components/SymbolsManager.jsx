@@ -366,7 +366,9 @@ const SymbolsManager = () => {
         if (hits && hits.length) return; // symbol click handled elsewhere
       } catch {}
 
-      if (!isLoggedIn) {
+      // 以即時的 auth 狀態為準，避免閉包狀態過期
+      const loggedInNow = !!useAuthStore.getState().isLoggedIn;
+      if (!loggedInNow) {
         try { setShowLoginModal(true); } catch {}
         return;
       }
