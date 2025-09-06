@@ -7,8 +7,8 @@ import CreatePost from "./Pages/CreatePost";
 import ProtectedRoute from "./Components/ProtectedRoute";
 import EditPost from "./Pages/EditPost";
 import About from "./Pages/About";
-import TravelPins from "./Pages/TravelPins";
 import TravelPinsNew from "./Pages/TravelPinsNew";
+import {Navigate} from "react-router";
 
 function App() {
     return (
@@ -16,7 +16,7 @@ function App() {
             <Route element={<Layout/>}>
                 <Route path={"/"} element={<Posts/>}/>
                 <Route path={"/about"} element={<About/>}/>
-                <Route path={"/travel-pins"} element={<TravelPins/>}/>
+                <Route path={"/travel-pins"} element={<Navigate to="/travel-pins-new" replace />}/>
                 <Route path={"/travel-pins-new"} element={<TravelPinsNew/>}/>
                 <Route element={<ProtectedRoute/>}>
                     <Route path={"/create-post"} element={<CreatePost/>}/>

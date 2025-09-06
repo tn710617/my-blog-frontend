@@ -8,7 +8,7 @@ export default function EnhancedMobileNav({categories, onNavigate, showCategorie
     const intl = useIntl();
     const navigate = useNavigate();
     const location = useLocation();
-    const isOnTravelPinsPage = location.pathname === '/travel-pins';
+    const isOnTravelPinsPage = location.pathname === '/travel-pins-new';
     const categoryId = useCategoryStore((state) => state.categoryId);
     const setCategoryId = useCategoryStore((state) => state.setCategoryId);
     const setCurrentPage = usePaginationStore((state) => state.setCurrentPage);
@@ -42,7 +42,7 @@ export default function EnhancedMobileNav({categories, onNavigate, showCategorie
 
     const handleTravelPinsClick = () => {
         resetFilters();
-        navigate("/travel-pins");
+        navigate("/travel-pins-new");
         if (onNavigate) onNavigate();
     };
 
@@ -110,7 +110,7 @@ export default function EnhancedMobileNav({categories, onNavigate, showCategorie
                 <NavItem 
                     icon="📍" 
                     onClick={handleTravelPinsClick}
-                    isActive={window.location.pathname === '/travel-pins'}
+                    isActive={window.location.pathname === '/travel-pins-new'}
                 >
                     Travel Pins
                 </NavItem>
