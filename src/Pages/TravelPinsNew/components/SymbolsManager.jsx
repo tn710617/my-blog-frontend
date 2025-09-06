@@ -489,17 +489,32 @@ const SymbolsManager = () => {
     try {
       const targetZoom = ZOOM_LEVELS.CITY;
       mapInstance.flyTo({ center: pin.coordinates, zoom: targetZoom, duration: 900 });
-      
-      // 確保只執行一次開啟動作，避免 moveend 和 timeout 競態
+
+      // 確保只執行一次開啟動作；若相機未移動成功，再補一次導航
       let popupOpened = false;
       const openOnce = () => {
         if (popupOpened) return;
         popupOpened = true;
-        try { openPinPopup(mapInstance, pin); } catch {}
+        try {
+          // 檢查視窗是否已含目標位置；若沒有，補一次 flyTo 再開啟
+          const center = mapInstance.getCenter?.();
+          const [lng, lat] = pin.coordinates || [];
+          const nearEnough = center && typeof center.lng === 'number' && typeof center.lat === 'number'
+            ? (Math.abs(center.lng - lng) < 0.001 && Math.abs(center.lat - lat) < 0.001)
+            : false;
+          if (!nearEnough) {
+            mapInstance.flyTo({ center: pin.coordinates, zoom: targetZoom, duration: 700 });
+            mapInstance.once('moveend', () => { try { openPinPopup(mapInstance, pin); } catch {} });
+            // 後備：若依然未觸發 moveend，800ms 後強制開啟
+            setTimeout(() => { try { openPinPopup(mapInstance, pin); } catch {} }, 800);
+            return;
+          }
+          openPinPopup(mapInstance, pin);
+        } catch {}
       };
-      
+
       mapInstance.once('moveend', openOnce);
-      // 後備：若 moveend 未觸發，0.95s 後也嘗試開啟
+      // 後備：若 moveend 未觸發，0.95s 後也嘗試開啟（並檢查是否需要補導航）
       setTimeout(openOnce, 950);
     } catch {
       try { openPinPopup(mapInstance, pin); } catch {}

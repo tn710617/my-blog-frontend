@@ -111,7 +111,7 @@ export const setMobilePadding = (map, isMobile) => {
   const mobile = typeof isMobile === 'boolean'
     ? isMobile
     : (typeof window !== 'undefined' ? window.innerWidth <= 768 : false);
-  map.setPadding({ bottom: mobile ? 100 : 0 });
+  map.setPadding({ bottom: mobile ? 250 : 0 });
 };
 
 // Handle window resize and update padding

@@ -9,7 +9,7 @@ import LocationButton from './components/LocationButton';
 import { useKeyboardHandlers } from './hooks/useKeyboardHandlers';
 import { useLocationListener } from './hooks/useLocationListener';
 import { useGeolocation } from './hooks/useGeolocation';
-import { handleResize } from './utils/cameraHelpers';
+import { handleResize, setMobilePadding } from './utils/cameraHelpers';
 import { useResponsive } from './hooks/useResponsive';
 
 // Travel Pins New - Main Component
@@ -49,6 +49,12 @@ const TravelPinsNew = () => {
     return () => {
       window.removeEventListener('resize', onResize);
     };
+  }, [mapInstance, isMobile]);
+
+  // Apply initial mobile padding to raise globe on mobile (match legacy behavior)
+  React.useEffect(() => {
+    if (!mapInstance) return;
+    try { setMobilePadding(mapInstance, isMobile); } catch {}
   }, [mapInstance, isMobile]);
 
   return (
