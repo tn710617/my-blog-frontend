@@ -21,6 +21,10 @@ export const Z_INDEX = {
   // Mobile gesture notifications/warnings
   GESTURE_WARNING: 1100,
   
+  // Location and control buttons
+  GPS_BUTTON: 1500,
+  LOCATION_ERROR_TOAST: 1550,
+  
   // Highest priority elements (toast notifications, etc.)
   TOAST: 2000,
 };

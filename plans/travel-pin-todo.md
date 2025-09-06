@@ -236,21 +236,39 @@
 - [✅] 統一 z-index 常數並套用：`utils/zIndex.js`（POPUP 1400／OVERLAY 1200／MODAL 1600），`popupStyles.js` 直接引用常數
 - [✅] Overlay 以 portal 掛載至地圖容器（同一 stacking context），使用 `backdrop-filter: blur(2px)`，不遮擋 Popup
 
-## Phase 13 — 搜尋功能（地名/座標）🔄 IN PROGRESS
-- [T13.1] 複用現有搜尋組件，整合至 TravelPinsNew 頁面：
+## Phase 13 — 搜尋功能（地名/座標）✅ DONE
+- [✅T13.1] 複用現有搜尋組件，整合至 TravelPinsNew 頁面：
   - 修改 NavBar 邏輯：當頁面為 `travel-pins-new` 時顯示 `TravelPinsSearchBar` 
   - 保持組件位置在 `src/Components/Nav/TravelPinsSearchBar.jsx`（沿用現有架構）
-  - 修改 `onLocationSelect` 回調，支援 TravelPinsNew 地圖實例
+  - 創建 `useLocationListener` hook 處理地圖導航整合
+  - 修改 `onLocationSelect` 回調，透過 CustomEvent 支援 TravelPinsNew 地圖實例
   - 樣式與位置完全沿用現有 TravelPins 設定
-- [T13.2] 地名搜尋功能驗證：現有功能已完整，僅需整合測試
-- [T13.3] 座標搜尋解析功能：
-  - 支援 lng,lat 格式（預設優先順序）
-  - 支援多種分隔符（逗號、空白）
-  - 智慧判斷 lng/lat 順序（基於數值範圍）
-- [T13.5] 快捷鍵整合：
-  - 先評估現有 `TravelPinsSearchBar` 快捷鍵邏輯複雜度
-  - 如邏輯簡單則沿用現有實作
-  - 如邏輯複雜則重構為共用 hook
+- [✅T13.2] 地名搜尋功能驗證：現有 Mapbox Geocoding API 功能完整運作
+- [✅T13.3] 座標搜尋解析功能：
+  - 支援多種格式：`lng,lat` / `lat,lng`（逗號、空白分隔）
+  - 智慧判斷座標順序（基於數值範圍：|num1| > 90 視為經度）
+  - 座標驗證：lat (-90~90), lng (-180~180)
+  - 特殊圖示顯示：🎯 for coordinates, 🌍 for countries, 📍 for places
+  - **座標搜尋使用街道級別 zoom (15)**，地名搜尋保持原有層級
+- [✅T13.5] 快捷鍵整合：
+  - 評估複雜度：TravelPinsSearchBar 邏輯簡單，沿用現有實作
+  - 解決 ESC 處理衝突：在 TravelPinsNew useKeyboardHandlers 中添加搜尋框特例處理
+  - 添加搜尋框 id="location-search-input" 支援既有邏輯
+  - 保持 Ctrl/Cmd+F 聚焦功能正常運作
+
+**完成摘要：**
+- ✅ 地名搜尋：完整的 Mapbox Geocoding 整合，支援國家/城市搜尋
+- ✅ 座標搜尋：支援多格式座標輸入，自動解析並導航到街道級別視圖 (zoom: 15)
+- ✅ 智慧 Zoom：座標搜尋→街道級別，國家搜尋→國家級別，城市搜尋→城市級別  
+- ✅ 快捷鍵協調：Ctrl/Cmd+F 聚焦、ESC 處理不衝突、↑↓ Enter 鍵盤導航
+- ✅ UI 一致性：保持現有設計語言，座標結果顯示特殊圖示和標題
+
+**實作位置：**
+- `src/Components/Nav/index.jsx`：NavBar 路徑判斷邏輯更新
+- `src/Components/Nav/TravelPinsSearchBar.jsx`：座標解析功能、UI 更新
+- `src/Pages/TravelPinsNew/hooks/useLocationListener.js`：地圖導航整合
+- `src/Pages/TravelPinsNew/hooks/useKeyboardHandlers.js`：ESC 衝突解決
+- `src/Pages/TravelPinsNew/index.jsx`：hook 整合
 
 **實作決策：**
 - ✅ 複用現有 `TravelPinsSearchBar` 組件（功能完整、UI 現代化）
