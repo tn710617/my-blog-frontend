@@ -30,11 +30,15 @@ const renderInline = (text) => {
     return `\x00CODESPAN${idx}\x00`;
   });
 
+  // Bucketize generated HTML (links/images/autolinks) to avoid being touched by emphasis regex
+  const htmlBuckets = [];
+  const saveHtml = (html) => `\x00HTML${htmlBuckets.push(html) - 1}\x00`;
+
   // Images ![alt](url)
   t = t.replace(/!\[([^\]]*)\]\(([^)\s]+)(?:\s+"([^"]+)")?\)/g, (_m, alt, url) => {
     const safe = sanitizeUrl(url);
     if (!safe) return escapeHtml(alt || '');
-    return `<img src="${safe}" alt="${escapeHtml(alt || '')}" style="max-width:100%;height:auto;border-radius:8px"/>`;
+    return saveHtml(`<img src="${safe}" alt="${escapeHtml(alt || '')}" style="max-width:100%;height:auto;border-radius:8px"/>`);
   });
 
   // Links [text](url)
@@ -42,14 +46,14 @@ const renderInline = (text) => {
     const safe = sanitizeUrl(url);
     const textEsc = escapeHtml(label);
     if (!safe) return textEsc;
-    return `<a href="${safe}" target="_blank" rel="noopener noreferrer nofollow" class="text-blue-600 hover:text-blue-800 underline">${textEsc}</a>`;
+    return saveHtml(`<a href="${safe}" target="_blank" rel="noopener noreferrer nofollow" class="text-blue-600 hover:text-blue-800 underline">${textEsc}</a>`);
   });
 
   // Autolink bare URLs
   t = t.replace(/(^|\s)(https?:\/\/[^\s<]+)(?=$|\s)/g, (_m, pre, url) => {
     const safe = sanitizeUrl(url);
     if (!safe) return pre + escapeHtml(url);
-    return `${pre}<a href="${safe}" target="_blank" rel="noopener noreferrer nofollow" class="text-blue-600 hover:text-blue-800 underline">${escapeHtml(url)}</a>`;
+    return `${pre}${saveHtml(`<a href="${safe}" target="_blank" rel="noopener noreferrer nofollow" class="text-blue-600 hover:text-blue-800 underline">${escapeHtml(url)}</a>`)}`;
   });
 
   // Strong, Emphasis, Strikethrough (simple, non-nested-safe)
@@ -59,6 +63,9 @@ const renderInline = (text) => {
     .replace(/\*(.+?)\*/g, '<em>$1</em>')
     .replace(/_(.+?)_/g, '<em>$1</em>')
     .replace(/~~(.+?)~~/g, '<del class="line-through text-slate-600">$1</del>');
+
+  // Restore saved HTML blocks (links/images/autolinks)
+  t = t.replace(/\x00HTML(\d+)\x00/g, (_m, i) => htmlBuckets[Number(i)]);
 
   // Restore code spans (already escaped when saved to buckets)
   t = t.replace(/\x00CODESPAN(\d+)\x00/g, (_m, i) => `<code class="bg-slate-100 px-1 py-0.5 rounded text-xs font-mono text-slate-800">${codeBuckets[Number(i)]}</code>`);
@@ -173,4 +180,3 @@ export const markdownToHtml = (markdown) => {
 
   return out.join('\n');
 };
-

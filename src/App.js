@@ -16,7 +16,6 @@ function App() {
             <Route element={<Layout/>}>
                 <Route path={"/"} element={<Posts/>}/>
                 <Route path={"/about"} element={<About/>}/>
-                <Route path={"/travel-pins"} element={<Navigate to="/travel-pins-new" replace />}/>
                 <Route path={"/travel-pins-new"} element={<TravelPinsNew/>}/>
                 <Route element={<ProtectedRoute/>}>
                     <Route path={"/create-post"} element={<CreatePost/>}/>

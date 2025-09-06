@@ -11,10 +11,12 @@ import DeleteButton from "./DeleteButton";
 export default function SinglePost() {
     const isLoggedIn = useAuthStore((state) => state.isLoggedIn)
     const [searchParams] = useSearchParams()
-    const postId = searchParams.get("post_id")
+    // Sanitize post_id to digits only, handling cases like trailing punctuation from Markdown links
+    const rawPostId = searchParams.get("post_id")
+    const postId = rawPostId ? (rawPostId.match(/\d+/)?.[0] || null) : null
     const navigate = useNavigate()
 
-    const {isSuccess, data} = useShowPost(postId, {
+    const {isSuccess, isError, data} = useShowPost(postId, {
         enabled: !!postId,
     })
 
@@ -26,7 +28,7 @@ export default function SinglePost() {
 
 
     return (
-        isSuccess &&
+        isSuccess ?
         <div className={"m-4 flex justify-between"}>
             <div className={"lg:block hidden lg:1/12 xl:w-1/6"}/>
             <div className={"flex flex-col gap-4 rounded-xl w-full 2xl:w-7/12 shadow-xl bg-gray-50 px-4 py-7"}>
@@ -45,5 +47,12 @@ export default function SinglePost() {
             </div>
             <div className={"lg:block hidden lg:1/12 xl:w-1/6"}/>
         </div>
+        : isError ? (
+          <div className="m-4 flex justify-center">
+            <div className="rounded-xl w-full 2xl:w-7/12 bg-red-50 text-red-700 px-4 py-6 shadow">
+              Failed to load the post. Please check the link.
+            </div>
+          </div>
+        ) : null
     )
 }

@@ -49,9 +49,14 @@ const buildFootprintSVG = (color) => `
 `;
 
 const loadedImages = new Set();
+// 去重同名圖示的同時載入，避免競態導致重複 addImage
+const inFlightImages = new Map();
 
 const loadIconImage = (map, name, color) => {
-  return new Promise((resolve, reject) => {
+  // 若已在載入中，直接共用同一個 Promise，避免同名競態
+  if (inFlightImages.has(name)) return inFlightImages.get(name);
+
+  const p = new Promise((resolve) => {
     // 檢查地圖是否仍然有效
     if (!map || !map.addImage || typeof map.addImage !== 'function') {
       return resolve(); // 靜默失敗，避免阻塞
@@ -73,37 +78,49 @@ const loadIconImage = (map, name, color) => {
       try {
         // 再次檢查地圖是否有效
         if (map.addImage && typeof map.addImage === 'function') {
-          map.addImage(name, img, { pixelRatio: 2 });
-          loadedImages.add(name);
+          // 加之前再檢查一次是否已存在（避免並發）
+          if (map.hasImage && map.hasImage(name)) {
+            loadedImages.add(name);
+          } else {
+            map.addImage(name, img, { pixelRatio: 2 });
+            loadedImages.add(name);
+          }
         }
         resolve();
       } catch (e) {
-        console.warn(`Failed to add image ${name}:`, e.message);
+        // 若是已存在的錯誤，直接忽略；其他錯誤再提示
+        if (!String(e?.message || '').includes('already exists')) {
+          console.warn(`Failed to add image ${name}:`, e.message);
+        }
         resolve(); // 不 reject，避免阻塞其他圖片
+      } finally {
+        inFlightImages.delete(name);
       }
     };
-    img.onerror = (e) => {
-      console.warn(`Failed to load image ${name}`);
+    img.onerror = () => {
+      try { console.warn(`Failed to load image ${name}`); } catch {}
+      inFlightImages.delete(name);
       resolve(); // 改為 resolve 而不是 reject
     };
     img.src = `data:image/svg+xml;charset=utf-8,${encodeURIComponent(svg)}`;
   });
+
+  inFlightImages.set(name, p);
+  return p;
 };
 
 const ensureAllPaletteImages = async (map) => {
   // 確保地圖仍然有效
   if (!map || !map.getCanvas || !map.getCanvas()) {
-    console.warn('Map invalid during image loading');
     return;
   }
   
   try {
     if (!map.isStyleLoaded()) {
-      console.warn('Map style not ready for image loading');
+      // 樣式尚未完成，安靜返回，交由之後的初始化或 styleimagemissing 補圖
       return;
     }
   } catch {
-    console.warn('Cannot check map style status');
     return;
   }
   
@@ -111,13 +128,7 @@ const ensureAllPaletteImages = async (map) => {
   SKIN_SCHEMES.forEach((s, idx) => tasks.push(loadIconImage(map, `fp-skin-${idx}`, s.main)));
   CONTRAST_SCHEMES.forEach((s, idx) => tasks.push(loadIconImage(map, `fp-contrast-${idx}`, s.main)));
   
-  const results = await Promise.allSettled(tasks);
-  
-  // 檢查載入失敗的圖片
-  const failed = results.filter(r => r.status === 'rejected').length;
-  if (failed > 0) {
-    console.warn(`${failed} images failed to load`);
-  }
+  await Promise.allSettled(tasks);
 };
 
 const hashToIdx = (id, modulo) => {
@@ -230,14 +241,14 @@ const SymbolsManager = () => {
           });
           return;
         }
-        // 後備：等待首次完整載入
-        const onStyleLoaded = () => {
-          map.off('style.load', onStyleLoaded);
+        // 後備：等待首次完整載入（使用 map 的 'load' 事件）
+        const onMapLoad = () => {
+          map.off('load', onMapLoad);
           requestAnimationFrame(() => {
             if (map.getCanvas && map.getCanvas()) initializeMapSymbols();
           });
         };
-        map.on('style.load', onStyleLoaded);
+        map.on('load', onMapLoad);
       } catch {
         // 若檢查失敗（例如地圖已被移除），安靜略過，等待下一輪依賴變更
       }
@@ -256,8 +267,28 @@ const SymbolsManager = () => {
       return;
     }
 
+    let styleImageMissingHandler = null;
     const setup = async () => {
-      // 確保圖示已註冊
+      // 註冊 styleimagemissing：在樣式要求圖示但尚未被 addImage 時即時補上
+      styleImageMissingHandler = (e) => {
+        try {
+          const id = e?.id;
+          if (!id) return;
+          if (loadedImages.has(id) || (map.hasImage && map.hasImage(id))) return;
+          if (id.startsWith('fp-contrast-')) {
+            const idx = Number(id.replace('fp-contrast-', ''));
+            const color = CONTRAST_SCHEMES?.[idx]?.main;
+            if (color) loadIconImage(map, id, color);
+          } else if (id.startsWith('fp-skin-')) {
+            const idx = Number(id.replace('fp-skin-', ''));
+            const color = SKIN_SCHEMES?.[idx]?.main;
+            if (color) loadIconImage(map, id, color);
+          }
+        } catch {}
+      };
+      try { map.on('styleimagemissing', styleImageMissingHandler); } catch {}
+
+      // 先嘗試預載所有圖示（若樣式尚未就緒，styleimagemissing 仍會當場補圖）
       await ensureAllPaletteImages(map);
 
       // 建立或更新 Source
@@ -415,6 +446,8 @@ const SymbolsManager = () => {
         if (typeof map.getSource === 'function' && typeof map.removeSource === 'function') {
           if (map.getSource(SOURCE_ID)) map.removeSource(SOURCE_ID);
         }
+        // 移除 styleimagemissing 監聽
+        try { if (styleImageMissingHandler) map.off('styleimagemissing', styleImageMissingHandler); } catch {}
       } catch (error) {
         console.warn('SymbolsManager cleanup error:', error);
       }
