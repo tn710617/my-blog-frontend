@@ -3,7 +3,7 @@ import { useIntl } from 'react-intl';
 import { useModalStore } from '../../stores/modalStore';
 import { useDeleteTravelPin } from '../../hooks/useTravelPinsApi';
 import { closeDisplayPopup, openDisplayPopup } from '../../utils/displayPopupController';
-import { Z_INDEX } from '../../utils/zIndex';
+import { createModalClasses } from '../../utils/modalStyles';
 
 const DeleteConfirmationModal = () => {
   const intl = useIntl();
@@ -36,49 +36,60 @@ const DeleteConfirmationModal = () => {
     }
   };
 
+  const t = (id) => intl.formatMessage({ id });
+  const formatDate = (date) => intl.formatDate(new Date(date));
+
   return (
-    <div
-      role="dialog"
-      aria-modal="true"
-      style={{
-        position: 'fixed',
-        inset: 0,
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'center',
-        zIndex: Z_INDEX.MODAL,
-        pointerEvents: 'none',
-      }}
-    >
-      <div
-        style={{
-          width: 'clamp(320px, 90vw, 420px)',
-          background: 'white',
-          borderRadius: 12,
-          border: '1px solid rgba(0,0,0,0.08)',
-          boxShadow: '0 20px 25px -5px rgba(0,0,0,0.1), 0 8px 10px -6px rgba(0,0,0,0.1)',
-          padding: 20,
-          pointerEvents: 'auto',
-        }}
-      >
-        <div style={{
-          background: 'linear-gradient(135deg, #ef4444 0%, #f97316 100%)',
-          color: 'white', borderRadius: 10, padding: '14px 16px', marginBottom: 12,
-          display: 'flex', alignItems: 'center', gap: 10
-        }}>
-          <span style={{ fontSize: 18 }}>⚠️</span>
-          <h3 style={{ margin: 0, fontSize: 16, fontWeight: 700 }}>{intl.formatMessage({id: 'travel_pins.delete_modal.title'})}</h3>
+    <div className={createModalClasses.backdrop()} role="dialog" aria-modal="true">
+      <div className={createModalClasses.dialog()}>
+        <div className={createModalClasses.header('danger')}>
+          <div className={createModalClasses.headerOverlay()} />
+          <div className={createModalClasses.headerContent()}>
+            <div className={createModalClasses.headerIcon()}>⚠️</div>
+            <div className={createModalClasses.headerText()}>
+              <h3 className={createModalClasses.headerTitle()}>{t('travel_pins.delete_modal.title')}</h3>
+              <p className={createModalClasses.headerSubtitle()}>{t('travel_pins.delete_modal.subtitle')}</p>
+            </div>
+          </div>
         </div>
-        <p style={{ marginTop: 0, color: '#475569' }}>
-          {intl.formatMessage({id: 'travel_pins.delete_modal.confirmation_text'})}
-        </p>
-        <div style={{ display: 'flex', gap: 12, justifyContent: 'flex-end', marginTop: 20 }}>
-          <button onClick={onCancel} style={{
-            padding: '10px 16px', borderRadius: 10, border: '1px solid #e2e8f0', background: 'white', cursor: 'pointer'
-          }}>{intl.formatMessage({id: 'travel_pins.delete_modal.cancel_button'})}</button>
-          <button onClick={onConfirm} style={{
-            padding: '10px 16px', borderRadius: 10, border: '1px solid transparent', background: '#ef4444', color: 'white', cursor: 'pointer'
-          }}>{intl.formatMessage({id: 'travel_pins.delete_modal.delete_button'})}</button>
+        
+        <div className={createModalClasses.body()}>
+          <div className="space-y-4">
+            <div className={createModalClasses.contentSection('danger')}>
+              <div className={createModalClasses.sectionContent()}>
+                <div className={createModalClasses.sectionIcon('danger')}>📍</div>
+                <div className={createModalClasses.sectionText()}>
+                  <div className={createModalClasses.sectionLabel()}>{t('travel_pins.delete_modal.pin_to_delete')}</div>
+                  <div className={createModalClasses.sectionTitle()}>{pin?.title}</div>
+                  {pin?.note && (
+                    <div className={createModalClasses.sectionDesc() + " line-clamp-2"}>{pin.note}</div>
+                  )}
+                  {pin?.visited_at && (
+                    <div className="text-xs text-slate-500 mt-2">{t('travel_pins.popup.visited')} {formatDate(pin.visited_at)}</div>
+                  )}
+                </div>
+              </div>
+            </div>
+            
+            <div className={createModalClasses.contentSection('warning')}>
+              <div className={createModalClasses.sectionContent()}>
+                <div className={createModalClasses.sectionIcon('small') + " bg-gradient-to-br from-amber-400 to-orange-500"}>💡</div>
+                <div className="text-sm text-slate-700">
+                  <div className="font-semibold mb-1">{t('travel_pins.delete_modal.confirmation_title')}</div>
+                  <div>{t('travel_pins.delete_modal.confirmation_text')}</div>
+                </div>
+              </div>
+            </div>
+          </div>
+          
+          <div className={createModalClasses.actions()}>
+            <button onClick={onCancel} className={createModalClasses.button('secondary')}>
+              {t('travel_pins.delete_modal.cancel_button')}
+            </button>
+            <button onClick={onConfirm} className={createModalClasses.button('danger')}>
+              {t('travel_pins.delete_modal.delete_forever_button')}
+            </button>
+          </div>
         </div>
       </div>
     </div>
