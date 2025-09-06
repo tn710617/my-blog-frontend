@@ -5,7 +5,7 @@ import { Z_INDEX } from '../../utils/zIndex';
 import { markdownToHtml } from '../../utils/markdownUtils';
 import { copyPinUrlToClipboard } from '../../utils/urlUtils';
 import { usePinFromCache } from '../../hooks/useTravelPinsApi';
-import { createPopupClasses } from '../../utils/popupTailwindStyles';
+import { createModalClasses } from '../../utils/modalStyles';
 
 const DisplayPopup = ({ withinOverlay = false }) => {
   const intl = useIntl();
@@ -51,17 +51,17 @@ const DisplayPopup = ({ withinOverlay = false }) => {
   };
 
   const content = (
-    <div className={createPopupClasses.dialog()}>
-        <header className={createPopupClasses.header()}>
-          <div className={createPopupClasses.headerOverlay()} />
-          <div className={createPopupClasses.headerContent()}>
-            <div className={createPopupClasses.titleSection()}>
-              <h3 className={createPopupClasses.title()}>{pin.title}</h3>
+    <div className={createModalClasses.dialog()}>
+        <header className={createModalClasses.header('primary')}>
+          <div className={createModalClasses.headerOverlay()} />
+          <div className={createModalClasses.headerContent()}>
+            <div className={createModalClasses.headerText()}>
+              <h3 className={createModalClasses.headerTitle()}>{pin.title}</h3>
               {pin.visited_at && (
-                <p className={createPopupClasses.date()}>📍 {formatDate(pin.visited_at)}</p>
+                <p className="text-sm opacity-90 mt-2 font-normal">📍 {formatDate(pin.visited_at)}</p>
               )}
             </div>
-            <button className={createPopupClasses.closeBtn()} aria-label="Close" onClick={onClose}>
+            <button className="flex-shrink-0 w-8 h-8 bg-white/10 hover:bg-white/20 rounded-lg border-none cursor-pointer flex items-center justify-center text-white transition-all duration-200 hover:scale-105" aria-label="Close" onClick={onClose}>
               <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                 <line x1="18" y1="6" x2="6" y2="18"></line>
                 <line x1="6" y1="6" x2="18" y2="18"></line>
@@ -70,29 +70,29 @@ const DisplayPopup = ({ withinOverlay = false }) => {
           </div>
         </header>
 
-        <div className={createPopupClasses.content()}>
+        <div className={createModalClasses.body()}>
           {pin.note && (
-            <section className={createPopupClasses.section()}>
-              <h4 className={createPopupClasses.sectionTitle()}>
-                <span className={createPopupClasses.sectionIcon()}>📝</span>
+            <section className="space-y-3">
+              <h4 className="text-sm font-bold text-slate-700 uppercase tracking-wide flex items-center gap-2">
+                <span className="text-base">📝</span>
                 {t('travel_pins.popup.travel_notes')}
               </h4>
-              <div className={createPopupClasses.notesContainer()}>
-                <div className={createPopupClasses.notesContent()} dangerouslySetInnerHTML={{ __html: markdownToHtml(pin.note) }} />
+              <div className="bg-gradient-to-br from-amber-50 to-orange-50 border border-amber-200/50 rounded-xl p-4">
+                <div className="text-sm text-slate-700 leading-relaxed max-w-none" dangerouslySetInnerHTML={{ __html: markdownToHtml(pin.note) }} />
               </div>
             </section>
           )}
 
           {pin.photo_url && (
-            <section className={createPopupClasses.section()}>
-              <h4 className={createPopupClasses.sectionTitle()}>
-                <span className={createPopupClasses.sectionIcon()}>📷</span>
+            <section className="space-y-3">
+              <h4 className="text-sm font-bold text-slate-700 uppercase tracking-wide flex items-center gap-2">
+                <span className="text-base">📷</span>
                 {t('travel_pins.popup.photo')}
               </h4>
-              <div className={createPopupClasses.photoContainer()}>
-                <button className={createPopupClasses.photoBtn()} aria-label="View photo" onClick={onPhoto}>
-                  <img src={pin.photo_url} alt={pin.title} className={createPopupClasses.photoImg()} loading="lazy" />
-                  <div className={createPopupClasses.photoOverlay()}>
+              <div className="relative">
+                <button className="w-full border-none bg-none p-0 cursor-pointer rounded-xl overflow-hidden relative block" aria-label="View photo" onClick={onPhoto}>
+                  <img src={pin.photo_url} alt={pin.title} className="w-full h-48 object-cover transition-transform duration-300 hover:scale-105" loading="lazy" />
+                  <div className="absolute inset-0 bg-black/40 flex items-center justify-center opacity-0 hover:opacity-100 transition-opacity duration-300 text-white">
                     <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                       <circle cx="11" cy="11" r="8"></circle>
                       <path d="M21 21l-4.35-4.35"></path>
@@ -105,9 +105,9 @@ const DisplayPopup = ({ withinOverlay = false }) => {
           )}
         </div>
 
-        <footer className={createPopupClasses.actions()}>
-          <button className={createPopupClasses.button('secondary')} onClick={onCopy} type="button">
-            <svg className={createPopupClasses.buttonIcon()} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+        <footer className={createModalClasses.actions()}>
+          <button className={createModalClasses.button('secondary')} onClick={onCopy} type="button">
+            <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
               {copied ? (
                 <polyline points="20,6 9,17 4,12"></polyline>
               ) : (
@@ -121,19 +121,19 @@ const DisplayPopup = ({ withinOverlay = false }) => {
           </button>
           
           {copyError && (
-            <span className={createPopupClasses.copyError()}>{copyError}</span>
+            <span className="text-red-600 text-xs">{copyError}</span>
           )}
           
-          <button className={createPopupClasses.button('primary')} onClick={onEdit}>
-            <svg className={createPopupClasses.buttonIcon()} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+          <button className={createModalClasses.button('primary')} onClick={onEdit}>
+            <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
               <path d="M12 20h9"></path>
               <path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"></path>
             </svg>
             {t('travel_pins.popup.edit_button')}
           </button>
           
-          <button className={createPopupClasses.button('danger')} onClick={onDelete}>
-            <svg className={createPopupClasses.buttonIcon()} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+          <button className={createModalClasses.button('danger')} onClick={onDelete}>
+            <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
               <polyline points="3,6 5,6 21,6"></polyline>
               <path d="m19,6v14a2,2 0,0 1,-2,2H7a2,2 0,0 1,-2,-2V6m3,0V4a2,2 0,0 1,2,-2h4a2,2 0,0 1,2,2V6"></path>
             </svg>
