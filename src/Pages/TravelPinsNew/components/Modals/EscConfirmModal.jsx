@@ -41,34 +41,19 @@ const EscConfirmModal = ({ withinOverlay = false }) => {
             <div className={createModalClasses.headerIcon()}>💾</div>
             <div className={createModalClasses.headerText()}>
               <h3 className={createModalClasses.headerTitle()}>{t('travel_pins.unsaved_modal.title')}</h3>
-              <p className={createModalClasses.headerSubtitle()}>You have unsaved changes</p>
+              <p className={createModalClasses.headerSubtitle()}>{t('travel_pins.unsaved_modal.subtitle')}</p>
             </div>
           </div>
         </div>
         
         <div className={createModalClasses.body()}>
           <div className="space-y-4">
-            <div className={createModalClasses.contentSection('warning')}>
-              <div className={createModalClasses.sectionContent()}>
-                <div className={createModalClasses.sectionIcon('warning')}>✏️</div>
-                <div className={createModalClasses.sectionText()}>
-                  <div className={createModalClasses.sectionLabel()}>Current Form</div>
-                  <div className={createModalClasses.sectionTitle()}>
-                    {editingPin ? `Editing: ${editingPin.title}` : 'Creating New Pin'}
-                  </div>
-                  <div className={createModalClasses.sectionDesc()}>
-                    You have made changes that haven't been saved yet.
-                  </div>
-                </div>
-              </div>
-            </div>
-            
             <div className={createModalClasses.contentSection('info')}>
               <div className={createModalClasses.sectionContent()}>
                 <div className={createModalClasses.sectionIcon('small')}>💡</div>
                 <div className="text-sm text-slate-700">
-                  <div className="font-semibold mb-1">What would you like to do?</div>
-                  <div>You can go back to continue editing, or discard your changes and close the form.</div>
+                  <div className="font-semibold mb-1">{t('travel_pins.unsaved_modal.question')}</div>
+                  <div>{t('travel_pins.unsaved_modal.subtitle')}</div>
                 </div>
               </div>
             </div>
@@ -76,10 +61,10 @@ const EscConfirmModal = ({ withinOverlay = false }) => {
           
           <div className={createModalClasses.actions()}>
             <button onClick={onCancel} className={createModalClasses.button('continue')}>
-              Continue Editing
+              {t('travel_pins.unsaved_modal.continue_button')}
             </button>
             <button onClick={onConfirm} className={createModalClasses.button('secondary')}>
-              Discard Changes
+              {t('travel_pins.unsaved_modal.discard_button')}
             </button>
           </div>
         </div>

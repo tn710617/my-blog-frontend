@@ -136,6 +136,7 @@
   "travel_pins.unsaved_modal.subtitle": "您有尚未儲存的變更",
   "travel_pins.unsaved_modal.current_form": "目前表單",
   "travel_pins.unsaved_modal.question": "您想要執行什麼動作？",
+  "travel_pins.unsaved_modal.continue_button": "繼續編輯",
   "travel_pins.unsaved_modal.save_button": "儲存變更",
   "travel_pins.unsaved_modal.discard_button": "捨棄變更",
   "travel_pins.toast.pin_created": "旅遊標記建立成功！",

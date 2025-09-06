@@ -135,6 +135,7 @@
   "travel_pins.unsaved_modal.subtitle": "You have unsaved changes",
   "travel_pins.unsaved_modal.current_form": "Current Form",
   "travel_pins.unsaved_modal.question": "What would you like to do?",
+  "travel_pins.unsaved_modal.continue_button": "Continue Editing",
   "travel_pins.unsaved_modal.save_button": "Save Changes",
   "travel_pins.unsaved_modal.discard_button": "Discard Changes",
   "travel_pins.toast.pin_created": "Travel pin created successfully!",
