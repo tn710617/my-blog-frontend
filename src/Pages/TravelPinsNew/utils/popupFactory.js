@@ -43,8 +43,9 @@ export function createPopup(pin, handlers) {
     closeButton: false,
     closeOnClick: false,
     className: 'travel-pin-popup-container',
-    anchor: 'center',
-    offset: [0, 0],
+    // Prefer showing above the point; SymbolsManager will recenter to make it appear centered in viewport
+    anchor: 'bottom',
+    offset: [0, 8],
     maxWidth: 'none'
   });
 

@@ -5,6 +5,7 @@ import MapLoadingIndicator from './components/MapLoadingIndicator';
 import MobileGestureToggle from './components/MobileGestureToggle';
 import SymbolsManager from './components/SymbolsManager';
 import BackgroundOverlay from './components/BackgroundOverlay';
+import DisplayPopup from './components/Popups/DisplayPopup';
 import DeleteConfirmationModal from './components/Modals/DeleteConfirmationModal';
 import PhotoModal from './components/Modals/PhotoModal';
 import EditPinModal from './components/Modals/EditPinModal';
@@ -65,6 +66,7 @@ const TravelPinsNew = () => {
         
         {/* SymbolLayer-based pins (no backside flicker) */}
         <SymbolsManager />
+        <DisplayPopup />
         <BackgroundOverlay />
         
         {/* Phase 14 - Location Button */}

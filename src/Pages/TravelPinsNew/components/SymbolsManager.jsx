@@ -4,7 +4,7 @@ import { useMapStore } from '../stores/mapStore';
 import { useTravelPins } from '../hooks/useTravelPinsApi';
 import { assignColorsByScreen } from '../utils/colorManager';
 import { SKIN_SCHEMES, CONTRAST_SCHEMES } from '../utils/palettes';
-import { createPopup, updatePopup } from '../utils/popupFactory';
+// import { createPopup, updatePopup } from '../utils/popupFactory';
 import { useModalStore } from '../stores/modalStore';
 import { setDisplayPopupCloser, clearDisplayPopupCloser, setDisplayPopupOpener } from '../utils/displayPopupController';
 import { copyPinUrlToClipboard, getPinIdFromUrl } from '../utils/urlUtils';
@@ -160,7 +160,7 @@ const SymbolsManager = () => {
   const { data: pins = [], isLoading } = useTravelPins();
   const assignedColorsRef = React.useRef(new Map());
   const hoverIdRef = React.useRef(null);
-  const openPopupRef = React.useRef(null);
+  const openPopupRef = React.useRef(null); // legacy ref no longer used for Mapbox Popup
   const openPinRef = React.useRef(null);
   const isLoggedIn = useAuthStore((s) => s.isLoggedIn);
   const setShowLoginModal = useLoginModalStore((s) => s.setShowLoginModal);
@@ -174,46 +174,14 @@ const SymbolsManager = () => {
 
   const openPinPopup = React.useCallback((map, pin) => {
     if (!map || !pin) return;
-    try { if (openPopupRef.current) openPopupRef.current.remove(); } catch {}
-    const popup = createPopup(pin, {
-      t,
-      formatDate,
-      isLoggedIn,
-      onPopupOpen: () => {},
-      onPopupClose: () => { 
-        openPopupRef.current = null; 
-        openPinRef.current = null; 
-        clearDisplayPopupCloser();
-        // 僅在 activeModal 是 'display' 時才關閉，避免刪除流程誤關閉其他 modal
-        try {
-          const current = useModalStore.getState().activeModal;
-          if (current === 'display') closeModal();
-        } catch {}
-      },
-      onCopyLink: async () => { await copyPinUrlToClipboard(pin.id); },
-      onEdit: () => {
-        // 關閉目前 popup，開啟編輯表單
-        try { if (openPopupRef.current) openPopupRef.current.remove(); } catch {}
-        try { openModal('form', { pin }); } catch (e) { console.error(e); }
-      },
-      onDelete: () => {
-        // 先關閉顯示視窗，再開啟刪除確認，避免 onPopupClose 關掉新 modal
-        try { if (openPopupRef.current) openPopupRef.current.remove(); } catch {}
-        try { openModal('delete', { pin }); } catch (e) { console.error(e); }
-      },
-      onPhotoView: () => {
-        if (!pin.photo_url) return;
-        try { openModal('photo', { url: pin.photo_url, title: pin.title, pin }); } catch (e) { console.error(e); }
-      },
-    });
-    popup.setLngLat(pin.coordinates).addTo(map);
-    openPopupRef.current = popup;
+    // React-based fixed-position display popup (no Mapbox Popup)
     openPinRef.current = pin;
-    setDisplayPopupCloser(() => {
-      try { popup.remove(); } catch {}
-    });
-    try { openModal('display', { id: pin.id }); } catch {}
-  }, [t, formatDate, isLoggedIn, openModal, closeModal]);
+    // Provide global open/close hooks for overlay and others
+    setDisplayPopupCloser(() => { try { useModalStore.getState().closeModal(); } catch {} });
+    setDisplayPopupOpener((p) => { try { useModalStore.getState().openModal('display', { pin: p }); } catch {} });
+    // Open display popup with pin data
+    try { openModal('display', { pin }); } catch (e) { console.error(e); }
+  }, [openModal]);
 
   React.useEffect(() => {
     if (!isMapReady || !mapInstance || isLoading) return;
@@ -439,47 +407,7 @@ const SymbolsManager = () => {
     waitForStyleLoad();
   }, [isMapReady, mapInstance, isLoading, pins, isLoggedIn, setShowLoginModal]);
 
-  // 登入狀態變更時，若已有開啟的 popup，更新其內容（顯示/隱藏編輯與刪除按鈕）
-  React.useEffect(() => {
-    if (!openPopupRef.current || !openPinRef.current) return;
-    try {
-      const pin = openPinRef.current;
-      const popup = openPopupRef.current;
-      // 以最新 isLoggedIn 重繪內容
-      const handlers = { t, formatDate, isLoggedIn };
-      updatePopup(popup, pin, handlers);
-    } catch {}
-  }, [t, formatDate, isLoggedIn]);
-
-  // 補強：直接訂閱 Auth Store 的變化，確保在 React 不重渲染的邊界情況也能即時同步 popup 內容
-  React.useEffect(() => {
-    const unsubscribe = useAuthStore.subscribe(
-      (s) => s.isLoggedIn,
-      (loggedIn) => {
-        try {
-          if (!openPopupRef.current || !openPinRef.current) return;
-          const popup = openPopupRef.current;
-          const pin = openPinRef.current;
-          updatePopup(popup, pin, { t, formatDate, isLoggedIn: loggedIn });
-        } catch {}
-      }
-    );
-    return () => unsubscribe?.();
-  }, [t, formatDate]);
-
-  // 當 pins 資料更新時，如果有開啟的 popup，同步內容（例如標題、備註、照片）
-  React.useEffect(() => {
-    if (!openPopupRef.current || !openPinRef.current) return;
-    const id = openPinRef.current.id;
-    const updated = pins.find((p) => String(p.id) === String(id));
-    if (!updated) return;
-    try {
-      const popup = openPopupRef.current;
-      const handlers = { t, formatDate, isLoggedIn };
-      openPinRef.current = updated;
-      updatePopup(popup, updated, handlers);
-    } catch {}
-  }, [pins, t, formatDate, isLoggedIn]);
+  // React-based DisplayPopup renders from modal store; updates are driven by store/pins state naturally.
 
   // 註冊開啟顯示視窗的入口，供 Delete Modal 取消後回到顯示視窗
   React.useEffect(() => {
