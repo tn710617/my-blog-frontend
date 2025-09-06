@@ -3,16 +3,10 @@ import {usePaginationStore, useCategoryStore, usePostTagsStore} from "../../stor
 import {useNavigate} from "react-router";
 
 export default function TravelPinsButton() {
-    const setCurrentPage = usePaginationStore((state) => state.setCurrentPage)
-    const setCategoryId = useCategoryStore((state) => state.setCategoryId)
-    const setTags = usePostTagsStore((state) => state.setTags)
     const navigate = useNavigate()
     
     const handleOnClick = () => {
-        setCategoryId(null)
-        setTags([])
-        setCurrentPage(null)
-        navigate("/travel-pins")
+        navigate("/travel-pins-new")
     }
     
     return (

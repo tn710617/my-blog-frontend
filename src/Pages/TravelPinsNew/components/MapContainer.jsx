@@ -30,7 +30,7 @@ const MapContainer = () => {
       
       const map = new mapboxgl.Map({
         container: mapContainerRef.current,
-        style: 'mapbox://styles/mapbox/satellite-streets-v12', // Keep satellite style for consistency
+        style: 'mapbox://styles/mapbox/outdoors-v12', // Keep satellite style for consistency
         center: center,
         zoom: 2, // Start at zoom 2 like original
         projection: 'globe', // 3D globe projection
