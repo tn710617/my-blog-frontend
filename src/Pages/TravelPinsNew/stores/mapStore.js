@@ -21,7 +21,8 @@ export const useMapStore = create(
       },
       
       // Mobile gesture mode (persisted for user preference)
-      isMobileGestureMode: 'rotate', // 'rotate' | 'scroll'
+      // Default to 'scroll' so cooperativeGestures:true on first load
+      isMobileGestureMode: 'scroll', // 'rotate' | 'scroll'
       
       // Set map instance
       setMapInstance: (map) => {

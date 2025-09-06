@@ -2,20 +2,20 @@ import React from 'react';
 import { useIntl } from 'react-intl';
 import { useMapStore } from '../stores/mapStore';
 import { Z_INDEX } from '../utils/zIndex';
+import { useResponsive } from '../hooks/useResponsive';
 
 const MobileGestureToggle = () => {
   const intl = useIntl();
   const { isMobileGestureMode, toggleMobileGestureMode } = useMapStore();
+  const isMobile = useResponsive();
 
   // Only show on mobile devices
-  if (window.innerWidth > 768) {
-    return null;
-  }
+  if (!isMobile) return null;
 
-  const isRotateMode = isMobileGestureMode === 'rotate';
+  const isScrollMode = isMobileGestureMode === 'scroll';
 
-  const icon = isRotateMode ? (
-    // Globe rotation icon - earth with orbital paths
+  const icon = isScrollMode ? (
+    // Globe icon when current behavior is: finger = page scroll (cooperativeGestures: true)
     <div className="relative">
       <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
         <circle cx="12" cy="12" r="10"/>
@@ -31,7 +31,7 @@ const MobileGestureToggle = () => {
       </div>
     </div>
   ) : (
-    // Page scroll icon - document with scroll arrows
+    // Document icon when current behavior is: finger = rotate/pan map (cooperativeGestures: false)
     <div className="relative">
       <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
         <rect x="3" y="2" width="18" height="20" rx="2" ry="2"/>
@@ -55,23 +55,23 @@ const MobileGestureToggle = () => {
         backdrop-blur-md border transition-all duration-500 ease-out
         hover:scale-105 hover:shadow-2xl hover:-translate-y-1
         active:scale-95 active:translate-y-0
-        ${isRotateMode 
-          ? 'bg-gradient-to-br from-blue-900/90 to-cyan-800/90 border-blue-700/50 text-blue-100 hover:from-blue-800/95 hover:to-cyan-700/95 hover:border-blue-600/70 shadow-lg shadow-blue-900/50' 
-          : 'bg-slate-900/80 border-slate-700/50 text-slate-200 hover:bg-slate-800/90 hover:border-slate-600/70 shadow-lg shadow-slate-900/50'
+        ${isScrollMode 
+          ? 'bg-slate-900/80 border-slate-700/50 text-slate-200 hover:bg-slate-800/90 hover:border-slate-600/70 shadow-lg shadow-slate-900/50' 
+          : 'bg-gradient-to-br from-blue-900/90 to-cyan-800/90 border-blue-700/50 text-blue-100 hover:from-blue-800/95 hover:to-cyan-700/95 hover:border-blue-600/70 shadow-lg shadow-blue-900/50'
         }
       `}
       style={{ zIndex: Z_INDEX.GPS_BUTTON }}
       title={intl.formatMessage({
-        id: isRotateMode ? 'travel_pins.mobile_toggle.rotation_mode' : 'travel_pins.mobile_toggle.scroll_mode'
+        id: isScrollMode ? 'travel_pins.mobile_toggle.scroll_mode' : 'travel_pins.mobile_toggle.rotation_mode'
       })}
     >
       <div className="flex items-center justify-center relative">
         {icon}
         {/* Subtle glow effect */}
         <div className={`absolute inset-0 rounded-2xl transition-opacity duration-300 ${
-          isRotateMode 
-            ? 'bg-gradient-radial from-cyan-400/20 to-transparent opacity-0 hover:opacity-100' 
-            : 'bg-gradient-radial from-slate-400/20 to-transparent opacity-0 hover:opacity-100'
+          isScrollMode 
+            ? 'bg-gradient-radial from-slate-400/20 to-transparent opacity-0 hover:opacity-100' 
+            : 'bg-gradient-radial from-cyan-400/20 to-transparent opacity-0 hover:opacity-100'
         }`} />
       </div>
     </button>

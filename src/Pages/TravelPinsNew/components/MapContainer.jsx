@@ -1,8 +1,9 @@
-import React, { useRef, useEffect } from 'react';
+import React, { useRef, useEffect, useMemo } from 'react';
 import mapboxgl from 'mapbox-gl';
 import 'mapbox-gl/dist/mapbox-gl.css';
 import { useMapStore } from '../stores/mapStore';
 import { Z_INDEX } from '../utils/zIndex';
+import { useResponsive } from '../hooks/useResponsive';
 
 const MapContainer = () => {
   const mapContainerRef = useRef(null);
@@ -15,6 +16,12 @@ const MapContainer = () => {
     setMapRootEl,
   } = useMapStore();
 
+  // Use responsive hook for consistent mobile detection
+  const isMobile = useResponsive();
+
+  // Derive a stable dependency key: desktop forces cooperative gestures
+  const coopKey = useMemo(() => (isMobile ? isMobileGestureMode : 'desktop'), [isMobile, isMobileGestureMode]);
+
   useEffect(() => {
     if (!mapContainerRef.current) return;
 
@@ -22,9 +29,6 @@ const MapContainer = () => {
     mapboxgl.accessToken = import.meta.env.VITE_MAPBOX_TOKEN;
 
     try {
-      // Detect mobile device for positioning (following existing pattern)
-      const isMobile = window.innerWidth <= 768;
-      
       // Adjust center position for mobile - move earth higher (more negative latitude)
       const center = isMobile ? [0, -15] : [0, 0];
       
@@ -45,7 +49,8 @@ const MapContainer = () => {
         keyboard: true,
         touchPitch: true,       // Two-finger pitch/tilt on mobile
         pitchWithRotate: true,  // Enable pitch when rotating
-        cooperativeGestures: isMobileGestureMode === 'scroll' ? true : false,
+        // Desktop: always cooperative gestures; Mobile: follow toggle mode
+        cooperativeGestures: !isMobile || isMobileGestureMode === 'scroll',
       });
 
       // Map load event
@@ -79,7 +84,7 @@ const MapContainer = () => {
       console.error('Failed to initialize map:', error);
       setMapError(error.message || 'Failed to initialize map');
     }
-  }, [setMapInstance, setMapError, isMobileGestureMode]);
+  }, [setMapInstance, setMapError, coopKey]);
 
   // Expose root element for portals like overlay
   useEffect(() => {

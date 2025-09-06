@@ -118,10 +118,17 @@ export const setMobilePadding = (map, isMobile = window.innerWidth <= 768) => {
 
 // Handle window resize and update padding
 export const handleResize = (map) => {
-  if (!map) return;
-  
+  if (!map || typeof map.resize !== 'function') return;
+
+  const target = map;
   setTimeout(() => {
-    map.resize();
-    setMobilePadding(map);
+    try {
+      // Guard against map being removed between scheduling and execution
+      if (!target || typeof target.getContainer !== 'function') return;
+      const container = target.getContainer();
+      if (!container) return;
+      target.resize();
+      setMobilePadding(target);
+    } catch {}
   }, 100);
 };
