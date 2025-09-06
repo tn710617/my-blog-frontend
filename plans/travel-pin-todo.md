@@ -279,10 +279,31 @@
 
 **依賴：** Phase 2（地圖實例）、現有 NavBar 架構
 
-## Phase 14 — 工具與動作（定位/控制）
-- [T14.1] 取得使用者位置按鈕（定位成功置中、失敗提示錯誤）
-- [T14.2] 定位時顯示 loading 與錯誤 UI（如權限拒絕/逾時）
-- [T14.3] 搜尋/定位與 SymbolLayer 不互斥（維持 hover/click）
+## Phase 14 — 工具與動作（定位/控制）✅ DONE
+- [✅T14.1] 取得使用者位置按鈕（定位成功置中、失敗提示錯誤）
+- [✅T14.2] 定位時顯示 loading 與錯誤 UI（如權限拒絕/逾時）
+- [✅T14.3] 搜尋/定位與 SymbolLayer 不互斥（維持 hover/click）
+
+**完成摘要：**
+- GPS 定位按鈕：位於右下角 (`fixed bottom-6 right-6`)，64x64px 圓形設計
+- 定位狀態顯示：loading 動畫 (琥珀色脈衝效果)、成功 (綠色漸層)、錯誤 toast (紅色通知)
+- 位置精度：街道級別 zoom (15)，平滑 flyTo 動畫 2.5s
+- 錯誤處理：權限拒絕/逾時/服務不可用等完整錯誤訊息與手動清除機制
+- 手勢切換按鈕：移動至左下角 (`fixed bottom-6 left-6`)，採用舊實作的精緻設計風格
+- 完整國際化：所有按鈕文字、錯誤訊息、提示文字支援 EN/ZH-TW
+- 地圖容器優化：移除內容確保 Mapbox GL JS 最佳互動性，加入 WebGL 支援檢測
+
+**變更摘要（Phase 14 完成時）：**
+- **按鈕布局優化**：MobileGestureToggle 移動至左下角，採用舊實作一致的視覺設計
+- **地圖容器清理**：移除所有內容避免 Mapbox GL JS 互動干擾，加入 WebGL 支援檢測
+- **定位功能完整**：GPS 按鈕功能完備，包含錯誤處理、動畫效果、國際化支援
+
+**實作位置：**
+- `src/Pages/TravelPinsNew/components/LocationButton.jsx`：GPS 定位按鈕完整實作
+- `src/Pages/TravelPinsNew/components/MobileGestureToggle.jsx`：手勢切換按鈕位置與樣式更新
+- `src/Pages/TravelPinsNew/components/MapContainer.jsx`：地圖容器優化與 WebGL 檢測
+- `src/Pages/TravelPinsNew/hooks/useGeolocation.js`：定位邏輯 hook
+- `src/Pages/TravelPinsNew/index.jsx`：組件整合與事件處理
 
 ### 執行順序建議（摘要）
 1) Phase 0 → 1（基礎 + 資料）
