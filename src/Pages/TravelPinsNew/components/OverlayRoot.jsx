@@ -76,30 +76,53 @@ const OverlayRoot = () => {
       />
 
       {/* Scroll container and content surface (shared) */}
-      <div className="fixed inset-0 flex justify-center p-4 overflow-y-auto" style={{ pointerEvents: 'none' }}>
+      <div
+        className="fixed inset-0 flex justify-center p-4 overflow-y-auto"
+        onClick={handleBackdropClick}
+      >
         {/* Each child enables pointer events to remain interactive */}
         {activeModal === 'display' && (
-          <div className="my-4 self-start" style={{ zIndex: Z_INDEX.POPUP, pointerEvents: 'auto' }}>
+          <div
+            className="my-4 self-start"
+            style={{ zIndex: Z_INDEX.POPUP, pointerEvents: 'auto' }}
+            onClick={(e) => e.stopPropagation()}
+          >
             <DisplayPopup withinOverlay />
           </div>
         )}
         {activeModal === 'delete' && (
-          <div className="my-4 self-start" style={{ zIndex: Z_INDEX.MODAL, pointerEvents: 'auto' }}>
+          <div
+            className="my-4 self-start"
+            style={{ zIndex: Z_INDEX.MODAL, pointerEvents: 'auto' }}
+            onClick={(e) => e.stopPropagation()}
+          >
             <DeleteConfirmationModal withinOverlay />
           </div>
         )}
         {activeModal === 'form' && !modalData?.confirmOpen && (
-          <div className="my-4 self-start" style={{ zIndex: Z_INDEX.MODAL, pointerEvents: 'auto' }}>
+          <div
+            className="my-4 self-start"
+            style={{ zIndex: Z_INDEX.MODAL, pointerEvents: 'auto' }}
+            onClick={(e) => e.stopPropagation()}
+          >
             <EditPinModal withinOverlay />
           </div>
         )}
         {activeModal === 'form' && modalData?.confirmOpen && (
-          <div className="my-4 self-start" style={{ zIndex: Z_INDEX.MODAL, pointerEvents: 'auto' }}>
+          <div
+            className="my-4 self-start"
+            style={{ zIndex: Z_INDEX.MODAL, pointerEvents: 'auto' }}
+            onClick={(e) => e.stopPropagation()}
+          >
             <EscConfirmModal withinOverlay />
           </div>
         )}
         {activeModal === 'photo' && (
-          <div className="my-4 self-center w-full" style={{ zIndex: Z_INDEX.MODAL, pointerEvents: 'auto' }}>
+          <div
+            className="my-4 self-center w-full"
+            style={{ zIndex: Z_INDEX.MODAL, pointerEvents: 'auto' }}
+            onClick={(e) => e.stopPropagation()}
+          >
             <PhotoModal withinOverlay />
           </div>
         )}
@@ -109,4 +132,3 @@ const OverlayRoot = () => {
 };
 
 export default OverlayRoot;
-

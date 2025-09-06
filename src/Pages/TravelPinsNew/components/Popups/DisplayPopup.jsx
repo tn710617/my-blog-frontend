@@ -6,6 +6,7 @@ import {markdownToHtml} from '../../utils/markdownUtils';
 import {copyPinUrlToClipboard} from '../../utils/urlUtils';
 import {usePinFromCache} from '../../hooks/useTravelPinsApi';
 import {createModalClasses} from '../../utils/modalStyles';
+import {useAuthStore} from '../../../../stores';
 
 const DisplayPopup = ({withinOverlay = false}) => {
     const intl = useIntl();
@@ -20,6 +21,8 @@ const DisplayPopup = ({withinOverlay = false}) => {
     // Always run hooks in the same order (avoid conditional hooks)
     const latestPin = usePinFromCache(pinId);
     const pin = latestPin || modalData?.pin;
+    // 訂閱登入狀態，確保登入/登出會即時觸發重渲染
+    const isLoggedIn = useAuthStore((s) => s.isLoggedIn);
     if (activeModal !== 'display' || !pinId || !pin) return null;
 
     const t = (id) => intl.formatMessage({id});
@@ -137,27 +140,31 @@ const DisplayPopup = ({withinOverlay = false}) => {
                         <span className="text-red-600 text-xs">{copyError}</span>
                     )}
 
-                    <button className={createModalClasses.button('primary')} onClick={onEdit}>
-                        <div className={"flex items-center gap-2 justify-center"}>
-                            <svg className="w-4 h-4 hidden sm:block" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                                <path d="M12 20h9"></path>
-                                <path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"></path>
-                            </svg>
-                            {t('travel_pins.popup.edit_button')}
-                        </div>
-                    </button>
+                    {isLoggedIn && (
+                        <button className={createModalClasses.button('primary')} onClick={onEdit}>
+                            <div className={"flex items-center gap-2 justify-center"}>
+                                <svg className="w-4 h-4 hidden sm:block" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                                    <path d="M12 20h9"></path>
+                                    <path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"></path>
+                                </svg>
+                                {t('travel_pins.popup.edit_button')}
+                            </div>
+                        </button>
+                    )}
 
-                    <button className={createModalClasses.button('danger')} onClick={onDelete}>
-                        <div className={"flex items-center gap-2 justify-center"}>
-                            <svg className="w-4 h-4 hidden sm:block" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                                <polyline points="3,6 5,6 21,6"></polyline>
-                                <path
-                                    d="m19,6v14a2,2 0,0 1,-2,2H7a2,2 0,0 1,-2,-2V6m3,0V4a2,2 0,0 1,2,-2h4a2,2 0,0 1,2,2V6"></path>
-                            </svg>
-                            {t('travel_pins.popup.delete_button')}
+                    {isLoggedIn && (
+                        <button className={createModalClasses.button('danger')} onClick={onDelete}>
+                            <div className={"flex items-center gap-2 justify-center"}>
+                                <svg className="w-4 h-4 hidden sm:block" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                                    <polyline points="3,6 5,6 21,6"></polyline>
+                                    <path
+                                        d="m19,6v14a2,2 0,0 1,-2,2H7a2,2 0,0 1,-2,-2V6m3,0V4a2,2 0,0 1,2,-2h4a2,2 0,0 1,2,2V6"></path>
+                                </svg>
+                                {t('travel_pins.popup.delete_button')}
 
-                        </div>
-                    </button>
+                            </div>
+                        </button>
+                    )}
                 </footer>
             </div>
 
