@@ -33,12 +33,8 @@ export const useKeyboardHandlers = () => {
       }
 
       if (activeModal === 'photo') {
-        // Close photo modal then restore display popup
-        closeModal();
-        const pin = modalData?.pin;
-        if (pin) {
-          setTimeout(() => { try { openDisplayPopup(pin); } catch {} }, 0);
-        }
+        // Unified behavior for ESC and close button
+        try { useModalStore.getState().closePhotoAndBackToDisplay(); } catch {}
         return;
       }
 

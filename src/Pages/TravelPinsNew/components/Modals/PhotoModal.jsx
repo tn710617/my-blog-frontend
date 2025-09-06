@@ -5,7 +5,7 @@ import { Z_INDEX } from '../../utils/zIndex';
 const PhotoModal = () => {
   const activeModal = useModalStore((s) => s.activeModal);
   const modalData = useModalStore((s) => s.modalData);
-  const closeModal = useModalStore((s) => s.closeModal);
+  const closePhotoAndBackToDisplay = useModalStore((s) => s.closePhotoAndBackToDisplay);
 
   if (activeModal !== 'photo' || !modalData?.url) return null;
 
@@ -17,7 +17,7 @@ const PhotoModal = () => {
       zIndex: Z_INDEX.MODAL, pointerEvents: 'none'
     }}>
       <div style={{ position: 'relative', width: 'min(92vw, 980px)', pointerEvents: 'auto' }}>
-        <button onClick={closeModal} aria-label="Close" style={{
+        <button onClick={closePhotoAndBackToDisplay} aria-label="Close" style={{
           position: 'absolute', top: -12, right: -12, width: 36, height: 36,
           borderRadius: '9999px', border: '1px solid rgba(0,0,0,0.08)', background: 'white', cursor: 'pointer',
           boxShadow: '0 6px 12px rgba(0,0,0,0.12)'
@@ -34,4 +34,3 @@ const PhotoModal = () => {
 };
 
 export default PhotoModal;
-

@@ -1,4 +1,5 @@
 import { create } from 'zustand';
+import { openDisplayPopup } from '../utils/displayPopupController';
 
 // Modal state management for Travel Pins New
 // Handles which modal is currently open and prevents multiple modals from being open simultaneously
@@ -23,6 +24,18 @@ export const useModalStore = create((set, get) => ({
       activeModal: null,
       modalData: null
     });
+  },
+
+  // Close photo modal and return to display popup (unified handler for ESC/close button)
+  closePhotoAndBackToDisplay: () => {
+    const { activeModal, modalData } = get();
+    if (activeModal !== 'photo') return;
+    const pin = modalData?.pin;
+    set({ activeModal: null, modalData: null });
+    if (pin) {
+      // Defer to next tick to avoid interfering with current event stack
+      setTimeout(() => { try { openDisplayPopup(pin); } catch {} }, 0);
+    }
   },
   
   // Update current modal data (non-destructive)
