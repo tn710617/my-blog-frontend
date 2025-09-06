@@ -7,7 +7,7 @@ import { SKIN_SCHEMES, CONTRAST_SCHEMES } from '../utils/palettes';
 // import { createPopup, updatePopup } from '../utils/popupFactory';
 import { useModalStore } from '../stores/modalStore';
 import { setDisplayPopupCloser, clearDisplayPopupCloser, setDisplayPopupOpener } from '../utils/displayPopupController';
-import { copyPinUrlToClipboard, getPinIdFromUrl } from '../utils/urlUtils';
+import { copyPinUrlToClipboard, getPinIdFromUrl, updateUrlWithPin } from '../utils/urlUtils';
 import { useAuthStore, useLoginModalStore } from '../../../stores';
 
 const SOURCE_ID = 'travel-pins-source';
@@ -179,6 +179,8 @@ const SymbolsManager = () => {
     // Provide global open/close hooks for overlay and others
     setDisplayPopupCloser(() => { try { useModalStore.getState().closeModal(); } catch {} });
     setDisplayPopupOpener((p) => { try { useModalStore.getState().openModal('display', { pin: p }); } catch {} });
+    // Update URL for deep link consistency
+    try { updateUrlWithPin(pin.id); } catch {}
     // Open display popup with pin data
     try { openModal('display', { pin }); } catch (e) { console.error(e); }
   }, [openModal]);

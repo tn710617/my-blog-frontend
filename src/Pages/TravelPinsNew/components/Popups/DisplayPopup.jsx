@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import ReactDOM from 'react-dom';
 import { useIntl } from 'react-intl';
 import { useModalStore } from '../../stores/modalStore';
@@ -15,6 +15,8 @@ const DisplayPopup = () => {
   const openModal = useModalStore((s) => s.openModal);
   const closeModal = useModalStore((s) => s.closeModal);
   const mapRootEl = useMapStore((s) => s.mapRootEl);
+  const [copied, setCopied] = useState(false);
+  const [copyError, setCopyError] = useState('');
 
   useEffect(() => {
     try { injectPopupStyles(); } catch {}
@@ -28,7 +30,16 @@ const DisplayPopup = () => {
   const formatDate = (date) => intl.formatDate(new Date(date));
 
   const onClose = () => closeModal();
-  const onCopy = async () => { try { await copyPinUrlToClipboard(pin.id); } catch {} };
+  const onCopy = async () => {
+    setCopyError('');
+    const res = await copyPinUrlToClipboard(pin.id);
+    if (res?.success) {
+      setCopied(true);
+      setTimeout(() => setCopied(false), 1500);
+    } else {
+      setCopyError(res?.error || '');
+    }
+  };
   const onEdit = () => { try { closeModal(); openModal('form', { pin }); } catch {} };
   const onDelete = () => { try { closeModal(); openModal('delete', { pin }); } catch {} };
   const onPhoto = () => { if (pin.photo_url) try { openModal('photo', { url: pin.photo_url, title: pin.title, pin }); } catch {} };
@@ -96,13 +107,29 @@ const DisplayPopup = () => {
         </div>
 
         <footer className="popup-actions">
-          <button className="popup-btn popup-btn-secondary" onClick={onCopy}>
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-              <path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"></path>
-              <rect x="8" y="2" width="8" height="4" rx="1" ry="1"></rect>
-            </svg>
-            {t('travel_pins.popup.copy_link')}
+          <button className="popup-btn popup-btn-secondary" onClick={onCopy} type="button">
+            {copied ? (
+              <>
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                  <polyline points="20,6 9,17 4,12"></polyline>
+                </svg>
+                {t('travel_pins.popup.copied')}
+              </>
+            ) : (
+              <>
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                  <path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"></path>
+                  <rect x="8" y="2" width="8" height="4" rx="1" ry="1"></rect>
+                </svg>
+                {t('travel_pins.popup.copy_link')}
+              </>
+            )}
           </button>
+          {copyError && (
+            <span style={{ color: '#dc2626', fontSize: 12 }}>
+              {copyError}
+            </span>
+          )}
           <button className="popup-btn popup-btn-primary" onClick={onEdit}>
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
               <path d="M12 20h9"></path>
@@ -126,4 +153,3 @@ const DisplayPopup = () => {
 };
 
 export default DisplayPopup;
-
