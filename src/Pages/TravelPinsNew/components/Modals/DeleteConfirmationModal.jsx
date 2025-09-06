@@ -5,7 +5,7 @@ import { useDeleteTravelPin } from '../../hooks/useTravelPinsApi';
 import { closeDisplayPopup, openDisplayPopup } from '../../utils/displayPopupController';
 import { createModalClasses } from '../../utils/modalStyles';
 
-const DeleteConfirmationModal = () => {
+const DeleteConfirmationModal = ({ withinOverlay = false }) => {
   const intl = useIntl();
   const activeModal = useModalStore((s) => s.activeModal);
   const modalData = useModalStore((s) => s.modalData);
@@ -39,9 +39,8 @@ const DeleteConfirmationModal = () => {
   const t = (id) => intl.formatMessage({ id });
   const formatDate = (date) => intl.formatDate(new Date(date));
 
-  return (
-    <div className={createModalClasses.backdrop()} role="dialog" aria-modal="true">
-      <div className={createModalClasses.dialog()}>
+  const content = (
+    <div className={createModalClasses.dialog()}>
         <div className={createModalClasses.header('danger')}>
           <div className={createModalClasses.headerOverlay()} />
           <div className={createModalClasses.headerContent()}>
@@ -88,7 +87,14 @@ const DeleteConfirmationModal = () => {
             </button>
           </div>
         </div>
-      </div>
+    </div>
+  );
+
+  if (withinOverlay) return content;
+
+  return (
+    <div className={createModalClasses.backdrop()} role="dialog" aria-modal="true">
+      {content}
     </div>
   );
 };

@@ -3,7 +3,7 @@ import { useIntl } from 'react-intl';
 import { useModalStore } from '../../stores/modalStore';
 import { createModalClasses } from '../../utils/modalStyles';
 
-const EscConfirmModal = () => {
+const EscConfirmModal = ({ withinOverlay = false }) => {
   const intl = useIntl();
   const activeModal = useModalStore((s) => s.activeModal);
   const modalData = useModalStore((s) => s.modalData);
@@ -33,9 +33,8 @@ const EscConfirmModal = () => {
 
   const t = (id) => intl.formatMessage({ id });
 
-  return (
-    <div className={createModalClasses.backdrop()} role="dialog" aria-modal="true">
-      <div className={createModalClasses.dialog("w-[380px]")}>
+  const content = (
+    <div className={createModalClasses.dialog("w-[380px]")}>
         <div className={createModalClasses.header('warning')}>
           <div className={createModalClasses.headerOverlay()} />
           <div className={createModalClasses.headerContent()}>
@@ -84,7 +83,14 @@ const EscConfirmModal = () => {
             </button>
           </div>
         </div>
-      </div>
+    </div>
+  );
+
+  if (withinOverlay) return content;
+
+  return (
+    <div className={createModalClasses.backdrop()} role="dialog" aria-modal="true">
+      {content}
     </div>
   );
 };

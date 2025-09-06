@@ -7,7 +7,7 @@ import { copyPinUrlToClipboard } from '../../utils/urlUtils';
 import { usePinFromCache } from '../../hooks/useTravelPinsApi';
 import { createPopupClasses } from '../../utils/popupTailwindStyles';
 
-const DisplayPopup = () => {
+const DisplayPopup = ({ withinOverlay = false }) => {
   const intl = useIntl();
   const activeModal = useModalStore((s) => s.activeModal);
   const modalData = useModalStore((s) => s.modalData);
@@ -50,14 +50,8 @@ const DisplayPopup = () => {
     }
   };
 
-  const el = (
-    <div
-      role="dialog"
-      aria-modal="true"
-      className="fixed inset-0 flex justify-center p-4 overflow-y-auto"
-      style={{ zIndex: Z_INDEX.POPUP, pointerEvents: 'auto' }}
-    >
-      <div className={`${createPopupClasses.dialog()} my-4 self-start`}>
+  const content = (
+    <div className={createPopupClasses.dialog()}>
         <header className={createPopupClasses.header()}>
           <div className={createPopupClasses.headerOverlay()} />
           <div className={createPopupClasses.headerContent()}>
@@ -147,10 +141,23 @@ const DisplayPopup = () => {
           </button>
         </footer>
       </div>
-    </div>
   );
 
-  return el;
+  if (withinOverlay) return content;
+
+  // Standalone fallback (prefer OverlayRoot in normal flow)
+  return (
+    <div
+      role="dialog"
+      aria-modal="true"
+      className="fixed inset-0 flex justify-center p-4 overflow-y-auto"
+      style={{ zIndex: Z_INDEX.POPUP, pointerEvents: 'auto' }}
+    >
+      <div className="my-4 self-start">
+        {content}
+      </div>
+    </div>
+  );
 };
 
 export default DisplayPopup;

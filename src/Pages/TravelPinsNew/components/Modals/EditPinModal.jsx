@@ -16,7 +16,7 @@ const toDateInput = (iso) => {
   // API 格式比照 TravelPins：直接送 YYYY-MM-DD 字串或 null，不轉 ISO
   const fromDateInput = (val) => (val && String(val)) || null;
 
-const EditPinModal = () => {
+const EditPinModal = ({ withinOverlay = false }) => {
   const intl = useIntl();
   const activeModal = useModalStore((s) => s.activeModal);
   const modalData = useModalStore((s) => s.modalData);
@@ -120,9 +120,8 @@ const EditPinModal = () => {
 
   const t = (id) => intl.formatMessage({ id });
 
-  return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 flex justify-center z-50 p-4 overflow-y-auto" role="dialog" aria-modal="true">
-      <div className="bg-white rounded-2xl overflow-hidden shadow-2xl border border-slate-200/50 w-[450px] max-w-[90vw] my-4 self-start" style={{ WebkitOverflowScrolling: 'touch' }}>
+  const content = (
+    <div className="bg-white rounded-2xl overflow-hidden shadow-2xl border border-slate-200/50 w-[450px] max-w-[90vw]" style={{ WebkitOverflowScrolling: 'touch' }}>
         <div className="bg-gradient-to-r from-indigo-600 via-purple-600 to-blue-600 text-white px-6 py-5 relative">
           <div className="absolute inset-0 bg-gradient-to-br from-white/10 to-transparent"></div>
           <div className="flex justify-between items-center relative z-10">
@@ -218,6 +217,15 @@ const EditPinModal = () => {
             </button>
           </div>
         </form>
+    </div>
+  );
+
+  if (withinOverlay) return content;
+
+  return (
+    <div className="fixed inset-0 bg-black bg-opacity-50 flex justify-center z-50 p-4 overflow-y-auto" role="dialog" aria-modal="true">
+      <div className="my-4 self-start">
+        {content}
       </div>
     </div>
   );

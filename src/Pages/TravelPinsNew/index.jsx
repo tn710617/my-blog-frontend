@@ -4,12 +4,7 @@ import MapContainer from './components/MapContainer';
 import MapLoadingIndicator from './components/MapLoadingIndicator';
 import MobileGestureToggle from './components/MobileGestureToggle';
 import SymbolsManager from './components/SymbolsManager';
-import BackgroundOverlay from './components/BackgroundOverlay';
-import DisplayPopup from './components/Popups/DisplayPopup';
-import DeleteConfirmationModal from './components/Modals/DeleteConfirmationModal';
-import PhotoModal from './components/Modals/PhotoModal';
-import EditPinModal from './components/Modals/EditPinModal';
-import EscConfirmModal from './components/Modals/EscConfirmModal';
+import OverlayRoot from './components/OverlayRoot';
 import LocationButton from './components/LocationButton';
 import { useKeyboardHandlers } from './hooks/useKeyboardHandlers';
 import { useLocationListener } from './hooks/useLocationListener';
@@ -66,8 +61,7 @@ const TravelPinsNew = () => {
         
         {/* SymbolLayer-based pins (no backside flicker) */}
         <SymbolsManager />
-        <DisplayPopup />
-        <BackgroundOverlay />
+        <OverlayRoot />
         
         {/* Phase 14 - Location Button */}
         <LocationButton
@@ -77,10 +71,7 @@ const TravelPinsNew = () => {
           onClearLocationError={clearLocationError}
         />
         
-        <DeleteConfirmationModal />
-        <PhotoModal />
-        <EditPinModal />
-        <EscConfirmModal />
+        {/* Dialog contents are now rendered by OverlayRoot */}
       </div>
       
       {/* TODO: Phase 4 - Display Popup */}
