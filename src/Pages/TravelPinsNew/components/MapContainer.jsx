@@ -29,6 +29,17 @@ const MapContainer = () => {
     mapboxgl.accessToken = import.meta.env.VITE_MAPBOX_TOKEN;
 
     try {
+      // Ensure the container is empty before initializing the map
+      // Mapbox warns and may degrade interactivity if the container has any nodes
+      const containerEl = mapContainerRef.current;
+      if (containerEl && containerEl.firstChild) {
+        try {
+          while (containerEl.firstChild) {
+            containerEl.removeChild(containerEl.firstChild);
+          }
+        } catch {}
+      }
+
       // Adjust center position for mobile - move earth higher (more negative latitude)
       const center = isMobile ? [0, -15] : [0, 0];
       
@@ -98,8 +109,6 @@ const MapContainer = () => {
       className="relative w-full h-full"
       style={{ zIndex: Z_INDEX.MAP, position: 'relative' }}
     >
-      {/* TODO: Phase 12 - Custom overlay controls (GPS location button, etc.)
-          Following original pattern to avoid touchmove passive event warnings */}
     </div>
   );
 };
