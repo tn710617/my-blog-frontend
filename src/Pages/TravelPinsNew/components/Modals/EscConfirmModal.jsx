@@ -53,7 +53,7 @@ const EscConfirmModal = ({ withinOverlay = false }) => {
                 <div className={createModalClasses.sectionIcon('small')}>💡</div>
                 <div className="text-sm text-slate-700">
                   <div className="font-semibold mb-1">{t('travel_pins.unsaved_modal.question')}</div>
-                  <div>{t('travel_pins.unsaved_modal.subtitle')}</div>
+                  <div>{t('travel_pins.unsaved_modal.answer')}</div>
                 </div>
               </div>
             </div>
