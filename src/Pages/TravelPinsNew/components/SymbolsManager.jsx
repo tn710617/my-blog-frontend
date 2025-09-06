@@ -9,6 +9,7 @@ import { useModalStore } from '../stores/modalStore';
 import { setDisplayPopupCloser, clearDisplayPopupCloser, setDisplayPopupOpener } from '../utils/displayPopupController';
 import { copyPinUrlToClipboard, getPinIdFromUrl, updateUrlWithPin } from '../utils/urlUtils';
 import { useAuthStore, useLoginModalStore } from '../../../stores';
+import {ZOOM_LEVELS} from "../utils";
 
 const SOURCE_ID = 'travel-pins-source';
 const LAYER_ID = 'travel-pins-layer';
@@ -453,8 +454,8 @@ const SymbolsManager = () => {
     deepLinkHandledRef.current = true;
 
     try {
-      const targetZoom = Math.max(mapInstance.getZoom?.() ?? 2, 4.5);
-      mapInstance.easeTo({ center: pin.coordinates, zoom: targetZoom, duration: 900 });
+      const targetZoom = ZOOM_LEVELS.CITY;
+      mapInstance.flyTo({ center: pin.coordinates, zoom: targetZoom, duration: 900 });
       
       // 確保只執行一次開啟動作，避免 moveend 和 timeout 競態
       let popupOpened = false;
