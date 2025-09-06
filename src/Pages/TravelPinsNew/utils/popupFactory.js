@@ -3,6 +3,7 @@ import mapboxgl from 'mapbox-gl';
 import { buildPopupHTML } from './popupHtml';
 import { injectPopupStyles } from './popupStyles';
 import { markdownToHtml } from './markdownUtils';
+import { detectIsMobile } from '../hooks/useResponsive';
 
 /**
  * Modern popup factory for Travel Pins New
@@ -50,7 +51,7 @@ export function createPopup(pin, handlers) {
   const popupId = `popup-${pin.id}`;
 
   // Build HTML
-  const isMobile = typeof window !== 'undefined' ? window.innerWidth <= 768 : false;
+  const isMobile = detectIsMobile();
   const html = buildPopupHTML(pin, {
     t,
     formatDate,
@@ -164,7 +165,7 @@ export function updatePopup(popup, pin, handlers) {
   const popupId = `popup-${pin.id}`;
   
   // Rebuild HTML
-  const isMobile = typeof window !== 'undefined' ? window.innerWidth <= 768 : false;
+  const isMobile = detectIsMobile();
   const html = buildPopupHTML(pin, {
     t,
     formatDate,

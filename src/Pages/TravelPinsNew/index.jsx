@@ -14,11 +14,13 @@ import { useKeyboardHandlers } from './hooks/useKeyboardHandlers';
 import { useLocationListener } from './hooks/useLocationListener';
 import { useGeolocation } from './hooks/useGeolocation';
 import { handleResize } from './utils/cameraHelpers';
+import { useResponsive } from './hooks/useResponsive';
 
 // Travel Pins New - Main Component
 // Entry point for the new Travel Pins implementation
 const TravelPinsNew = () => {
   const { mapInstance } = useMapStore();
+  const isMobile = useResponsive();
   
   // Centralized ESC handling (delete/photo/display)
   useKeyboardHandlers();
@@ -45,13 +47,13 @@ const TravelPinsNew = () => {
 
   // Handle window resize for map responsiveness
   React.useEffect(() => {
-    const onResize = () => handleResize(mapInstance);
+    const onResize = () => handleResize(mapInstance, isMobile);
     window.addEventListener('resize', onResize);
     
     return () => {
       window.removeEventListener('resize', onResize);
     };
-  }, [mapInstance]);
+  }, [mapInstance, isMobile]);
 
   return (
     <div className="h-screen flex flex-col relative">
