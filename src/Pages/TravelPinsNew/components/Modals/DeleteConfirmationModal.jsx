@@ -61,9 +61,6 @@ const DeleteConfirmationModal = () => {
                 <div className={createModalClasses.sectionText()}>
                   <div className={createModalClasses.sectionLabel()}>{t('travel_pins.delete_modal.pin_to_delete')}</div>
                   <div className={createModalClasses.sectionTitle()}>{pin?.title}</div>
-                  {pin?.note && (
-                    <div className={createModalClasses.sectionDesc() + " line-clamp-2"}>{pin.note}</div>
-                  )}
                   {pin?.visited_at && (
                     <div className="text-xs text-slate-500 mt-2">{t('travel_pins.popup.visited')} {formatDate(pin.visited_at)}</div>
                   )}

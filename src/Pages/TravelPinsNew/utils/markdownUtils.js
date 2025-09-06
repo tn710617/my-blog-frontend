@@ -25,7 +25,7 @@ const renderInline = (text) => {
 
   // Inline code: protect content by special wrapper during other replacements
   const codeBuckets = [];
-  t = t.replace(/`([^`]+)`/g, (_m, code) => {
+  t = t.replace(/`([^`\n]+)`/g, (_m, code) => {
     const idx = codeBuckets.push(code) - 1;
     return `__CODE_SPAN_${idx}__`;
   });
@@ -58,10 +58,11 @@ const renderInline = (text) => {
     .replace(/__(.+?)__/g, '<strong>$1</strong>')
     .replace(/\*(.+?)\*/g, '<em>$1</em>')
     .replace(/_(.+?)_/g, '<em>$1</em>')
-    .replace(/~~(.+?)~~/g, '<del>$1</del>');
+    .replace(/~~(.+?)~~/g, '<del class="line-through text-slate-600">$1</del>')
+    .replace(/~(.+?)~/g, '<del class="line-through text-slate-600">$1</del>');
 
   // Restore code spans (escaped inside <code>)
-  t = t.replace(/__CODE_SPAN_(\d+)__/g, (_m, i) => `<code class="bg-gray-100 px-1 py-0.5 rounded text-sm font-mono">${escapeHtml(codeBuckets[Number(i)])}</code>`);
+  t = t.replace(/__CODE_SPAN_(\d+)__/g, (_m, i) => `<code class="bg-slate-100 px-1 py-0.5 rounded text-xs font-mono text-slate-800">${escapeHtml(codeBuckets[Number(i)])}</code>`);
 
   return t;
 };
@@ -89,14 +90,14 @@ export const markdownToHtml = (markdown) => {
       }
       if (i < lines.length) i++; // skip closing fence
       const code = escapeHtml(codeLines.join('\n'));
-      out.push(`<pre class="bg-gray-900/95 text-gray-100 rounded-lg p-4 overflow-auto"><code>${code}</code></pre>`);
+      out.push(`<pre class="bg-slate-900 text-slate-100 rounded-lg p-3 my-2 overflow-auto text-xs"><code class="font-mono">${code}</code></pre>`);
       nextNonEmpty();
       continue;
     }
 
     // Horizontal rule
     if (/^\s{0,3}(?:-{3,}|\*{3,}|_{3,})\s*$/.test(lines[i])) {
-      out.push('<hr />');
+      out.push('<hr class="border-t border-slate-300 my-4" />');
       i++;
       nextNonEmpty();
       continue;
@@ -106,7 +107,16 @@ export const markdownToHtml = (markdown) => {
     const h = lines[i].match(/^\s{0,3}(#{1,6})\s+(.+)$/);
     if (h) {
       const level = h[1].length;
-      out.push(`<h${level}>${renderInline(h[2].trim())}</h${level}>`);
+      const headingClasses = {
+        1: 'text-lg font-semibold text-slate-900 mt-4 mb-2',
+        2: 'text-base font-semibold text-slate-900 mt-4 mb-2', 
+        3: 'text-sm font-semibold text-slate-900 mt-3 mb-2',
+        4: 'text-sm font-semibold text-slate-900 mt-3 mb-2',
+        5: 'text-xs font-semibold text-slate-900 mt-2 mb-1',
+        6: 'text-xs font-semibold text-slate-900 mt-2 mb-1'
+      };
+      const className = headingClasses[level] || headingClasses[6];
+      out.push(`<h${level} class="${className}">${renderInline(h[2].trim())}</h${level}>`);
       i++;
       nextNonEmpty();
       continue;
@@ -120,7 +130,7 @@ export const markdownToHtml = (markdown) => {
         i++;
       }
       const inner = bq.join('\n');
-      out.push(`<blockquote style="border-left:4px solid #e5e7eb;padding:8px 12px;color:#374151;background:#f9fafb;border-radius:6px">${markdownToHtml(inner)}</blockquote>`);
+      out.push(`<blockquote class="border-l-4 border-slate-300 bg-slate-50 p-3 my-2 rounded-md text-slate-700">${markdownToHtml(inner)}</blockquote>`);
       nextNonEmpty();
       continue;
     }
@@ -140,7 +150,8 @@ export const markdownToHtml = (markdown) => {
         items.push(`<li>${renderInline(m[1].trim())}</li>`);
         i++;
       }
-      out.push(`<${tag} style="padding-left:1.25rem;list-style:${isOl ? 'decimal' : 'disc'};margin:0.5rem 0">${items.join('')}</${tag}>`);
+      const listClasses = isOl ? 'list-decimal list-inside my-2 space-y-1' : 'list-disc list-inside my-2 space-y-1';
+      out.push(`<${tag} class="${listClasses}">${items.join('')}</${tag}>`);
       nextNonEmpty();
       continue;
     }
@@ -152,7 +163,7 @@ export const markdownToHtml = (markdown) => {
       i++;
     }
     if (buf.length) {
-      out.push(`<p>${renderInline(buf.join(' '))}</p>`);
+      out.push(`<p class="my-2 leading-relaxed">${renderInline(buf.join(' '))}</p>`);
       nextNonEmpty();
       continue;
     }
@@ -164,30 +175,3 @@ export const markdownToHtml = (markdown) => {
   return out.join('\n');
 };
 
-// Check if text contains markdown formatting
-export const hasMarkdownFormatting = (text) => {
-  if (!text) return false;
-  
-  const markdownPatterns = [
-    /\*\*.*?\*\*/, // Bold
-    /\*.*?\*/, // Italic
-    /`.*?`/, // Inline code
-    /\[.*?\]\(.*?\)/, // Links
-  ];
-  
-  return markdownPatterns.some(pattern => pattern.test(text));
-};
-
-// Preview markdown formatting (for form preview)
-export const getMarkdownPreview = (text, maxLength = 100) => {
-  if (!text) return '';
-  
-  const html = markdownToHtml(text);
-  const plainText = html.replace(/<[^>]*>/g, ''); // Strip HTML tags for preview
-  
-  if (plainText.length <= maxLength) {
-    return plainText;
-  }
-  
-  return plainText.substring(0, maxLength) + '...';
-};

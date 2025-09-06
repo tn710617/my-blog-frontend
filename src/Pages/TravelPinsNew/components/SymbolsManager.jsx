@@ -5,7 +5,6 @@ import { useMapStore } from '../stores/mapStore';
 import { useTravelPins, TRAVEL_PINS_QUERY_KEYS } from '../hooks/useTravelPinsApi';
 import { assignColorsByScreen } from '../utils/colorManager';
 import { SKIN_SCHEMES, CONTRAST_SCHEMES } from '../utils/palettes';
-// import { createPopup, updatePopup } from '../utils/popupFactory';
 import { useModalStore } from '../stores/modalStore';
 import { setDisplayPopupCloser, clearDisplayPopupCloser, setDisplayPopupOpener } from '../utils/displayPopupController';
 import { copyPinUrlToClipboard, getPinIdFromUrl, updateUrlWithPin } from '../utils/urlUtils';

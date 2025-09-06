@@ -74,9 +74,9 @@ export const POPUP_SECTION_ICON = "text-base";
 export const POPUP_NOTES_CONTAINER = "bg-gradient-to-br from-amber-50 to-orange-50 border border-amber-200/50 rounded-xl p-4";
 
 /**
- * Notes content
+ * Notes content - markdown styles are now embedded in the HTML
  */
-export const POPUP_NOTES_CONTENT = "text-sm text-slate-700 leading-relaxed prose prose-sm prose-slate max-w-none";
+export const POPUP_NOTES_CONTENT = "text-sm text-slate-700 leading-relaxed max-w-none";
 
 /**
  * Photo section
@@ -106,14 +106,14 @@ export const POPUP_ACTIONS = "flex flex-wrap gap-3 px-6 py-5 bg-gradient-to-br f
 /**
  * Base popup button
  */
-export const POPUP_BTN_BASE = "flex items-center gap-2 px-4 py-2.5 rounded-lg font-medium text-sm transition-all duration-200 border min-h-[40px]";
+export const POPUP_BTN_BASE = "flex items-center justify-center gap-2 px-4 py-2.5 rounded-lg font-medium text-sm transition-all duration-200 border min-h-[40px] min-w-[110px]";
 
 /**
  * Popup button variants
  */
 export const POPUP_BUTTONS = {
-  // Copy link button
-  secondary: `${POPUP_BTN_BASE} bg-white text-slate-600 border-slate-300 hover:bg-slate-50 hover:border-slate-400`,
+  // Copy link button - updated to match edit/delete style
+  secondary: `${POPUP_BTN_BASE} bg-gradient-to-r from-slate-500 to-slate-600 hover:from-slate-600 hover:to-slate-700 text-white border-transparent shadow-sm hover:shadow-md hover:-translate-y-0.5`,
   
   // Edit button
   primary: `${POPUP_BTN_BASE} bg-gradient-to-r from-blue-500 to-indigo-500 hover:from-blue-600 hover:to-indigo-600 text-white border-transparent shadow-sm hover:shadow-md hover:-translate-y-0.5`,
