@@ -109,6 +109,17 @@ const loadIconImage = (map, name, color) => {
   return p;
 };
 
+// Ensure a guaranteed-present blank image for fallback to avoid warnings
+const ensureBlankImage = (map) => {
+  try {
+    if (!map || !map.addImage) return;
+    if (map.hasImage && map.hasImage('tp-blank')) return;
+    // 1x1 transparent pixel
+    const blank = { width: 1, height: 1, data: new Uint8Array([0, 0, 0, 0]) };
+    map.addImage('tp-blank', blank, { pixelRatio: 1 });
+  } catch {}
+};
+
 const ensureAllPaletteImages = async (map) => {
   // 確保地圖仍然有效
   if (!map || !map.getCanvas || !map.getCanvas()) {
@@ -288,11 +299,32 @@ const SymbolsManager = () => {
       };
       try { map.on('styleimagemissing', styleImageMissingHandler); } catch {}
 
+      // 先提供空白佔位，避免任何時序下的缺圖警告
+      ensureBlankImage(map);
+
       // 先嘗試預載所有圖示（若樣式尚未就緒，styleimagemissing 仍會當場補圖）
       await ensureAllPaletteImages(map);
 
       // 建立或更新 Source
       const data = buildFeatureCollection(pins, map, assignedColorsRef.current);
+      const usedIconNames = new Set((data?.features || []).map(f => f?.properties?.icon).filter(Boolean));
+      // 主動確保首次需要的圖示已註冊
+      try {
+        usedIconNames.forEach((id) => {
+          try {
+            if (map.hasImage && map.hasImage(id)) return;
+            if (id.startsWith('fp-contrast-')) {
+              const idx = Number(id.replace('fp-contrast-', ''));
+              const color = CONTRAST_SCHEMES?.[idx]?.main;
+              if (color) loadIconImage(map, id, color);
+            } else if (id.startsWith('fp-skin-')) {
+              const idx = Number(id.replace('fp-skin-', ''));
+              const color = SKIN_SCHEMES?.[idx]?.main;
+              if (color) loadIconImage(map, id, color);
+            }
+          } catch {}
+        });
+      } catch {}
       if (!source) {
         map.addSource(SOURCE_ID, {
           type: 'geojson',
@@ -310,7 +342,8 @@ const SymbolsManager = () => {
           type: 'symbol',
           source: SOURCE_ID,
           layout: {
-            'icon-image': ['get', 'icon'],
+            // 初始使用佔位，待圖示預載完成後再切換成 per-feature icon
+            'icon-image': 'tp-blank',
             // 放大基底圖示，增加辨識度
             'icon-size': 1.3,
             'icon-allow-overlap': true,
@@ -326,7 +359,7 @@ const SymbolsManager = () => {
           type: 'symbol',
           source: SOURCE_ID,
           layout: {
-            'icon-image': ['get', 'icon'],
+            'icon-image': 'tp-blank',
             // hover 再放大一些
             'icon-size': 1.5,
             'icon-allow-overlap': true,
@@ -371,6 +404,28 @@ const SymbolsManager = () => {
         };
         map.on('click', LAYER_ID, onClick);
         map.on('click', HOVER_LAYER_ID, onClick);
+        // 等圖示實際可用後，再將 icon 切換為 per-feature 屬性，避免任何缺圖評估
+        const allIconsReady = () => {
+          try {
+            return Array.from(usedIconNames).every(id => map.hasImage && map.hasImage(id));
+          } catch { return false; }
+        };
+
+        const applyPerFeatureIcons = () => {
+          try { map.setLayoutProperty(LAYER_ID, 'icon-image', ['get', 'icon']); } catch {}
+          try { map.setLayoutProperty(HOVER_LAYER_ID, 'icon-image', ['get', 'icon']); } catch {}
+        };
+
+        const waitAndApply = () => {
+          if (allIconsReady()) { applyPerFeatureIcons(); return; }
+          // 無上限等候直到需要的圖示就緒（資料 URL 即時生成，理應極短），避免在未就緒時切換導致告警
+          const tick = () => {
+            if (allIconsReady()) { applyPerFeatureIcons(); return; }
+            setTimeout(tick, 30);
+          };
+          setTimeout(tick, 30);
+        };
+        waitAndApply();
       }
     };
 
@@ -382,6 +437,24 @@ const SymbolsManager = () => {
       if (!s) return;
       try {
         const updated = buildFeatureCollection(pins, map, assignedColorsRef.current);
+        // 確保此次資料所需圖示已存在，避免 setData 後立即評估造成缺圖警告
+        try {
+          const needed = new Set((updated?.features || []).map(f => f?.properties?.icon).filter(Boolean));
+          needed.forEach((id) => {
+            try {
+              if (map.hasImage && map.hasImage(id)) return;
+              if (id.startsWith('fp-contrast-')) {
+                const idx = Number(id.replace('fp-contrast-', ''));
+                const color = CONTRAST_SCHEMES?.[idx]?.main;
+                if (color) loadIconImage(map, id, color);
+              } else if (id.startsWith('fp-skin-')) {
+                const idx = Number(id.replace('fp-skin-', ''));
+                const color = SKIN_SCHEMES?.[idx]?.main;
+                if (color) loadIconImage(map, id, color);
+              }
+            } catch {}
+          });
+        } catch {}
         s.setData(updated);
       } catch {}
     };
