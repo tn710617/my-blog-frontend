@@ -13,19 +13,20 @@ const DeleteConfirmationModal = () => {
 
   const deletePinMutation = useDeleteTravelPin();
 
-  if (activeModal !== 'delete' || !modalData?.pin) return null;
+  if (activeModal !== 'delete' || !(modalData?.pin || modalData?.pinId)) return null;
 
   const pin = modalData.pin;
+  const pinId = modalData.pinId || pin?.id;
 
   const onCancel = () => {
     // 關閉刪除 modal，回到顯示視窗
     closeModal();
-    try { openDisplayPopup(pin); } catch {}
+    try { openDisplayPopup(pinId); } catch {}
   };
 
   const onConfirm = async () => {
     try {
-      await deletePinMutation.mutateAsync(pin.id);
+      await deletePinMutation.mutateAsync(pinId);
     } catch (e) {
       console.error('Failed to delete pin', e);
     } finally {

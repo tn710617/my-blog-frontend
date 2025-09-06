@@ -7,6 +7,7 @@ import { Z_INDEX } from '../../utils/zIndex';
 import { injectPopupStyles } from '../../utils/popupStyles';
 import { markdownToHtml } from '../../utils/markdownUtils';
 import { copyPinUrlToClipboard } from '../../utils/urlUtils';
+import { usePinFromCache } from '../../hooks/useTravelPinsApi';
 
 const DisplayPopup = () => {
   const intl = useIntl();
@@ -22,9 +23,11 @@ const DisplayPopup = () => {
     try { injectPopupStyles(); } catch {}
   }, []);
 
-  if (activeModal !== 'display' || !modalData?.pin || !mapRootEl) return null;
-
-  const pin = modalData.pin;
+  const pinId = modalData?.pinId || modalData?.pin?.id;
+  // Always run hooks in the same order (avoid conditional hooks)
+  const latestPin = usePinFromCache(pinId);
+  const pin = latestPin || modalData?.pin;
+  if (activeModal !== 'display' || !pinId || !mapRootEl || !pin) return null;
 
   const t = (id) => intl.formatMessage({ id });
   const formatDate = (date) => intl.formatDate(new Date(date));
@@ -42,7 +45,7 @@ const DisplayPopup = () => {
   };
   const onEdit = () => { try { closeModal(); openModal('form', { pin }); } catch {} };
   const onDelete = () => { try { closeModal(); openModal('delete', { pin }); } catch {} };
-  const onPhoto = () => { if (pin.photo_url) try { openModal('photo', { url: pin.photo_url, title: pin.title, pin }); } catch {} };
+  const onPhoto = () => { if (pin.photo_url) try { openModal('photo', { url: pin.photo_url, title: pin.title, pin, pinId: pin.id }); } catch {} };
 
   const el = (
     <div

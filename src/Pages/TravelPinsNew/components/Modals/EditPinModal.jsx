@@ -76,7 +76,7 @@ const EditPinModal = () => {
   const onCancel = () => {
     closeModal();
     if (editingPin) {
-      setTimeout(() => { try { openDisplayPopup(editingPin); } catch {} }, 0);
+      setTimeout(() => { try { openDisplayPopup(editingPin.id); } catch {} }, 0);
     }
   };
 
@@ -93,7 +93,7 @@ const EditPinModal = () => {
           coordinates: editingPin.coordinates,
         }});
         closeModal();
-        setTimeout(() => { try { openDisplayPopup({ ...editingPin, title, note, visited_at: fromDateInput(visitedAt) || editingPin.visited_at, photo_url: photoUrl }); } catch {} }, 0);
+        setTimeout(() => { try { openDisplayPopup(editingPin.id); } catch {} }, 0);
       } else if (modalData?.draft) {
         const draft = modalData.draft;
         const coords = draft.coordinates;
@@ -110,8 +110,8 @@ const EditPinModal = () => {
         });
         closeModal();
         // Reopen display for created pin (best-effort)
-        const pinForOpen = created || { id: draft.id, coordinates: draft.coordinates, title, note, visited_at: fromDateInput(visitedAt), photo_url: photoUrl };
-        setTimeout(() => { try { openDisplayPopup(pinForOpen); } catch {} }, 0);
+        const pinForOpenId = (created && created.id) || draft.id;
+        setTimeout(() => { try { openDisplayPopup(pinForOpenId); } catch {} }, 0);
       }
     } catch (err) {
       // TODO: show inline error

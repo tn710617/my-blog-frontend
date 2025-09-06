@@ -22,12 +22,12 @@ export const useKeyboardHandlers = () => {
       e.stopPropagation();
 
       // Priority: delete modal -> photo modal -> display popup
-      if (activeModal === 'delete' && modalData?.pin) {
+      if (activeModal === 'delete' && (modalData?.pin || modalData?.pinId)) {
         // Close delete modal and restore display popup
         closeModal();
         // Defer re-open to next tick to avoid same-event keyup side effects
         setTimeout(() => {
-          try { openDisplayPopup(modalData.pin); } catch {}
+          try { openDisplayPopup(modalData?.pinId || modalData?.pin?.id); } catch {}
         }, 0);
         return;
       }
@@ -58,7 +58,7 @@ export const useKeyboardHandlers = () => {
         }
         // Not dirty → close directly and restore display
         closeModal();
-        if (pin) setTimeout(() => { try { openDisplayPopup(pin); } catch {} }, 0);
+        if (pin) setTimeout(() => { try { openDisplayPopup(pin.id); } catch {} }, 0);
         return;
       }
 

@@ -110,6 +110,22 @@ export const POPUP_STYLES = `
     color: #475569;
   }
 
+  /* Headings inside notes (markdown) */
+  .popup-notes h1, .popup-notes h2, .popup-notes h3,
+  .popup-notes h4, .popup-notes h5, .popup-notes h6 {
+    margin: 0.25rem 0 0.5rem 0;
+    font-weight: 700;
+    color: #0f172a;
+  }
+  .popup-notes h1 { font-size: 1.375rem; }
+  .popup-notes h2 { font-size: 1.25rem; }
+  .popup-notes h3 { font-size: 1.125rem; }
+  .popup-notes h4 { font-size: 1rem; }
+  .popup-notes h5 { font-size: 0.9375rem; }
+  .popup-notes h6 { font-size: 0.875rem; }
+
+  .popup-notes p { margin: 0 0 12px 0; }
+
   .popup-notes p {
     margin: 0 0 12px 0;
   }

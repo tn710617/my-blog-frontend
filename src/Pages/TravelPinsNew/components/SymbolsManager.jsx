@@ -1,7 +1,8 @@
 import React from 'react';
 import { useIntl } from 'react-intl';
+import { useQueryClient } from '@tanstack/react-query';
 import { useMapStore } from '../stores/mapStore';
-import { useTravelPins } from '../hooks/useTravelPinsApi';
+import { useTravelPins, TRAVEL_PINS_QUERY_KEYS } from '../hooks/useTravelPinsApi';
 import { assignColorsByScreen } from '../utils/colorManager';
 import { SKIN_SCHEMES, CONTRAST_SCHEMES } from '../utils/palettes';
 // import { createPopup, updatePopup } from '../utils/popupFactory';
@@ -156,6 +157,7 @@ const buildFeatureCollection = (pins, map, assignedColorsRef) => {
 
 const SymbolsManager = () => {
   const intl = useIntl();
+  const queryClient = useQueryClient();
   const { mapInstance, isMapReady } = useMapStore();
   const { data: pins = [], isLoading } = useTravelPins();
   const assignedColorsRef = React.useRef(new Map());
@@ -172,18 +174,32 @@ const SymbolsManager = () => {
   const t = React.useCallback((key) => intl.formatMessage({ id: key }), [intl]);
   const formatDate = React.useCallback((date) => intl.formatDate(new Date(date)), [intl]);
 
-  const openPinPopup = React.useCallback((map, pin) => {
-    if (!map || !pin) return;
+  const openPinPopup = React.useCallback((map, pinOrId) => {
+    if (!map || !pinOrId) return;
     // React-based fixed-position display popup (no Mapbox Popup)
-    openPinRef.current = pin;
+    // Prefer freshest pin from react-query cache; fallback to local pins; finally incoming object
+    const list = queryClient.getQueryData(TRAVEL_PINS_QUERY_KEYS.list()) || [];
+    const targetId = typeof pinOrId === 'object' ? pinOrId.id : pinOrId;
+    const latest = (list.find?.((p) => String(p.id) === String(targetId)))
+      || (Array.isArray(pins) && pins.find((p) => String(p.id) === String(targetId)))
+      || (typeof pinOrId === 'object' ? pinOrId : null);
+    if (!latest) return;
+    openPinRef.current = latest;
     // Provide global open/close hooks for overlay and others
     setDisplayPopupCloser(() => { try { useModalStore.getState().closeModal(); } catch {} });
-    setDisplayPopupOpener((p) => { try { useModalStore.getState().openModal('display', { pin: p }); } catch {} });
+    setDisplayPopupOpener((p) => {
+      const currentPins = pins || [];
+      const pid = typeof p === 'object' ? p?.id : p;
+      const fresh = currentPins.find((x) => String(x.id) === String(pid));
+      const selected = fresh || (typeof p === 'object' ? p : null);
+      if (!pid && !selected) return;
+      try { useModalStore.getState().openModal('display', { pin: selected || undefined, pinId: pid || selected.id }); } catch {}
+    });
     // Update URL for deep link consistency
-    try { updateUrlWithPin(pin.id); } catch {}
+    try { updateUrlWithPin(latest.id); } catch {}
     // Open display popup with pin data
-    try { openModal('display', { pin }); } catch (e) { console.error(e); }
-  }, [openModal]);
+    try { openModal('display', { pin: latest, pinId: latest.id }); } catch (e) { console.error(e); }
+  }, [openModal, pins, queryClient]);
 
   React.useEffect(() => {
     if (!isMapReady || !mapInstance || isLoading) return;
@@ -320,9 +336,7 @@ const SymbolsManager = () => {
           const f = e.features?.[0];
           if (!f) return;
           const pinId = f.id;
-          const pin = pins.find((p) => String(p.id) === String(pinId));
-          if (!pin) return;
-          openPinPopup(map, pin);
+          openPinPopup(map, pinId);
         };
         map.on('click', LAYER_ID, onClick);
         map.on('click', HOVER_LAYER_ID, onClick);
@@ -417,6 +431,16 @@ const SymbolsManager = () => {
     setDisplayPopupOpener((pin) => openPinPopup(mapInstance, pin));
     return () => setDisplayPopupOpener(null);
   }, [isMapReady, mapInstance, openPinPopup]);
+
+  // Keep display popup content in sync with latest pins when list updates
+  React.useEffect(() => {
+    try {
+      const { activeModal, modalData, updateModalData } = useModalStore.getState();
+      if (activeModal !== 'display' || !modalData?.pin?.id) return;
+      const current = pins.find((p) => String(p.id) === String(modalData.pin.id));
+      if (current) updateModalData({ pin: current });
+    } catch {}
+  }, [pins]);
 
   // Deep-link：在載入完成後，若 URL 有 ?pin=<id>，自動置中並開啟該 pin 的 popup
   React.useEffect(() => {

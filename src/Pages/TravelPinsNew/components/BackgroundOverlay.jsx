@@ -16,10 +16,10 @@ const BackgroundOverlay = () => {
 
   const handleClose = () => {
     // delete：ESC/點 overlay 視同取消 → 關閉 modal、回到 display popup
-    if (activeModal === 'delete' && modalData?.pin) {
+    if (activeModal === 'delete' && (modalData?.pin || modalData?.pinId)) {
       closeModal();
       // 避免同一次鍵盤事件（尤其 keyup）關掉剛重開的 popup，延後至下一輪事件循環
-      setTimeout(() => { try { openDisplayPopup(modalData.pin); } catch {} }, 0);
+      setTimeout(() => { try { openDisplayPopup(modalData?.pinId || modalData?.pin?.id); } catch {} }, 0);
       return;
     }
     // form + confirmOpen：只關閉確認層，保留編輯表單

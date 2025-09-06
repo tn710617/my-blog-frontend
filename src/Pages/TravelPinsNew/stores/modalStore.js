@@ -30,11 +30,11 @@ export const useModalStore = create((set, get) => ({
   closePhotoAndBackToDisplay: () => {
     const { activeModal, modalData } = get();
     if (activeModal !== 'photo') return;
-    const pin = modalData?.pin;
+    const pinId = modalData?.pinId || modalData?.pin?.id;
     set({ activeModal: null, modalData: null });
-    if (pin) {
+    if (pinId) {
       // Defer to next tick to avoid interfering with current event stack
-      setTimeout(() => { try { openDisplayPopup(pin); } catch {} }, 0);
+      setTimeout(() => { try { openDisplayPopup(pinId); } catch {} }, 0);
     }
   },
   
