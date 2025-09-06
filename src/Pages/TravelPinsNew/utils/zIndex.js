@@ -19,10 +19,10 @@ export const Z_INDEX = {
   MODAL: 1600,
   
   // Mobile gesture notifications/warnings
-  GESTURE_WARNING: 1100,
+  GESTURE_WARNING: 1000,
   
-  // Location and control buttons
-  GPS_BUTTON: 1500,
+  // Location and control buttons (below overlay root)
+  GPS_BUTTON: 1000,
   LOCATION_ERROR_TOAST: 1550,
   
   // Highest priority elements (toast notifications, etc.)
