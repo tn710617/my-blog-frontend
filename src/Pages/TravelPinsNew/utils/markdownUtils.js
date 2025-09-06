@@ -27,7 +27,7 @@ const renderInline = (text) => {
   const codeBuckets = [];
   t = t.replace(/`([^`\n]+)`/g, (_m, code) => {
     const idx = codeBuckets.push(code) - 1;
-    return `__CODE_SPAN_${idx}__`;
+    return `\x00CODESPAN${idx}\x00`;
   });
 
   // Images ![alt](url)
@@ -61,7 +61,7 @@ const renderInline = (text) => {
     .replace(/~~(.+?)~~/g, '<del class="line-through text-slate-600">$1</del>');
 
   // Restore code spans (already escaped when saved to buckets)
-  t = t.replace(/__CODE_SPAN_(\d+)__/g, (_m, i) => `<code class="bg-slate-100 px-1 py-0.5 rounded text-xs font-mono text-slate-800">${codeBuckets[Number(i)]}</code>`);
+  t = t.replace(/\x00CODESPAN(\d+)\x00/g, (_m, i) => `<code class="bg-slate-100 px-1 py-0.5 rounded text-xs font-mono text-slate-800">${codeBuckets[Number(i)]}</code>`);
 
   return t;
 };
