@@ -11,12 +11,12 @@ export const POPUP_CONTAINER = "travel-pin-popup-modern";
 /**
  * Popup dialog classes - matches modal dialog style
  */
-export const POPUP_DIALOG = "w-full max-w-[420px] bg-white rounded-2xl overflow-hidden shadow-2xl border border-slate-200/50";
+export const POPUP_DIALOG = "w-full max-w-[420px] bg-white rounded-2xl overflow-hidden shadow-2xl border border-slate-200/50 flex flex-col";
 
 /**
- * Popup header - matches modal header with gradient
+ * Popup header - matches modal header with gradient, flex-shrink-0 to prevent compression
  */
-export const POPUP_HEADER = "bg-gradient-to-r from-indigo-600 via-purple-600 to-blue-600 text-white px-6 py-5 relative";
+export const POPUP_HEADER = "bg-gradient-to-r from-indigo-600 via-purple-600 to-blue-600 text-white px-6 py-5 relative flex-shrink-0";
 
 /**
  * Header overlay for gradient enhancement
@@ -49,9 +49,9 @@ export const POPUP_DATE = "text-sm opacity-90 mt-2 font-normal";
 export const POPUP_CLOSE_BTN = "flex-shrink-0 w-8 h-8 bg-white/10 hover:bg-white/20 rounded-lg border-none cursor-pointer flex items-center justify-center text-white transition-all duration-200 hover:scale-105";
 
 /**
- * Popup content container
+ * Popup content container - with scrollable support, flexible height
  */
-export const POPUP_CONTENT = "p-6 space-y-6";
+export const POPUP_CONTENT = "p-6 space-y-6 flex-1 overflow-y-auto min-h-0";
 
 /**
  * Content section
@@ -99,9 +99,9 @@ export const POPUP_PHOTO_IMG = "w-full h-48 object-cover transition-transform du
 export const POPUP_PHOTO_OVERLAY = "absolute inset-0 bg-black/40 flex items-center justify-center opacity-0 hover:opacity-100 transition-opacity duration-300 text-white";
 
 /**
- * Popup actions footer
+ * Popup actions footer - flex-shrink-0 to prevent compression
  */
-export const POPUP_ACTIONS = "flex flex-wrap gap-3 px-6 py-5 bg-gradient-to-br from-slate-50 to-gray-50 border-t border-slate-100";
+export const POPUP_ACTIONS = "flex flex-wrap gap-3 px-6 py-5 bg-gradient-to-br from-slate-50 to-gray-50 border-t border-slate-100 flex-shrink-0";
 
 /**
  * Base popup button
@@ -141,10 +141,10 @@ export const COPY_ERROR_TEXT = "text-red-600 text-xs";
  * Mobile responsive classes
  */
 export const MOBILE_RESPONSIVE = {
-  dialog: "sm:max-w-[420px] max-w-[calc(100vw-2rem)]",
+  dialog: "sm:max-w-[420px] max-w-[calc(100vw-4rem)]",
   header: "px-4 py-4 sm:px-6 sm:py-5",
   title: "text-lg sm:text-xl",
-  content: "p-4 sm:p-6 space-y-4 sm:space-y-6",
+  content: "p-4 sm:p-6 space-y-4 sm:space-y-6 flex-1 overflow-y-auto min-h-0",
   actions: "flex-col sm:flex-row px-4 py-4 sm:px-6 sm:py-5",
   button: "w-full sm:w-auto justify-center",
   photo: "h-40 sm:h-48"

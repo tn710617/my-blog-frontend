@@ -11,8 +11,8 @@ const BackgroundOverlay = () => {
   const modalData = useModalStore((s) => s.modalData);
   const closeModal = useModalStore((s) => s.closeModal);
   const updateModalData = useModalStore((s) => s.updateModalData);
-  const mapRootEl = useMapStore((s) => s.mapRootEl);
   const mapInstance = useMapStore((s) => s.mapInstance);
+  const mapRootEl = useMapStore((s) => s.mapRootEl);
 
   const handleClose = () => {
     // delete：ESC/點 overlay 視同取消 → 關閉 modal、回到 display popup
@@ -61,25 +61,27 @@ const BackgroundOverlay = () => {
     };
   }, [hasAnyModalOpen, mapInstance]);
 
-  if (!hasAnyModalOpen || !mapRootEl) return null;
+  if (!hasAnyModalOpen) return null;
+  const isDisplay = activeModal === 'display';
 
   const overlay = (
     <div
       role="presentation"
       onClick={handleClose}
       style={{
-        position: 'absolute',
+        position: isDisplay ? 'fixed' : 'absolute',
         inset: 0,
-        background: 'rgba(0,0,0,0.35)',
+        background: 'rgba(0,0,0,0.60)',
         zIndex: Z_INDEX.OVERLAY,
-        // 重新啟用模糊，但因為 overlay 在 map 容器 stacking context，
-        // 且 popup 的 z-index 更高，不會模糊到 popup 本身。
         backdropFilter: 'blur(2px) saturate(80%)',
         WebkitBackdropFilter: 'blur(2px) saturate(80%)',
       }}
     />
   );
 
+  // For display popup, render at page level (above navbar). For other modals, keep overlay within map container.
+  if (isDisplay) return overlay;
+  if (!mapRootEl) return null;
   return ReactDOM.createPortal(overlay, mapRootEl);
 };
 

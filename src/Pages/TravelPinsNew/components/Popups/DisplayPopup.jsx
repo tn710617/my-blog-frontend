@@ -1,8 +1,6 @@
 import React, { useState } from 'react';
-import ReactDOM from 'react-dom';
 import { useIntl } from 'react-intl';
 import { useModalStore } from '../../stores/modalStore';
-import { useMapStore } from '../../stores/mapStore';
 import { Z_INDEX } from '../../utils/zIndex';
 import { markdownToHtml } from '../../utils/markdownUtils';
 import { copyPinUrlToClipboard } from '../../utils/urlUtils';
@@ -15,7 +13,6 @@ const DisplayPopup = () => {
   const modalData = useModalStore((s) => s.modalData);
   const openModal = useModalStore((s) => s.openModal);
   const closeModal = useModalStore((s) => s.closeModal);
-  const mapRootEl = useMapStore((s) => s.mapRootEl);
   const [copied, setCopied] = useState(false);
   const [copyError, setCopyError] = useState('');
 
@@ -23,7 +20,7 @@ const DisplayPopup = () => {
   // Always run hooks in the same order (avoid conditional hooks)
   const latestPin = usePinFromCache(pinId);
   const pin = latestPin || modalData?.pin;
-  if (activeModal !== 'display' || !pinId || !mapRootEl || !pin) return null;
+  if (activeModal !== 'display' || !pinId || !pin) return null;
 
   const t = (id) => intl.formatMessage({ id });
   const formatDate = (date) => intl.formatDate(new Date(date));
@@ -57,16 +54,10 @@ const DisplayPopup = () => {
     <div
       role="dialog"
       aria-modal="true"
-      style={{
-        position: 'absolute',
-        left: '50%',
-        top: '12%',
-        transform: 'translateX(-50%)',
-        zIndex: Z_INDEX.POPUP,
-        pointerEvents: 'auto',
-      }}
+      className="fixed inset-0 flex justify-center p-4 overflow-y-auto"
+      style={{ zIndex: Z_INDEX.POPUP, pointerEvents: 'auto' }}
     >
-      <div className={createPopupClasses.dialog()}>
+      <div className={`${createPopupClasses.dialog()} my-4 self-start`}>
         <header className={createPopupClasses.header()}>
           <div className={createPopupClasses.headerOverlay()} />
           <div className={createPopupClasses.headerContent()}>
@@ -159,7 +150,7 @@ const DisplayPopup = () => {
     </div>
   );
 
-  return ReactDOM.createPortal(el, mapRootEl);
+  return el;
 };
 
 export default DisplayPopup;
