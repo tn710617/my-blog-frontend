@@ -7,7 +7,7 @@ import { assignColorsByScreen } from '../utils/colorManager';
 import { CONTRAST_SCHEMES } from '../utils/palettes';
 import { useModalStore } from '../stores/modalStore';
 import { setDisplayPopupCloser, clearDisplayPopupCloser, setDisplayPopupOpener } from '../utils/displayPopupController';
-import { copyPinUrlToClipboard, getPinIdFromUrl, updateUrlWithPin } from '../utils/urlUtils';
+import { copyPinUrlToClipboard, getPinIdFromUrl } from '../utils/urlUtils';
 import { useAuthStore, useLoginModalStore } from '../../../stores';
 import {ZOOM_LEVELS} from "../utils";
 
@@ -197,8 +197,6 @@ const SymbolsManager = () => {
       if (!pid && !selected) return;
       try { useModalStore.getState().openModal('display', { pin: selected || undefined, pinId: pid || selected.id }); } catch {}
     });
-    // Update URL for deep link consistency
-    try { updateUrlWithPin(latest.id); } catch {}
     // Open display popup with pin data
     try { openModal('display', { pin: latest, pinId: latest.id }); } catch (e) { console.error(e); }
   }, [openModal, pins, queryClient]);
