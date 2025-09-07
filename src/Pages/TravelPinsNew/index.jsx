@@ -16,7 +16,6 @@ import { useResponsive } from './hooks/useResponsive';
 // Entry point for the new Travel Pins implementation
 const TravelPinsNew = () => {
   const { mapInstance } = useMapStore();
-  const isMobile = useResponsive();
   
   // Centralized ESC handling (delete/photo/display)
   useKeyboardHandlers();
@@ -43,20 +42,27 @@ const TravelPinsNew = () => {
 
   // Handle window resize for map responsiveness
   React.useEffect(() => {
-    const onResize = () => handleResize(mapInstance, isMobile);
+    const onResize = () => handleResize(mapInstance);
     window.addEventListener('resize', onResize);
     
     return () => {
       window.removeEventListener('resize', onResize);
     };
-  }, [mapInstance, isMobile]);
+  }, [mapInstance]);
 
   // 不再使用 setPadding 調整地球位置，避免 globe 底部灰色圓形重疊
+
+  // 僅在行動裝置上調整整個模組於文件中的垂直位移
+  const isMobile = useResponsive();
+  const MOBILE_DOCUMENT_OFFSET_PX = 80; // <-- 調整這個值（例如 40、80）
 
   return (
     <div className="h-screen flex flex-col relative">
       {/* Phase 2 - Map Container */}
-      <div className="flex-1 relative">
+      <div
+        className="flex-1 relative"
+        style={isMobile && MOBILE_DOCUMENT_OFFSET_PX ? { transform: `translateY(-${MOBILE_DOCUMENT_OFFSET_PX}px)` } : undefined}
+      >
         <MapContainer />
         <MapLoadingIndicator />
         <MobileGestureToggle />

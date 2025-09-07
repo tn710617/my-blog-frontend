@@ -40,8 +40,8 @@ const MapContainer = () => {
         } catch {}
       }
 
-      // Adjust center position for mobile - move earth higher (slightly more negative latitude)
-      const center = isMobile ? [0, -90] : [0, 0];
+      // Use a neutral initial center; document-level offset handled outside via CSS
+      const center = [0, 0];
       
       const map = new mapboxgl.Map({
         container: mapContainerRef.current,

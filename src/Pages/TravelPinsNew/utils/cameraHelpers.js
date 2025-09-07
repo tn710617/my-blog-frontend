@@ -106,7 +106,7 @@ export const calculateDistance = (lat1, lon1, lat2, lon2) => {
 };
 
 // Handle window resize and update padding
-export const handleResize = (map, isMobile) => {
+export const handleResize = (map) => {
   if (!map || typeof map.resize !== 'function') return;
 
   const target = map;
