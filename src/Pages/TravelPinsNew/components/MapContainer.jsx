@@ -76,13 +76,6 @@ const MapContainer = () => {
         setMapError(event.error?.message || 'Failed to load map');
       });
 
-      // NOTE: Removed built-in NavigationControl and GeolocateControl to avoid 
-      // non-passive touchmove event warnings. The original implementation uses
-      // custom overlay controls instead (Phase 12 - Search controls overlay)
-
-      // NOTE: Pins are rendered via SymbolLayer (SymbolsManager)
-      // TODO: Popup interactions are handled in SymbolsManager
-
       // Cleanup: remove map and clear store instance to avoid stale references
       return () => {
         try {

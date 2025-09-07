@@ -9,7 +9,7 @@ import LocationButton from './components/LocationButton';
 import { useKeyboardHandlers } from './hooks/useKeyboardHandlers';
 import { useLocationListener } from './hooks/useLocationListener';
 import { useGeolocation } from './hooks/useGeolocation';
-import { handleResize, setMobilePadding } from './utils/cameraHelpers';
+import { handleResize } from './utils/cameraHelpers';
 import { useResponsive } from './hooks/useResponsive';
 
 // Travel Pins New - Main Component
@@ -51,11 +51,7 @@ const TravelPinsNew = () => {
     };
   }, [mapInstance, isMobile]);
 
-  // Apply initial mobile padding to raise globe on mobile (match legacy behavior)
-  React.useEffect(() => {
-    if (!mapInstance) return;
-    try { setMobilePadding(mapInstance, isMobile); } catch {}
-  }, [mapInstance, isMobile]);
+  // 不再使用 setPadding 調整地球位置，避免 globe 底部灰色圓形重疊
 
   return (
     <div className="h-screen flex flex-col relative">

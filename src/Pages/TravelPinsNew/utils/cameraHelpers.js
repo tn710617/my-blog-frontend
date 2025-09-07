@@ -105,15 +105,6 @@ export const calculateDistance = (lat1, lon1, lat2, lon2) => {
   return R * c; // Distance in meters
 };
 
-// Set mobile padding for better globe positioning
-export const setMobilePadding = (map, isMobile) => {
-  if (!map) return;
-  const mobile = typeof isMobile === 'boolean'
-    ? isMobile
-    : (typeof window !== 'undefined' ? window.innerWidth <= 768 : false);
-  map.setPadding({ bottom: mobile ? 250 : 0 });
-};
-
 // Handle window resize and update padding
 export const handleResize = (map, isMobile) => {
   if (!map || typeof map.resize !== 'function') return;
@@ -126,7 +117,6 @@ export const handleResize = (map, isMobile) => {
       const container = target.getContainer();
       if (!container) return;
       target.resize();
-      setMobilePadding(target, isMobile);
     } catch {}
   }, 100);
 };
