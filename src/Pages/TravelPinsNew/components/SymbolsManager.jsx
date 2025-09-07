@@ -4,7 +4,7 @@ import { useQueryClient } from '@tanstack/react-query';
 import { useMapStore } from '../stores/mapStore';
 import { useTravelPins, TRAVEL_PINS_QUERY_KEYS } from '../hooks/useTravelPinsApi';
 import { assignColorsByScreen } from '../utils/colorManager';
-import { SKIN_SCHEMES, CONTRAST_SCHEMES } from '../utils/palettes';
+import { CONTRAST_SCHEMES } from '../utils/palettes';
 import { useModalStore } from '../stores/modalStore';
 import { setDisplayPopupCloser, clearDisplayPopupCloser, setDisplayPopupOpener } from '../utils/displayPopupController';
 import { copyPinUrlToClipboard, getPinIdFromUrl, updateUrlWithPin } from '../utils/urlUtils';
@@ -120,27 +120,7 @@ const ensureBlankImage = (map) => {
   } catch {}
 };
 
-const ensureAllPaletteImages = async (map) => {
-  // 確保地圖仍然有效
-  if (!map || !map.getCanvas || !map.getCanvas()) {
-    return;
-  }
-  
-  try {
-    if (!map.isStyleLoaded()) {
-      // 樣式尚未完成，安靜返回，交由之後的初始化或 styleimagemissing 補圖
-      return;
-    }
-  } catch {
-    return;
-  }
-  
-  const tasks = [];
-  SKIN_SCHEMES.forEach((s, idx) => tasks.push(loadIconImage(map, `fp-skin-${idx}`, s.main)));
-  CONTRAST_SCHEMES.forEach((s, idx) => tasks.push(loadIconImage(map, `fp-contrast-${idx}`, s.main)));
-  
-  await Promise.allSettled(tasks);
-};
+// 移除整批預載（以實際需要的圖示為準，即時載入），避免冗餘下載與評估
 
 const hashToIdx = (id, modulo) => {
   try {
@@ -290,10 +270,6 @@ const SymbolsManager = () => {
             const idx = Number(id.replace('fp-contrast-', ''));
             const color = CONTRAST_SCHEMES?.[idx]?.main;
             if (color) loadIconImage(map, id, color);
-          } else if (id.startsWith('fp-skin-')) {
-            const idx = Number(id.replace('fp-skin-', ''));
-            const color = SKIN_SCHEMES?.[idx]?.main;
-            if (color) loadIconImage(map, id, color);
           }
         } catch {}
       };
@@ -301,9 +277,6 @@ const SymbolsManager = () => {
 
       // 先提供空白佔位，避免任何時序下的缺圖警告
       ensureBlankImage(map);
-
-      // 先嘗試預載所有圖示（若樣式尚未就緒，styleimagemissing 仍會當場補圖）
-      await ensureAllPaletteImages(map);
 
       // 建立或更新 Source
       const data = buildFeatureCollection(pins, map, assignedColorsRef.current);
@@ -316,10 +289,6 @@ const SymbolsManager = () => {
             if (id.startsWith('fp-contrast-')) {
               const idx = Number(id.replace('fp-contrast-', ''));
               const color = CONTRAST_SCHEMES?.[idx]?.main;
-              if (color) loadIconImage(map, id, color);
-            } else if (id.startsWith('fp-skin-')) {
-              const idx = Number(id.replace('fp-skin-', ''));
-              const color = SKIN_SCHEMES?.[idx]?.main;
               if (color) loadIconImage(map, id, color);
             }
           } catch {}
@@ -446,10 +415,6 @@ const SymbolsManager = () => {
               if (id.startsWith('fp-contrast-')) {
                 const idx = Number(id.replace('fp-contrast-', ''));
                 const color = CONTRAST_SCHEMES?.[idx]?.main;
-                if (color) loadIconImage(map, id, color);
-              } else if (id.startsWith('fp-skin-')) {
-                const idx = Number(id.replace('fp-skin-', ''));
-                const color = SKIN_SCHEMES?.[idx]?.main;
                 if (color) loadIconImage(map, id, color);
               }
             } catch {}
