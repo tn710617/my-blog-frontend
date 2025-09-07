@@ -5,6 +5,7 @@ import { useMapStore } from '../stores/mapStore';
 import { Z_INDEX } from '../utils/zIndex';
 import { useResponsive } from '../hooks/useResponsive';
 import { useIntl } from 'react-intl';
+import {ZOOM_LEVELS} from "../utils";
 
 const MapContainer = () => {
   const mapContainerRef = useRef(null);
@@ -49,7 +50,7 @@ const MapContainer = () => {
         container: mapContainerRef.current,
         style: 'mapbox://styles/mapbox/outdoors-v12', // Keep satellite style for consistency
         center: center,
-        zoom: 2, // Start at zoom 2 like original
+        zoom: ZOOM_LEVELS.WORLD, // Start at zoom 2 like original
         projection: 'globe', // 3D globe projection
         // Prevent duplicate world copies which can briefly show back-side markers
         renderWorldCopies: false,

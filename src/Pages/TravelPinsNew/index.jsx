@@ -50,31 +50,22 @@ const TravelPinsNew = () => {
         };
     }, [mapInstance]);
 
-    // 僅在行動裝置上調整整個模組於文件中的垂直位移
-    const isMobile = useResponsive();
-    const MOBILE_DOCUMENT_OFFSET_PX = 80; // <-- 調整這個值（例如 40、80）
-
     return (
-        <div className="h-screen flex flex-col relative">
-            <div
-                className="flex-1 relative"
-                style={isMobile && MOBILE_DOCUMENT_OFFSET_PX ? {transform: `translateY(-${MOBILE_DOCUMENT_OFFSET_PX}px)`} : undefined}
-            >
-                <MapContainer/>
-                <MapLoadingIndicator/>
-                <MobileGestureToggle/>
+        <div className="h-screen">
+            <MapContainer/>
+            <MapLoadingIndicator/>
+            <MobileGestureToggle/>
 
-                {/* SymbolLayer-based pins (no backside flicker) */}
-                <SymbolsManager/>
-                <OverlayRoot/>
+            {/* SymbolLayer-based pins (no backside flicker) */}
+            <SymbolsManager/>
+            <OverlayRoot/>
 
-                <LocationButton
-                    isLocating={isLocating}
-                    locationError={locationError}
-                    onGetCurrentLocation={handleGetCurrentLocation}
-                    onClearLocationError={clearLocationError}
-                />
-            </div>
+            <LocationButton
+                isLocating={isLocating}
+                locationError={locationError}
+                onGetCurrentLocation={handleGetCurrentLocation}
+                onClearLocationError={clearLocationError}
+            />
         </div>
     );
 };

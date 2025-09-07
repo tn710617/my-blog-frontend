@@ -8,7 +8,6 @@ import ProtectedRoute from "./Components/ProtectedRoute";
 import EditPost from "./Pages/EditPost";
 import About from "./Pages/About";
 import TravelPinsNew from "./Pages/TravelPinsNew";
-import {Navigate} from "react-router";
 
 function App() {
     return (
