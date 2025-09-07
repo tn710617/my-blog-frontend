@@ -22,10 +22,10 @@ const LocationButton = ({
         disabled={isLocating}
         className={`
           fixed bottom-6 right-6 w-16 h-16 rounded-2xl 
-          backdrop-blur-md border transition-all duration-500 ease-out
+          backdrop-blur-sm border transition-all duration-300 ease-out
           ${isLocating 
-            ? 'bg-amber-900/80 border-amber-700/50 text-amber-200 cursor-not-allowed shadow-lg shadow-amber-900/50' 
-            : 'bg-gradient-to-br from-emerald-900/90 to-teal-800/90 border-emerald-700/50 text-emerald-100 hover:from-emerald-800/95 hover:to-teal-700/95 hover:border-emerald-600/70 hover:scale-105 hover:shadow-2xl hover:-translate-y-1 shadow-lg shadow-emerald-900/50'
+            ? 'bg-orange-400/90 border-orange-300/60 text-white cursor-not-allowed shadow-md shadow-orange-900/20' 
+            : 'bg-gradient-to-br from-emerald-500/90 to-green-600/90 border-emerald-400/50 text-white hover:from-emerald-400/95 hover:to-green-500/95 hover:border-emerald-300/70 hover:scale-105 hover:shadow-lg hover:-translate-y-0.5 shadow-md shadow-green-900/30'
           }
           active:scale-95 active:translate-y-0
         `}
@@ -39,8 +39,8 @@ const LocationButton = ({
           {isLocating ? (
             <div className="relative">
               {/* Animated location pulse */}
-              <div className="animate-spin w-6 h-6 border-2 border-amber-200/60 border-t-amber-200 rounded-full"></div>
-              <div className="absolute inset-0 animate-ping w-6 h-6 border border-amber-300/40 rounded-full"></div>
+              <div className="animate-spin w-6 h-6 border-2 border-white/60 border-t-white rounded-full"></div>
+              <div className="absolute inset-0 animate-ping w-6 h-6 border border-white/40 rounded-full"></div>
             </div>
           ) : (
             <div className="relative">
@@ -57,11 +57,11 @@ const LocationButton = ({
               </div>
             </div>
           )}
-          {/* Subtle glow effect */}
+          {/* Subtle accent effect */}
           <div className={`absolute inset-0 rounded-2xl transition-opacity duration-300 ${
             isLocating 
-              ? 'bg-gradient-radial from-amber-400/20 to-transparent opacity-100' 
-              : 'bg-gradient-radial from-emerald-400/20 to-transparent opacity-0 hover:opacity-100'
+              ? 'bg-gradient-radial from-orange-300/15 to-transparent opacity-100' 
+              : 'bg-gradient-radial from-emerald-300/15 to-transparent opacity-0 hover:opacity-100'
           }`} />
         </div>
       </button>

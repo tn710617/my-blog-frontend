@@ -52,12 +52,12 @@ const MobileGestureToggle = () => {
       onClick={toggleMobileGestureMode}
       className={`
         fixed bottom-6 left-6 w-16 h-16 rounded-2xl 
-        backdrop-blur-md border transition-all duration-500 ease-out
-        hover:scale-105 hover:shadow-2xl hover:-translate-y-1
+        backdrop-blur-sm border transition-all duration-300 ease-out
+        hover:scale-105 hover:shadow-lg hover:-translate-y-0.5
         active:scale-95 active:translate-y-0
         ${isScrollMode 
-          ? 'bg-slate-900/80 border-slate-700/50 text-slate-200 hover:bg-slate-800/90 hover:border-slate-600/70 shadow-lg shadow-slate-900/50' 
-          : 'bg-gradient-to-br from-blue-900/90 to-cyan-800/90 border-blue-700/50 text-blue-100 hover:from-blue-800/95 hover:to-cyan-700/95 hover:border-blue-600/70 shadow-lg shadow-blue-900/50'
+          ? 'bg-white/90 border-stone-300/60 text-stone-700 hover:bg-white/95 hover:border-stone-400/70 shadow-md shadow-stone-900/20' 
+          : 'bg-gradient-to-br from-sky-500/90 to-blue-600/90 border-sky-400/50 text-white hover:from-sky-400/95 hover:to-blue-500/95 hover:border-sky-300/70 shadow-md shadow-blue-900/30'
         }
       `}
       style={{ zIndex: Z_INDEX.GPS_BUTTON }}
@@ -67,11 +67,11 @@ const MobileGestureToggle = () => {
     >
       <div className="flex items-center justify-center relative">
         {icon}
-        {/* Subtle glow effect */}
+        {/* Subtle accent effect */}
         <div className={`absolute inset-0 rounded-2xl transition-opacity duration-300 ${
           isScrollMode 
-            ? 'bg-gradient-radial from-slate-400/20 to-transparent opacity-0 hover:opacity-100' 
-            : 'bg-gradient-radial from-cyan-400/20 to-transparent opacity-0 hover:opacity-100'
+            ? 'bg-gradient-radial from-stone-500/10 to-transparent opacity-0 hover:opacity-100' 
+            : 'bg-gradient-radial from-sky-300/15 to-transparent opacity-0 hover:opacity-100'
         }`} />
       </div>
     </button>
