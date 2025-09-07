@@ -1,6 +1,7 @@
 import React, {useState} from 'react';
 import {useIntl} from 'react-intl';
 import {useModalStore} from '../../stores/modalStore';
+import {useMapStore} from '../../stores/mapStore';
 import {Z_INDEX} from '../../utils/zIndex';
 import {markdownToHtml} from '../../utils/markdownUtils';
 import {copyPinUrlToClipboard} from '../../utils/urlUtils';
@@ -18,17 +19,29 @@ const DisplayPopup = ({withinOverlay = false}) => {
     const [copyError, setCopyError] = useState('');
 
     const pinId = modalData?.pinId || modalData?.pin?.id;
-    // Always run hooks in the same order (avoid conditional hooks)
     const latestPin = usePinFromCache(pinId);
     const pin = latestPin || modalData?.pin;
-    // 訂閱登入狀態，確保登入/登出會即時觸發重渲染
     const isLoggedIn = useAuthStore((s) => s.isLoggedIn);
+    const mapInstance = useMapStore((s) => s.mapInstance);
+    
     if (activeModal !== 'display' || !pinId || !pin) return null;
 
     const t = (id) => intl.formatMessage({id});
     const formatDate = (date) => intl.formatDate(new Date(date));
 
     const onClose = () => closeModal();
+    
+    const onFlyTo = () => {
+        if (!mapInstance || !pin.coordinates) return;
+        
+        // 直接使用 pin.coordinates，與深連結功能一致
+        mapInstance.flyTo({
+            center: pin.coordinates, // pin.coordinates 已經是 Mapbox 格式 [lng, lat]
+            zoom: 15,
+            duration: 2000
+        });
+    };
+    
     const onCopy = async () => {
         setCopyError('');
         const res = await copyPinUrlToClipboard(pin.id);
@@ -39,14 +52,17 @@ const DisplayPopup = ({withinOverlay = false}) => {
             setCopyError(res?.error || '');
         }
     };
+    
     const onEdit = () => {
         closeModal();
         openModal('form', {pin});
     };
+    
     const onDelete = () => {
         closeModal();
         openModal('delete', {pin});
     };
+    
     const onPhoto = () => {
         if (pin.photo_url) {
             openModal('photo', {url: pin.photo_url, title: pin.title, pin, pinId: pin.id});
@@ -118,52 +134,67 @@ const DisplayPopup = ({withinOverlay = false}) => {
                     </section>
                 )}
 
-                <footer className={createModalClasses.actions() }>
-                    <button className={createModalClasses.button('secondary')} onClick={onCopy} type="button">
-                        <div className={"flex items-center gap-2 justify-center"}>
-                            <svg className="w-4 h-4 hidden sm:block" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                <footer className="space-y-3 pt-4">
+                    {/* 第一排：無需登入的功能 */}
+                    <div className="flex gap-3">
+                        <button 
+                            onClick={onFlyTo}
+                            className="flex-1 bg-sky-600 hover:bg-sky-700 text-white font-medium py-2.5 px-4 rounded-lg transition-colors text-sm flex items-center justify-center gap-2"
+                        >
+                            <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                                <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/>
+                                <circle cx="12" cy="10" r="3"/>
+                            </svg>
+                            {t('travel_pins.popup.fly_to')}
+                        </button>
+                        
+                        <button 
+                            onClick={onCopy}
+                            className="flex-1 bg-gray-200 hover:bg-gray-300 text-gray-700 font-medium py-2.5 px-4 rounded-lg transition-colors text-sm flex items-center justify-center gap-2"
+                        >
+                            <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                                 {copied ? (
-                                    <polyline points="20,6 9,17 4,12"></polyline>
+                                    <polyline points="20,6 9,17 4,12"/>
                                 ) : (
                                     <>
-                                        <path
-                                            d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"></path>
-                                        <rect x="8" y="2" width="8" height="4" rx="1" ry="1"></rect>
+                                        <path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/>
+                                        <rect x="8" y="2" width="8" height="4" rx="1" ry="1"/>
                                     </>
                                 )}
                             </svg>
                             {copied ? t('travel_pins.popup.copied') : t('travel_pins.popup.copy_link')}
-                        </div>
-                    </button>
+                        </button>
+                    </div>
 
                     {copyError && (
-                        <span className="text-red-600 text-xs">{copyError}</span>
+                        <div className="text-red-600 text-xs text-center">{copyError}</div>
                     )}
 
+                    {/* 第二排：需要登入的功能 */}
                     {isLoggedIn && (
-                        <button className={createModalClasses.button('primary')} onClick={onEdit}>
-                            <div className={"flex items-center gap-2 justify-center"}>
-                                <svg className="w-4 h-4 hidden sm:block" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                                    <path d="M12 20h9"></path>
-                                    <path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"></path>
+                        <div className="flex gap-3">
+                            <button 
+                                onClick={onEdit}
+                                className="flex-1 bg-blue-600 hover:bg-blue-700 text-white font-medium py-2.5 px-4 rounded-lg transition-colors text-sm flex items-center justify-center gap-2"
+                            >
+                                <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                                    <path d="M12 20h9"/>
+                                    <path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/>
                                 </svg>
                                 {t('travel_pins.popup.edit_button')}
-                            </div>
-                        </button>
-                    )}
-
-                    {isLoggedIn && (
-                        <button className={createModalClasses.button('danger')} onClick={onDelete}>
-                            <div className={"flex items-center gap-2 justify-center"}>
-                                <svg className="w-4 h-4 hidden sm:block" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                                    <polyline points="3,6 5,6 21,6"></polyline>
-                                    <path
-                                        d="m19,6v14a2,2 0,0 1,-2,2H7a2,2 0,0 1,-2,-2V6m3,0V4a2,2 0,0 1,2,-2h4a2,2 0,0 1,2,2V6"></path>
+                            </button>
+                            
+                            <button 
+                                onClick={onDelete}
+                                className="flex-1 bg-red-600 hover:bg-red-700 text-white font-medium py-2.5 px-4 rounded-lg transition-colors text-sm flex items-center justify-center gap-2"
+                            >
+                                <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                                    <polyline points="3,6 5,6 21,6"/>
+                                    <path d="m19,6v14a2,2 0,0 1,-2,2H7a2,2 0,0 1,-2,-2V6m3,0V4a2,2 0,0 1,2,-2h4a2,2 0,0 1,2,2V6"/>
                                 </svg>
                                 {t('travel_pins.popup.delete_button')}
-
-                            </div>
-                        </button>
+                            </button>
+                        </div>
                     )}
                 </footer>
             </div>
