@@ -162,5 +162,5 @@
   "travel_pins.location.unknown_error": "Unable to retrieve your location.",
   "mapbox.scroll_zoom_blocker.ctrl_message": "Use ctrl + scroll to zoom the map",
   "mapbox.scroll_zoom_blocker.cmd_message": "Use ⌘ + scroll to zoom the map",
-  "mapbox.touch_pan_blocker.message": "Use two fingers to move the map"
+  "mapbox.touch_pan_blocker.message": "Tap the bottom-left button to toggle map controls"
 }

@@ -4,6 +4,7 @@ import 'mapbox-gl/dist/mapbox-gl.css';
 import { useMapStore } from '../stores/mapStore';
 import { Z_INDEX } from '../utils/zIndex';
 import { useResponsive } from '../hooks/useResponsive';
+import { useIntl } from 'react-intl';
 
 const MapContainer = () => {
   const mapContainerRef = useRef(null);
@@ -18,6 +19,7 @@ const MapContainer = () => {
 
   // Use responsive hook for consistent mobile detection
   const isMobile = useResponsive();
+  const intl = useIntl();
 
   // Derive a stable dependency key: desktop forces cooperative gestures
   const coopKey = useMemo(() => (isMobile ? isMobileGestureMode : 'desktop'), [isMobile, isMobileGestureMode]);
@@ -62,6 +64,12 @@ const MapContainer = () => {
         pitchWithRotate: true,  // Enable pitch when rotating
         // Desktop: always cooperative gestures; Mobile: follow toggle mode
         cooperativeGestures: !isMobile || isMobileGestureMode === 'scroll',
+        // Localize cooperative gestures messages (desktop + mobile)
+        locale: {
+          'ScrollZoomBlocker.CtrlMessage': intl.formatMessage({ id: 'mapbox.scroll_zoom_blocker.ctrl_message' }),
+          'ScrollZoomBlocker.CmdMessage': intl.formatMessage({ id: 'mapbox.scroll_zoom_blocker.cmd_message' }),
+          'TouchPanBlocker.Message': intl.formatMessage({ id: 'mapbox.touch_pan_blocker.message' }),
+        },
       });
 
       // Map load event
@@ -88,7 +96,7 @@ const MapContainer = () => {
       console.error('Failed to initialize map:', error);
       setMapError(error.message || 'Failed to initialize map');
     }
-  }, [setMapInstance, setMapError, coopKey]);
+  }, [setMapInstance, setMapError, coopKey, intl]);
 
   // Expose root element for portals like overlay
   useEffect(() => {
