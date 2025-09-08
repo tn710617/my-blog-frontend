@@ -16,9 +16,10 @@ import {useResponsive} from './hooks/useResponsive';
 // Travel Pins New - Main Component
 // Entry point for the new Travel Pins implementation
 const TravelPinsNew = () => {
-    const {mapInstance, isMobileGestureMode} = useMapStore();
+    const {mapInstance, isMobileGestureMode, mapRootEl} = useMapStore();
     const isMobile = useResponsive();
     const [showCooperativeOverlay, setShowCooperativeOverlay] = React.useState(false);
+    const overlayHideTimerRef = React.useRef(null);
 
     // Centralized ESC handling (delete/photo/display)
     useKeyboardHandlers();
@@ -29,20 +30,95 @@ const TravelPinsNew = () => {
     // Geolocation hook for GPS positioning
     const {isLocating, locationError, getCurrentLocation, clearLocationError} = useGeolocation();
 
-    // Show cooperative gestures overlay when in scroll mode
+    // Show cooperative gestures overlay when user tries to scroll/page in scroll mode (mobile only)
     React.useEffect(() => {
-        if (mapInstance && isMobileGestureMode === 'scroll') {
-            // Show overlay briefly when switching to cooperative gestures mode
-            setShowCooperativeOverlay(true);
-            
-            // Auto-hide after 3 seconds
-            const timer = setTimeout(() => {
-                setShowCooperativeOverlay(false);
-            }, 3000);
-
-            return () => clearTimeout(timer);
+        if (!mapInstance) return;
+        if (!isMobile || isMobileGestureMode !== 'scroll') {
+            setShowCooperativeOverlay(false);
+            return;
         }
-    }, [mapInstance, isMobileGestureMode]);
+
+        const showAndDebounceHide = () => {
+            // Show once; keep showing while user continues to scroll
+            setShowCooperativeOverlay((prev) => prev || true);
+            if (overlayHideTimerRef.current) clearTimeout(overlayHideTimerRef.current);
+            overlayHideTimerRef.current = setTimeout(() => {
+                setShowCooperativeOverlay(false);
+                overlayHideTimerRef.current = null;
+            }, 1200);
+        };
+
+        const onWheel = () => showAndDebounceHide();
+        const onTouchMove = () => showAndDebounceHide();
+
+        window.addEventListener('wheel', onWheel, { passive: true });
+        window.addEventListener('touchmove', onTouchMove, { passive: true });
+
+        return () => {
+            window.removeEventListener('wheel', onWheel);
+            window.removeEventListener('touchmove', onTouchMove);
+            if (overlayHideTimerRef.current) {
+                clearTimeout(overlayHideTimerRef.current);
+                overlayHideTimerRef.current = null;
+            }
+        };
+    }, [mapInstance, isMobileGestureMode, isMobile]);
+
+    // Imperative toggle: disable/enable map interactions, cooperative gestures, and allow page scroll to pass through
+    React.useEffect(() => {
+        if (!mapInstance) return;
+        const m = mapInstance;
+
+        const disableAll = () => {
+            try {
+                m.keyboard?.disable?.();
+                m.dragPan?.disable?.();
+                m.scrollZoom?.disable?.();
+                m.boxZoom?.disable?.();
+                m.doubleClickZoom?.disable?.();
+                m.touchZoomRotate?.disable?.();
+                m.dragRotate?.disable?.();
+            } catch {}
+        };
+        const enableAll = () => {
+            try {
+                m.keyboard?.enable?.();
+                m.dragPan?.enable?.();
+                m.scrollZoom?.enable?.();
+                m.boxZoom?.enable?.();
+                m.doubleClickZoom?.enable?.();
+                m.touchZoomRotate?.enable?.();
+                m.dragRotate?.enable?.();
+            } catch {}
+        };
+
+        const root = mapRootEl;
+        const desiredCoop = !isMobile ? true : (isMobileGestureMode === 'scroll');
+        try {
+            if (typeof m.getCooperativeGestures === 'function' && typeof m.setCooperativeGestures === 'function') {
+                const current = m.getCooperativeGestures();
+                if (current !== desiredCoop) m.setCooperativeGestures(desiredCoop);
+            }
+        } catch {}
+
+        if (isMobile) {
+            if (isMobileGestureMode === 'scroll') {
+                disableAll();
+                try { if (root) root.classList.add('map--pass-through'); } catch {}
+            } else {
+                enableAll();
+                try { if (root) root.classList.remove('map--pass-through'); } catch {}
+            }
+        } else {
+            // Desktop: always enable interactions (Cmd/Ctrl + 滾輪可用) 並移除穿透
+            enableAll();
+            try { if (root) root.classList.remove('map--pass-through'); } catch {}
+        }
+
+        return () => {
+            // no-op; state changes will re-run effect
+        };
+    }, [mapInstance, mapRootEl, isMobileGestureMode, isMobile]);
 
     // Handle GPS location button click
     const handleGetCurrentLocation = React.useCallback(() => {
@@ -85,11 +161,11 @@ const TravelPinsNew = () => {
                 onClearLocationError={clearLocationError}
             />
 
-            {/*<MapboxCooperativeGesturesOverlay*/}
-            {/*    show={showCooperativeOverlay}*/}
-            {/*    onDismiss={() => setShowCooperativeOverlay(false)}*/}
-            {/*    isMobile={isMobile}*/}
-            {/*/>*/}
+            <MapboxCooperativeGesturesOverlay
+                show={showCooperativeOverlay}
+                onDismiss={() => setShowCooperativeOverlay(false)}
+                isMobile={isMobile}
+            />
         </div>
     );
 };

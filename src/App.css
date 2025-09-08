@@ -84,3 +84,10 @@ table tr:last-child td:first-child {
 table tr:last-child td:last-child {
   border-bottom-right-radius: 10px;
 }
+
+/* Allow page scroll to pass through the map container */
+.map--pass-through {
+  pointer-events: none;
+  /* On touch devices, allow vertical scroll gestures */
+  touch-action: pan-y;
+}

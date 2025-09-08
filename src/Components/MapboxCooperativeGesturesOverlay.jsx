@@ -45,6 +45,7 @@ const MapboxCooperativeGesturesOverlay = ({
   return (
     <div 
       className={`fixed inset-0 z-50 bg-black bg-opacity-80 flex items-center justify-center ${className}`}
+      style={{ pointerEvents: 'none' }}
     >
       {/* Mapbox-style message: white text centered on the full-screen overlay */}
       <div className="text-white px-6 py-4 text-base font-medium max-w-sm text-center">

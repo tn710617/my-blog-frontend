@@ -1,4 +1,4 @@
-import React, { useRef, useEffect, useMemo } from 'react';
+import React, { useRef, useEffect } from 'react';
 import mapboxgl from 'mapbox-gl';
 import 'mapbox-gl/dist/mapbox-gl.css';
 import { useMapStore } from '../stores/mapStore';
@@ -22,8 +22,20 @@ const MapContainer = () => {
   const isMobile = useResponsive();
   const intl = useIntl();
 
-  // Derive a stable dependency key: desktop forces cooperative gestures
-  const coopKey = useMemo(() => (isMobile ? isMobileGestureMode : 'desktop'), [isMobile, isMobileGestureMode]);
+  // Capture initial values only to avoid re-init on later changes
+  const isMobileInitialRef = useRef(isMobile);
+  const localeRef = useRef(null);
+  if (localeRef.current == null) {
+    try {
+      localeRef.current = {
+        'ScrollZoomBlocker.CtrlMessage': intl.formatMessage({ id: 'mapbox.scroll_zoom_blocker.ctrl_message' }),
+        'ScrollZoomBlocker.CmdMessage': intl.formatMessage({ id: 'mapbox.scroll_zoom_blocker.cmd_message' }),
+        'TouchPanBlocker.Message': intl.formatMessage({ id: 'mapbox.touch_pan_blocker.message' }),
+      };
+    } catch {
+      localeRef.current = {};
+    }
+  }
 
   useEffect(() => {
     if (!mapContainerRef.current) return;
@@ -63,14 +75,10 @@ const MapContainer = () => {
         keyboard: true,
         touchPitch: true,       // Two-finger pitch/tilt on mobile
         pitchWithRotate: true,  // Enable pitch when rotating
-        // Desktop: always cooperative gestures; Mobile: follow toggle mode
-        cooperativeGestures: !isMobile,
+        // Desktop: always cooperative gestures; Mobile: captured at initial render
+        cooperativeGestures: !isMobileInitialRef.current,
         // Localize cooperative gestures messages (desktop + mobile)
-        locale: {
-          'ScrollZoomBlocker.CtrlMessage': intl.formatMessage({ id: 'mapbox.scroll_zoom_blocker.ctrl_message' }),
-          'ScrollZoomBlocker.CmdMessage': intl.formatMessage({ id: 'mapbox.scroll_zoom_blocker.cmd_message' }),
-          'TouchPanBlocker.Message': intl.formatMessage({ id: 'mapbox.touch_pan_blocker.message' }),
-        },
+        locale: localeRef.current,
       });
 
       // Map load event
@@ -97,7 +105,7 @@ const MapContainer = () => {
       console.error('Failed to initialize map:', error);
       setMapError(error.message || 'Failed to initialize map');
     }
-  }, [setMapInstance, setMapError, coopKey, intl]);
+  }, []);
 
   // Expose root element for portals like overlay
   useEffect(() => {
