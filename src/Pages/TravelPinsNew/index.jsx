@@ -164,7 +164,6 @@ const TravelPinsNew = () => {
             <MapboxCooperativeGesturesOverlay
                 show={showCooperativeOverlay}
                 onDismiss={() => setShowCooperativeOverlay(false)}
-                isMobile={isMobile}
             />
         </div>
     );

@@ -164,5 +164,5 @@
   "travel_pins.location.unknown_error": "無法取得您的位置。",
   "mapbox.scroll_zoom_blocker.ctrl_message": "按住 Ctrl + 滾輪縮放地圖",
   "mapbox.scroll_zoom_blocker.cmd_message": "按住 ⌘ + 滾輪縮放地圖",
-  "mapbox.touch_pan_blocker.message": "請按左下角的按鈕切換以操作地圖"
+  "mapbox.touch_pan_blocker.message": "請點擊左下角切換按鈕以操作地圖"
 }
