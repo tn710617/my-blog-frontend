@@ -1,10 +1,12 @@
 import React, {useState, useEffect} from 'react';
+import { createPortal } from 'react-dom';
 import { useIntl } from 'react-intl';
 
 const MapboxCooperativeGesturesOverlay = ({
   show = true,
   onDismiss,
-  className = ""
+  className = "",
+  containerEl = null,
 }) => {
     const [isVisible, setIsVisible] = useState(show);
     const intl = useIntl();
@@ -29,17 +31,29 @@ const MapboxCooperativeGesturesOverlay = ({
 
     const message = intl.formatMessage({ id: 'mapbox.touch_pan_blocker.message' });
 
-    return (
-        <div
-            className={`fixed inset-0 z-50 bg-black bg-opacity-80 flex items-center justify-center ${className}`}
-            style={{pointerEvents: 'none'}}
-        >
-            {/* Mapbox-style message: white text centered on the full-screen overlay */}
-            <div className="text-white px-6 py-4 text-base font-medium max-w-sm text-center">
-                {message}
-            </div>
+    const overlayNode = (
+      <div
+        className={`flex items-center justify-center ${className}`}
+        style={{
+          position: containerEl ? 'absolute' : 'fixed',
+          inset: 0,
+          background: 'rgba(0,0,0,0.8)',
+          zIndex: 50,
+          pointerEvents: 'none',
+        }}
+      >
+        <div className="text-white px-6 py-4 text-base font-medium max-w-sm text-center">
+          {message}
         </div>
+      </div>
     );
+
+    // If a container element is provided (map root), render overlay inside it so it won't cover navbar
+    if (containerEl) {
+      return createPortal(overlayNode, containerEl);
+    }
+
+    return overlayNode;
 };
 
 export default MapboxCooperativeGesturesOverlay;

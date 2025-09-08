@@ -93,26 +93,35 @@ const TravelPinsNew = () => {
         };
 
         const root = mapRootEl;
-        const desiredCoop = !isMobile ? true : (isMobileGestureMode === 'scroll');
-        try {
-            if (typeof m.getCooperativeGestures === 'function' && typeof m.setCooperativeGestures === 'function') {
-                const current = m.getCooperativeGestures();
-                if (current !== desiredCoop) m.setCooperativeGestures(desiredCoop);
-            }
-        } catch {}
 
         if (isMobile) {
             if (isMobileGestureMode === 'scroll') {
+                // Mobile scroll: cooperative on (語意一致)、禁用互動、事件穿透頁面
+                try { if (typeof m.setCooperativeGestures === 'function') m.setCooperativeGestures(true); } catch {}
                 disableAll();
                 try { if (root) root.classList.add('map--pass-through'); } catch {}
             } else {
+                // Mobile rotate: cooperative off，啟用互動並確保可旋轉
+                try { if (typeof m.setCooperativeGestures === 'function') m.setCooperativeGestures(false); } catch {}
                 enableAll();
+                try { m.touchZoomRotate?.enableRotation?.(); } catch {}
                 try { if (root) root.classList.remove('map--pass-through'); } catch {}
             }
         } else {
-            // Desktop: always enable interactions (Cmd/Ctrl + 滾輪可用) 並移除穿透
-            enableAll();
+            // Desktop：先移除穿透 → 重置 scrollZoom → 開啟 cooperative → 再啟用互動
             try { if (root) root.classList.remove('map--pass-through'); } catch {}
+
+            // 確保 blocker 容器正確建立：強制走 disable → enable 流程
+            try { m.scrollZoom?.disable?.(); } catch {}
+            try {
+                if (typeof m.setCooperativeGestures === 'function') {
+                    m.setCooperativeGestures(true);
+                }
+            } catch {}
+            try { m.scrollZoom?.enable?.(); } catch {}
+
+            // 其他互動照常啟用（dragPan/dragRotate/touchZoomRotate 等）
+            enableAll();
         }
 
         return () => {
@@ -164,6 +173,7 @@ const TravelPinsNew = () => {
             <MapboxCooperativeGesturesOverlay
                 show={showCooperativeOverlay}
                 onDismiss={() => setShowCooperativeOverlay(false)}
+                containerEl={mapRootEl}
             />
         </div>
     );
