@@ -64,7 +64,7 @@ const MapContainer = () => {
         touchPitch: true,       // Two-finger pitch/tilt on mobile
         pitchWithRotate: true,  // Enable pitch when rotating
         // Desktop: always cooperative gestures; Mobile: follow toggle mode
-        cooperativeGestures: !isMobile || isMobileGestureMode === 'scroll',
+        cooperativeGestures: !isMobile,
         // Localize cooperative gestures messages (desktop + mobile)
         locale: {
           'ScrollZoomBlocker.CtrlMessage': intl.formatMessage({ id: 'mapbox.scroll_zoom_blocker.ctrl_message' }),

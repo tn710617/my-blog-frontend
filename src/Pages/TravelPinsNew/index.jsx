@@ -6,6 +6,7 @@ import MobileGestureToggle from './components/MobileGestureToggle';
 import SymbolsManager from './components/SymbolsManager';
 import OverlayRoot from './components/OverlayRoot';
 import LocationButton from './components/LocationButton';
+import MapboxCooperativeGesturesOverlay from '../../Components/MapboxCooperativeGesturesOverlay';
 import {useKeyboardHandlers} from './hooks/useKeyboardHandlers';
 import {useLocationListener} from './hooks/useLocationListener';
 import {useGeolocation} from './hooks/useGeolocation';
@@ -15,7 +16,9 @@ import {useResponsive} from './hooks/useResponsive';
 // Travel Pins New - Main Component
 // Entry point for the new Travel Pins implementation
 const TravelPinsNew = () => {
-    const {mapInstance} = useMapStore();
+    const {mapInstance, isMobileGestureMode} = useMapStore();
+    const isMobile = useResponsive();
+    const [showCooperativeOverlay, setShowCooperativeOverlay] = React.useState(false);
 
     // Centralized ESC handling (delete/photo/display)
     useKeyboardHandlers();
@@ -25,6 +28,21 @@ const TravelPinsNew = () => {
 
     // Geolocation hook for GPS positioning
     const {isLocating, locationError, getCurrentLocation, clearLocationError} = useGeolocation();
+
+    // Show cooperative gestures overlay when in scroll mode
+    React.useEffect(() => {
+        if (mapInstance && isMobileGestureMode === 'scroll') {
+            // Show overlay briefly when switching to cooperative gestures mode
+            setShowCooperativeOverlay(true);
+            
+            // Auto-hide after 3 seconds
+            const timer = setTimeout(() => {
+                setShowCooperativeOverlay(false);
+            }, 3000);
+
+            return () => clearTimeout(timer);
+        }
+    }, [mapInstance, isMobileGestureMode]);
 
     // Handle GPS location button click
     const handleGetCurrentLocation = React.useCallback(() => {
@@ -66,6 +84,12 @@ const TravelPinsNew = () => {
                 onGetCurrentLocation={handleGetCurrentLocation}
                 onClearLocationError={clearLocationError}
             />
+
+            {/*<MapboxCooperativeGesturesOverlay*/}
+            {/*    show={showCooperativeOverlay}*/}
+            {/*    onDismiss={() => setShowCooperativeOverlay(false)}*/}
+            {/*    isMobile={isMobile}*/}
+            {/*/>*/}
         </div>
     );
 };
