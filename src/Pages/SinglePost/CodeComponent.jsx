@@ -5,14 +5,22 @@ import {Prism as SyntaxHighlighter} from 'react-syntax-highlighter'
 
 export default function CodeComponent({
                                           node,
-                                          inline,
-                                          className = "text-blue-600 rounded font-semibold bg-blue-100 p-0.5",
+                                          className,
                                           children,
                                           ...props
                                       }) {
 
-    if (inline) {
-        return <code className={className} {...props}>
+    // React Markdown v10: Multiple checks to distinguish inline vs block code
+    // 1. Block code with language: className starts with 'language-'
+    // 2. Block code without language: contains newline characters
+    // 3. Inline code: no language class and no newlines
+    const hasLanguage = className && className.startsWith('language-')
+    const hasNewlines = String(children).includes('\n')
+    const isInlineCode = !hasLanguage && !hasNewlines
+
+    if (isInlineCode) {
+        const inlineClass = "text-blue-600 rounded font-semibold bg-blue-100 p-0.5"
+        return <code className={inlineClass} {...props}>
             {children}
         </code>
     }
