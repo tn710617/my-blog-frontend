@@ -8,7 +8,7 @@ import CheckLogin from "./CheckLogin";
 export default function Layout() {
     return (
         <div
-            className={"relative flex flex-col justify-between selection:bg-green-300 selection:text-green-900"}>
+            className={"h-screen relative flex flex-col justify-between selection:bg-green-300 selection:text-green-900"}>
             <div>
                 <Nav/>
                 <Outlet/>
