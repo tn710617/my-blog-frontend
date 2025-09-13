@@ -4,7 +4,7 @@ import SearchResult from "./SearchResult";
 import LoadMorePageComponent from "../LoadMorePageComponent";
 import {useIntl} from "react-intl";
 
-export default function SearchResultDropdown({searchTerm, searchedPosts, setShowSearchBoxComponent}) {
+export default function SearchResultDropdown({searchTerm, searchedPosts, setShowSearchBoxComponent, selectedResultIndex}) {
     const hasPosts = searchedPosts.data.pages[0].data.length !== 0
     const intl = useIntl()
 
@@ -17,7 +17,8 @@ export default function SearchResultDropdown({searchTerm, searchedPosts, setShow
                     <div>
                         <div className={"mt-2"}>
                             <SearchResult searchedPosts={searchedPosts}
-                                          setShowSearchBoxComponent={setShowSearchBoxComponent}/>
+                                          setShowSearchBoxComponent={setShowSearchBoxComponent}
+                                          selectedResultIndex={selectedResultIndex}/>
                         </div>
                         <div className={"mt-2 text-center"}>
                             <LoadMorePageComponent pagination={searchedPosts}

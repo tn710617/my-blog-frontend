@@ -4,6 +4,7 @@ import SearchResultDropdown from "./SearchResultDropdown";
 import {useDebounce} from "../../hooks/useDebounce";
 import {useInfinitePosts} from "../../APIs/posts";
 import {useIntl} from "react-intl";
+import {useNavigate} from "react-router";
 
 export default function SearchBoxInput({
                                            showSearchResultDropdown,
@@ -12,7 +13,9 @@ export default function SearchBoxInput({
                                        }) {
     const searchBoxInputIdPrefix = React.useId()
     const intl = useIntl()
+    const navigate = useNavigate()
     const [searchTerm, setSearchTerm] = React.useState("")
+    const [selectedResultIndex, setSelectedResultIndex] = React.useState(-1)
     const debouncedSearchTerm = useDebounce(searchTerm, 1000)
     const infinitePosts = useInfinitePosts({enabled: debouncedSearchTerm.length !== 0}, null, [], null, debouncedSearchTerm)
     const searchBoxInputRef = React.useRef()
@@ -24,11 +27,35 @@ export default function SearchBoxInput({
 
     const handleSearchBoxInputChanged = (event) => {
         setSearchTerm(event.target.value)
+        setSelectedResultIndex(-1) // Reset selection when search term changes
         if (event.target.value === '') {
             setShowSearchResultDropdown(false)
             return
         }
         setShowSearchResultDropdown(true)
+    }
+
+    const handleKeyDown = (event) => {
+        if (!showSearchResultDropdown || !infinitePosts.isSuccess) return
+
+        const allResults = infinitePosts.data.pages.flatMap(page => page.data)
+
+        if (event.key === 'ArrowDown') {
+            event.preventDefault()
+            setSelectedResultIndex(prev =>
+                prev < allResults.length - 1 ? prev + 1 : prev
+            )
+        } else if (event.key === 'ArrowUp') {
+            event.preventDefault()
+            setSelectedResultIndex(prev => prev > -1 ? prev - 1 : -1)
+        } else if (event.key === 'Enter' && selectedResultIndex >= 0) {
+            event.preventDefault()
+            const selectedPost = allResults[selectedResultIndex]
+            if (selectedPost) {
+                navigate(`/single-post?post_id=${selectedPost.id}`)
+                setShowSearchBoxComponent(false)
+            }
+        }
     }
 
     useEffect(() => {
@@ -50,12 +77,14 @@ export default function SearchBoxInput({
                     placeholder={intl.formatMessage({id: "nav.search_box.placeholder"})}
                     className={"border-0 outline-none w-full focus:text-black peer"}
                     onChange={handleSearchBoxInputChanged}
+                    onKeyDown={handleKeyDown}
                 />
             </div>
             {
                 showSearchResultDropdown && infinitePosts.isSuccess && debouncedSearchTerm !== '' &&
                 <SearchResultDropdown searchTerm={debouncedSearchTerm} searchedPosts={infinitePosts}
-                                      setShowSearchBoxComponent={setShowSearchBoxComponent}/>
+                                      setShowSearchBoxComponent={setShowSearchBoxComponent}
+                                      selectedResultIndex={selectedResultIndex}/>
             }
         </div>
     )
