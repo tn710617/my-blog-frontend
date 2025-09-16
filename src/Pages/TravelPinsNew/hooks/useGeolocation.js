@@ -27,7 +27,7 @@ export const useGeolocation = () => {
     const defaultOptions = {
       enableHighAccuracy: true,
       timeout: 10000,
-      maximumAge: 300000 // 5 minutes cache
+      maximumAge: 30000 // 30 seconds cache
     };
 
     const geolocationOptions = { ...defaultOptions, ...options };
