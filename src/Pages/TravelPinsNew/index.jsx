@@ -10,7 +10,6 @@ import MapboxCooperativeGesturesOverlay from '../../Components/MapboxCooperative
 import {useKeyboardHandlers} from './hooks/useKeyboardHandlers';
 import {useLocationListener} from './hooks/useLocationListener';
 import {useGeolocation} from './hooks/useGeolocation';
-import {handleResize} from './utils/cameraHelpers';
 import {useResponsive} from './hooks/useResponsive';
 
 // Travel Pins New - Main Component
@@ -142,16 +141,6 @@ const TravelPinsNew = () => {
             });
         });
     }, [mapInstance, getCurrentLocation]);
-
-    // Handle window resize for map responsiveness
-    React.useEffect(() => {
-        const onResize = () => handleResize(mapInstance);
-        window.addEventListener('resize', onResize);
-
-        return () => {
-            window.removeEventListener('resize', onResize);
-        };
-    }, [mapInstance]);
 
     return (
         <div className="h-screen">
