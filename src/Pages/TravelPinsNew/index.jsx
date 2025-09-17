@@ -17,8 +17,9 @@ import {useResponsive} from './hooks/useResponsive';
 const TravelPinsNew = () => {
     const {mapInstance, isMobileGestureMode, mapRootEl} = useMapStore();
     const isMobile = useResponsive();
-    const [showCooperativeOverlay, setShowCooperativeOverlay] = React.useState(false);
-    const overlayHideTimerRef = React.useRef(null);
+    const overlayHideRafRef = React.useRef(null);
+    const lastActivityTsRef = React.useRef(0);
+    const HIDE_DELAY_MS = 1300;
 
     // Centralized ESC handling (delete/photo/display)
     useKeyboardHandlers();
@@ -34,17 +35,31 @@ const TravelPinsNew = () => {
         if (!mapInstance) return;
         if (!isMobile || isMobileGestureMode !== 'scroll') {
             setShowCooperativeOverlay(false);
+            if (overlayHideRafRef.current) {
+                cancelAnimationFrame(overlayHideRafRef.current);
+                overlayHideRafRef.current = null;
+            }
             return;
         }
 
         const showAndDebounceHide = () => {
-            // Show once; keep showing while user continues to scroll
-            setShowCooperativeOverlay((prev) => prev || true);
-            if (overlayHideTimerRef.current) clearTimeout(overlayHideTimerRef.current);
-            overlayHideTimerRef.current = setTimeout(() => {
-                setShowCooperativeOverlay(false);
-                overlayHideTimerRef.current = null;
-            }, 1200);
+            // Show once and extend visibility while user keeps interacting (RAF-based debounce)
+            setShowCooperativeOverlay((prev) => true);
+            lastActivityTsRef.current = performance.now();
+            const tick = (now) => {
+                // If user interactions paused for HIDE_DELAY_MS, hide the overlay
+                if (now - lastActivityTsRef.current >= HIDE_DELAY_MS) {
+                    setShowCooperativeOverlay(false);
+                    overlayHideRafRef.current = null;
+                    return;
+                }
+                overlayHideRafRef.current = requestAnimationFrame(tick);
+            };
+
+            // Start a RAF loop if not already running
+            if (!overlayHideRafRef.current) {
+                overlayHideRafRef.current = requestAnimationFrame(tick);
+            }
         };
 
         const onWheel = () => showAndDebounceHide();
@@ -56,9 +71,9 @@ const TravelPinsNew = () => {
         return () => {
             window.removeEventListener('wheel', onWheel);
             window.removeEventListener('touchmove', onTouchMove);
-            if (overlayHideTimerRef.current) {
-                clearTimeout(overlayHideTimerRef.current);
-                overlayHideTimerRef.current = null;
+            if (overlayHideRafRef.current) {
+                cancelAnimationFrame(overlayHideRafRef.current);
+                overlayHideRafRef.current = null;
             }
         };
     }, [mapInstance, isMobileGestureMode, isMobile]);
@@ -141,6 +156,8 @@ const TravelPinsNew = () => {
             });
         });
     }, [mapInstance, getCurrentLocation]);
+
+    const [showCooperativeOverlay, setShowCooperativeOverlay] = React.useState(false);
 
     return (
         <div className="h-screen">
