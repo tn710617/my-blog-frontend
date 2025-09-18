@@ -2,7 +2,7 @@ import React from "react";
 
 export default function PositionDemoPage() {
   return (
-    <div className="bg-white min-h-screen">
+    <div className="min-h-screen">
       <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8">
         {/* Page Title */}
         <div className="bg-white rounded-xl shadow-xl p-6 sm:p-8 mb-6">
