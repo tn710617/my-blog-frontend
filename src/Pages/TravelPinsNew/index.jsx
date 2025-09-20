@@ -148,7 +148,6 @@ const TravelPinsNew = () => {
         if (!mapInstance) return;
 
         getCurrentLocation(({latitude, longitude}) => {
-            // Use easeTo for smooth movement, zoom to street level
             mapInstance.flyTo({
                 center: [longitude, latitude],
                 zoom: Math.max(15, mapInstance.getZoom()), // Street level, but don't zoom out if already closer
