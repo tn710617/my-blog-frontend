@@ -11,6 +11,7 @@ import {useKeyboardHandlers} from './hooks/useKeyboardHandlers';
 import {useLocationListener} from './hooks/useLocationListener';
 import {useGeolocation} from './hooks/useGeolocation';
 import {useResponsive} from './hooks/useResponsive';
+import {ZOOM_LEVELS} from "./utils";
 
 // Travel Pins New - Main Component
 // Entry point for the new Travel Pins implementation
@@ -65,8 +66,8 @@ const TravelPinsNew = () => {
         const onWheel = () => showAndDebounceHide();
         const onTouchMove = () => showAndDebounceHide();
 
-        window.addEventListener('wheel', onWheel, { passive: true });
-        window.addEventListener('touchmove', onTouchMove, { passive: true });
+        window.addEventListener('wheel', onWheel, {passive: true});
+        window.addEventListener('touchmove', onTouchMove, {passive: true});
 
         return () => {
             window.removeEventListener('wheel', onWheel);
@@ -92,7 +93,8 @@ const TravelPinsNew = () => {
                 m.doubleClickZoom?.disable?.();
                 m.touchZoomRotate?.disable?.();
                 m.dragRotate?.disable?.();
-            } catch {}
+            } catch {
+            }
         };
         const enableAll = () => {
             try {
@@ -103,7 +105,8 @@ const TravelPinsNew = () => {
                 m.doubleClickZoom?.enable?.();
                 m.touchZoomRotate?.enable?.();
                 m.dragRotate?.enable?.();
-            } catch {}
+            } catch {
+            }
         };
 
         const root = mapRootEl;
@@ -111,30 +114,37 @@ const TravelPinsNew = () => {
         if (isMobile) {
             if (isMobileGestureMode === 'scroll') {
                 // Mobile scroll: cooperative on (語意一致)、禁用互動、事件穿透頁面
-                try { if (typeof m.setCooperativeGestures === 'function') m.setCooperativeGestures(true); } catch {}
+                try {
+                    if (root) root.classList.add('map--pass-through');
+                } catch {
+                }
                 disableAll();
-                try { if (root) root.classList.add('map--pass-through'); } catch {}
             } else {
                 // Mobile rotate: cooperative off，啟用互動並確保可旋轉
-                try { if (typeof m.setCooperativeGestures === 'function') m.setCooperativeGestures(false); } catch {}
+                try {
+                    if (typeof m.setCooperativeGestures === 'function') m.setCooperativeGestures(false);
+                } catch {
+                }
                 enableAll();
-                try { m.touchZoomRotate?.enableRotation?.(); } catch {}
-                try { if (root) root.classList.remove('map--pass-through'); } catch {}
+                try {
+                    if (root) root.classList.remove('map--pass-through');
+                } catch {
+                }
             }
         } else {
-            // Desktop：先移除穿透 → 重置 scrollZoom → 開啟 cooperative → 再啟用互動
-            try { if (root) root.classList.remove('map--pass-through'); } catch {}
+            // Desktop：先移除穿透 → 開啟 cooperative → 再啟用互動
+            try {
+                if (root) root.classList.remove('map--pass-through');
+            } catch {
+            }
 
-            // 確保 blocker 容器正確建立：強制走 disable → enable 流程
-            try { m.scrollZoom?.disable?.(); } catch {}
             try {
                 if (typeof m.setCooperativeGestures === 'function') {
                     m.setCooperativeGestures(true);
                 }
-            } catch {}
-            try { m.scrollZoom?.enable?.(); } catch {}
+            } catch {
+            }
 
-            // 其他互動照常啟用（dragPan/dragRotate/touchZoomRotate 等）
             enableAll();
         }
 
@@ -150,7 +160,7 @@ const TravelPinsNew = () => {
         getCurrentLocation(({latitude, longitude}) => {
             mapInstance.flyTo({
                 center: [longitude, latitude],
-                zoom: Math.max(15, mapInstance.getZoom()), // Street level, but don't zoom out if already closer
+                zoom: Math.max(ZOOM_LEVELS.STREET, mapInstance.getZoom()), // Street level, but don't zoom out if already closer
                 duration: 2500
             });
         });

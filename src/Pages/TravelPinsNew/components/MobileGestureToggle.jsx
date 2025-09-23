@@ -1,7 +1,7 @@
 import React from 'react';
 import { useIntl } from 'react-intl';
 import { useMapStore } from '../stores/mapStore';
-import { Z_INDEX } from '../utils/zIndex';
+import { Z_INDEX } from '../utils';
 import { useResponsive } from '../hooks/useResponsive';
 
 const MobileGestureToggle = () => {
@@ -47,6 +47,8 @@ const MobileGestureToggle = () => {
     </div>
   );
 
+  const zIndex = Z_INDEX.GPS_BUTTON;
+
   return (
     <button
       onClick={toggleMobileGestureMode}
@@ -54,13 +56,12 @@ const MobileGestureToggle = () => {
         fixed bottom-6 left-6 w-16 h-16 rounded-2xl 
         backdrop-blur-sm border transition-all duration-300 ease-out
         hover:scale-105 hover:shadow-lg hover:-translate-y-0.5
-        active:scale-95 active:translate-y-0
+        active:scale-95 active:translate-y-0 z-[${zIndex}]
         ${isScrollMode 
           ? 'bg-white/90 border-stone-300/60 text-stone-700 hover:bg-white/95 hover:border-stone-400/70 shadow-md shadow-stone-900/20' 
           : 'bg-gradient-to-br from-sky-500/90 to-blue-600/90 border-sky-400/50 text-white hover:from-sky-400/95 hover:to-blue-500/95 hover:border-sky-300/70 shadow-md shadow-blue-900/30'
         }
       `}
-      style={{ zIndex: Z_INDEX.GPS_BUTTON }}
       title={intl.formatMessage({
         id: isScrollMode ? 'travel_pins.mobile_toggle.scroll_mode' : 'travel_pins.mobile_toggle.rotation_mode'
       })}
