@@ -8,6 +8,7 @@ import DeleteConfirmationModal from './Modals/DeleteConfirmationModal';
 import PhotoModal from './Modals/PhotoModal';
 import EditPinModal from './Modals/EditPinModal';
 import EscConfirmModal from './Modals/EscConfirmModal';
+import {disableAll, enableAll} from '../utils/mapInteractionController'
 
 // Unified Overlay Root: single backdrop + scroll container
 const OverlayRoot = () => {
@@ -45,47 +46,30 @@ const OverlayRoot = () => {
     // Scroll lock + disable map interactions while any modal is open
     useEffect(() => {
         if (!hasAnyModalOpen) return;
-        const prevOverflow = document.body.style.overflow;
-        document.body.style.overflow = 'hidden';
         const m = mapInstance;
-        const restore = [];
-        try {
-            if (m?.keyboard?.isEnabled && m.keyboard.isEnabled()) {
-                m.keyboard.disable();
-                restore.push(() => m.keyboard.enable());
-            }
-            if (m?.dragPan?.isEnabled && m.dragPan.isEnabled()) {
-                m.dragPan.disable();
-                restore.push(() => m.dragPan.enable());
-            }
-            if (m?.scrollZoom?.isEnabled && m.scrollZoom.isEnabled()) {
-                m.scrollZoom.disable();
-                restore.push(() => m.scrollZoom.enable());
-            }
-            if (m?.boxZoom?.isEnabled && m.boxZoom.isEnabled()) {
-                m.boxZoom.disable();
-                restore.push(() => m.boxZoom.enable());
-            }
-            if (m?.doubleClickZoom?.isEnabled && m.doubleClickZoom.isEnabled()) {
-                m.doubleClickZoom.disable();
-                restore.push(() => m.doubleClickZoom.enable());
-            }
-            if (m?.touchZoomRotate?.isEnabled && m.touchZoomRotate.isEnabled()) {
-                m.touchZoomRotate.disable();
-                restore.push(() => m.touchZoomRotate.enable());
-            }
-            if (m?.dragRotate?.isEnabled && m.dragRotate.isEnabled()) {
-                m.dragRotate.disable();
-                restore.push(() => m.dragRotate.enable());
-            }
-        } catch {
-        }
-        return () => {
-            document.body.style.overflow = prevOverflow;
+        const prevOverflow = document.body.style.overflow;
+
+        const lock = () => {
+            document.body.style.overflow = 'hidden';
             try {
-                restore.reverse().forEach((fn) => fn && fn());
+                disableAll(m);
             } catch {
             }
+
+        }
+
+        const unlock = () => {
+            document.body.style.overflow = prevOverflow;
+            try {
+                enableAll(m);
+            } catch {
+            }
+        }
+
+        lock();
+
+        return () => {
+            unlock();
         };
     }, [hasAnyModalOpen, mapInstance]);
 
