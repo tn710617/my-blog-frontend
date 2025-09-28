@@ -59,10 +59,30 @@ export default function CreatePost() {
         navigate('/')
     }
 
+    const generateAutoTitle = () => {
+        const now = new Date()
+        const year = now.getFullYear()
+        const month = String(now.getMonth() + 1).padStart(2, '0')
+        const day = String(now.getDate()).padStart(2, '0')
+        const hour = String(now.getHours()).padStart(2, '0')
+        const minute = String(now.getMinutes()).padStart(2, '0')
+
+        const timeString = `${year}${month}${day}${hour}${minute}`
+        const prefix = intl.formatMessage({id: "store_post.auto_title_prefix"})
+        return `${prefix} ${timeString}`
+    }
+
     const handleStoreButtonClick = (event) => {
         event.preventDefault()
         if (!hasRequiredContent) return
-        storePost.mutate(form, {
+
+        // Auto-generate title for lifestyle category if title is empty
+        const finalForm = {...form}
+        if (form.category_id === "3" && !form.post_title) {
+            finalForm.post_title = generateAutoTitle()
+        }
+
+        storePost.mutate(finalForm, {
             onError: (error) => handleStorePostError(error, setPostTitleValid),
             onSuccess: handleStoreButtonSuccess
         })

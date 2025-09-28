@@ -57,8 +57,13 @@ export const useCreatePostForm = () => {
                      form.locale !== defaultForm.locale ||
                      form.created_at !== defaultForm.created_at
 
-  // Check if form has required content for saving (title AND content required)
-  const hasRequiredContent = form.post_title && form.post_content
+  // Check if form has required content for saving
+  // For lifestyle category (id: "3"), only content is required
+  // For other categories, both title and content are required
+  const isLifestyleCategory = form.category_id === "3"
+  const hasRequiredContent = isLifestyleCategory
+    ? form.post_content
+    : form.post_title && form.post_content
 
   return {
     form,

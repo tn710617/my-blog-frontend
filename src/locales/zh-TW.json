@@ -202,5 +202,6 @@
   "demo.css-position.summary_absolute": "脫離文件流，相對最近的非 static 祖先定位",
   "demo.css-position.summary_fixed": "脫離文件流，相對視窗定位，不隨捲動移動",
   "demo.css-position.summary_sticky": "在容器內先正常流動，達門檻後黏住邊界",
-  "demo.css-position.summary_note": "💡 重要提醒：sticky 需要設定門檻值（如 top: 0），且只在最近的可捲動容器內生效。若父元素有 overflow: hidden 或 transform 屬性，可能會影響 sticky 行為。"
+  "demo.css-position.summary_note": "💡 重要提醒：sticky 需要設定門檻值（如 top: 0），且只在最近的可捲動容器內生效。若父元素有 overflow: hidden 或 transform 屬性，可能會影響 sticky 行為。",
+  "store_post.auto_title_prefix": "隨筆"
 }
