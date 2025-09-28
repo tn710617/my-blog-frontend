@@ -93,6 +93,7 @@ export const usePostFormStore = create(
         category_id: "2",
         is_public: true,
         should_publish_medium: false,
+        is_preview_displayed: true,
         locale: "zh-TW",
         created_at: ""
       },
@@ -108,6 +109,7 @@ export const usePostFormStore = create(
           category_id: "2",
           is_public: true,
           should_publish_medium: false,
+          is_preview_displayed: true,
           locale: "zh-TW",
           created_at: ""
         }

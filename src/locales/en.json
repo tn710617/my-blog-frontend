@@ -202,5 +202,11 @@
   "demo.css-position.summary_fixed": "Removed from document flow; positioned relative to viewport, doesn't move with scrolling",
   "demo.css-position.summary_sticky": "Flows normally within container, then sticks to boundary when threshold is reached",
   "demo.css-position.summary_note": "💡 Important note: sticky requires threshold values (like top: 0) and only works within the nearest scrollable container. Parent elements with overflow: hidden or transform properties may affect sticky behavior.",
-  "store_post.auto_title_prefix": "Notes"
+  "store_post.auto_title_prefix": "Notes",
+  "store_post.is_preview_displayed.option.show": "Show Preview",
+  "store_post.is_preview_displayed.option.hide": "Hide Preview",
+  "edit_post.is_preview_displayed.option.show": "Show Preview",
+  "edit_post.is_preview_displayed.option.hide": "Hide Preview",
+  "posts.hidden_preview.title": "Preview Hidden",
+  "posts.hidden_preview.description": "This post's preview has been hidden by the author"
 }

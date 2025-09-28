@@ -17,6 +17,7 @@ import LocaleSelect from "../../Components/LocaleSelect";
 import CategorySelection from "../../Components/CategorySelection";
 import {useSearchParams} from "react-router";
 import PublishMediumSelection from "../../Components/PublishMediumSelection";
+import IsPreviewDisplayedSelect from "../../Components/IsPreviewDisplayedSelect";
 import {useEditPostForm} from "../../hooks/useEditPostForm";
 import {useTagifyManager} from "../../hooks/useTagifyManager";
 
@@ -90,6 +91,7 @@ export default function EditPost() {
                     <div className={"flex gap-2"}>
                         <CategorySelection form={displayForm} setForm={setForm} categories={categories}/>
                         <PublishMediumSelection form={displayForm} setForm={setForm}/>
+                        <IsPreviewDisplayedSelect form={displayForm} setForm={setForm} isEditMode={true}/>
                     </div>
                     <div>
                         <input

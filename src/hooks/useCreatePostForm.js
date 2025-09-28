@@ -43,6 +43,7 @@ export const useCreatePostForm = () => {
     category_id: "2",
     is_public: true,
     should_publish_medium: false,
+    is_preview_displayed: true,
     locale: "zh-TW",
     created_at: ""
   }
@@ -54,6 +55,7 @@ export const useCreatePostForm = () => {
                      form.category_id !== defaultForm.category_id ||
                      form.is_public !== defaultForm.is_public ||
                      form.should_publish_medium !== defaultForm.should_publish_medium ||
+                     form.is_preview_displayed !== defaultForm.is_preview_displayed ||
                      form.locale !== defaultForm.locale ||
                      form.created_at !== defaultForm.created_at
 

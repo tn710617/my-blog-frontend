@@ -28,7 +28,8 @@ export const usePostFormCache = () => {
       created_at: isServerData
         ? dayjs(data.created_at).toISOString().slice(0, -1)
         : data.created_at || '',
-      should_publish_medium: data.should_publish_medium || false
+      should_publish_medium: data.should_publish_medium || false,
+      is_preview_displayed: data.is_preview_displayed ?? true
     }
   }, [])
 
@@ -61,7 +62,8 @@ export const usePostFormCache = () => {
       created_at: serverData.created_at
         ? dayjs(serverData.created_at).toISOString().slice(0, -1)
         : '',
-      should_publish_medium: serverData.should_publish_medium || false
+      should_publish_medium: serverData.should_publish_medium || false,
+      is_preview_displayed: serverData.is_preview_displayed ?? true
     }
   }, [])
 
@@ -91,7 +93,8 @@ export const usePostFormCache = () => {
     is_public: true,
     locale: 'zh-TW',
     created_at: '',
-    should_publish_medium: false
+    should_publish_medium: false,
+    is_preview_displayed: true
   }), [])
 
   return {

@@ -18,6 +18,7 @@ import LocaleSelect from "../../Components/LocaleSelect";
 import CategorySelection from "../../Components/CategorySelection";
 import toast from "react-hot-toast";
 import PublishMediumSelection from "../../Components/PublishMediumSelection";
+import IsPreviewDisplayedSelect from "../../Components/IsPreviewDisplayedSelect";
 import {useCreatePostForm} from "../../hooks/useCreatePostForm";
 import {useTagifyManager} from "../../hooks/useTagifyManager";
 
@@ -111,6 +112,7 @@ export default function CreatePost() {
                     <div className={"flex gap-2"}>
                         <CategorySelection form={form} setForm={setForm} categories={categories}/>
                         <PublishMediumSelection form={form} setForm={setForm}/>
+                        <IsPreviewDisplayedSelect form={form} setForm={setForm}/>
                     </div>
                     <div>
                         <input

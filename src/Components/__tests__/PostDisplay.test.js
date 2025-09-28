@@ -172,6 +172,7 @@ describe('Post Display Components', () => {
       created_at: '2024-03-01T00:00:00Z',
       updated_at: '2024-03-02T00:00:00Z',
       is_public: true,
+      is_preview_displayed: true,
       tags: [
         { id: 1, tag_name: 'integration' },
         { id: 2, tag_name: 'test' }
@@ -196,6 +197,26 @@ describe('Post Display Components', () => {
       expect(screen.getByText('general')).toBeInTheDocument()
       expect(screen.getByText('March 1, 2024')).toBeInTheDocument()
       expect(screen.getByText('March 2, 2024')).toBeInTheDocument()
+    })
+
+    it('shows hidden preview when is_preview_displayed is false', () => {
+      const hiddenPost = { ...mockPost, is_preview_displayed: false }
+
+      render(renderWithProviders(<PostCard post={hiddenPost} />))
+
+      // Check title is still visible
+      expect(screen.getByText('Integration Test Post')).toBeInTheDocument()
+
+      // Check hidden preview content instead of actual content
+      expect(screen.getByText('Preview Hidden')).toBeInTheDocument()
+      expect(screen.getByText("This post's preview has been hidden by the author")).toBeInTheDocument()
+
+      // Should not show actual content
+      expect(screen.queryByText(/This is markdown content/)).not.toBeInTheDocument()
+
+      // Tags and metadata should still be visible
+      expect(screen.getByText('integration')).toBeInTheDocument()
+      expect(screen.getByText('general')).toBeInTheDocument()
     })
 
     it('handles post card click navigation', () => {

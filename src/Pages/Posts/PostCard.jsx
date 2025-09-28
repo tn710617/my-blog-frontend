@@ -2,12 +2,13 @@ import React from "react";
 import lodash from "lodash";
 import PostTags from "../../Components/PostTags";
 import PostMetadata from "../../Components/PostMetadata";
+import HiddenPreview from "../../Components/HiddenPreview";
 import {useNavigate} from "react-router";
 import removeMd from "remove-markdown";
 
 export default function PostCard({post}) {
     const navigate = useNavigate()
-    const {id, post_title, post_content, tags} = post
+    const {id, post_title, post_content, tags, is_preview_displayed} = post
     const handlePostCardClick = (e) => {
         const postId = e.target.id
         navigate(`/single-post?post_id=${postId}`)
@@ -19,10 +20,14 @@ export default function PostCard({post}) {
                 <div
                     className={"font-bold text-xl mb-2 border-0 border-b-2 border-b-transparent group-hover:border-blue-400"}>{post_title}
                 </div>
-                <p className={"text-gray-400 group-hover:text-gray-500"}>{lodash.truncate(removeMd(post_content), {
-                    length: 200,
-                    omission: "..."
-                })}</p>
+                {is_preview_displayed ? (
+                    <p className={"text-gray-400 group-hover:text-gray-500"}>{lodash.truncate(removeMd(post_content), {
+                        length: 200,
+                        omission: "..."
+                    })}</p>
+                ) : (
+                    <HiddenPreview />
+                )}
                 <div className={"after:absolute after:inset-0"} id={id} onClick={handlePostCardClick}></div>
             </div>
             <PostTags tags={tags}/>
