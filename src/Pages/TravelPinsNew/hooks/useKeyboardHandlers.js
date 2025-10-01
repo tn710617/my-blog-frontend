@@ -1,5 +1,5 @@
 import {useEffect, useRef} from 'react';
-import {useModalStore} from '../stores/modalStore';
+import {useModalStore, MODAL_TYPES} from '../stores/modalStore';
 import {openDisplayPopup, closeDisplayPopup} from '../utils/displayPopupController';
 
 // Centralized ESC handling for TravelPinsNew
@@ -16,10 +16,6 @@ export const useKeyboardHandlers = () => {
             const {
                 activeModal,
                 modalData,
-                deleteModal,
-                photoModal,
-                formModal,
-                displayModal,
                 closeModal,
                 updateModalData,
             } = store;
@@ -29,7 +25,7 @@ export const useKeyboardHandlers = () => {
             e.stopPropagation();
 
             // Priority: delete modal -> photo modal -> display popup
-            if ([deleteModal, photoModal].includes(activeModal) && (modalData?.pin || modalData?.pinId)) {
+            if ([MODAL_TYPES.DELETE, MODAL_TYPES.PHOTO].includes(activeModal) && (modalData?.pin || modalData?.pinId)) {
                 // Close delete modal and restore display popup
                 closeModal();
                 // Defer re-open to next tick to avoid same-event keyup side effects
@@ -42,7 +38,7 @@ export const useKeyboardHandlers = () => {
                 return;
             }
 
-            if (activeModal === formModal) {
+            if (activeModal === MODAL_TYPES.FORM) {
                 // Avoid immediately closing form when just returned from esc-confirm
                 const pin = modalData?.pin;
                 const confirmOpen = !!modalData?.confirmOpen;
@@ -70,7 +66,7 @@ export const useKeyboardHandlers = () => {
 
             // No standalone esc-confirm modal anymore
 
-            if (activeModal === displayModal) {
+            if (activeModal === MODAL_TYPES.DISPLAY) {
                 // Close display popup and its overlay
                 try {
                     closeDisplayPopup();

@@ -1,5 +1,5 @@
 import React, {useEffect} from 'react';
-import {useModalStore} from '../stores/modalStore';
+import {MODAL_TYPES, useModalStore} from '../stores/modalStore';
 import {useMapStore} from '../stores/mapStore';
 import {closeDisplayPopup, openDisplayPopup} from '../utils/displayPopupController';
 import {Z_INDEX} from '../utils/zIndex';
@@ -18,13 +18,12 @@ const OverlayRoot = () => {
     const modalData = modalStore.modalData;
     const closeModal = modalStore.closeModal;
     const updateModalData = modalStore.updateModalData
-    const {deleteModal, formModal, displayModal, photoModal} = modalStore;
 
     const mapInstance = useMapStore((s) => s.mapInstance);
 
     const handleBackdropClick = () => {
         // Unify overlay click behavior (kept from previous logic)
-        if ([photoModal, deleteModal].includes(activeModal) && (modalData?.pin || modalData?.pinId)) {
+        if ([MODAL_TYPES.PHOTO, MODAL_TYPES.DELETE].includes(activeModal) && (modalData?.pin || modalData?.pinId)) {
             closeModal();
             setTimeout(() => {
                 try {
@@ -34,7 +33,7 @@ const OverlayRoot = () => {
             }, 0);
             return;
         }
-        if (activeModal === formModal && modalData?.confirmOpen) {
+        if (activeModal === MODAL_TYPES.FORM && modalData?.confirmOpen) {
             updateModalData({confirmOpen: false});
             return;
         }

@@ -7,23 +7,18 @@ import {resolve} from 'path'
 export default defineConfig(({mode}) => ({
     plugins: [react()],
 
-    // Handle JSX in .js files (for CRA compatibility)
-    esbuild: {
-        loader: 'jsx',
-        include: /src\/.*\.[jt]sx?$/,
-        exclude: [],
-    },
-
+    // Handle JSX in .js files (for CRA compatibility) - be more specific to avoid TypeScript files
     optimizeDeps: {
         esbuildOptions: {
             loader: {
                 '.js': 'jsx',
+                '.ts': 'ts',
+                '.tsx': 'tsx',
             },
         },
     },
 
-    // Environment variable handling - support both VITE_ and REACT_APP_ prefixes during transition
-    envPrefix: ['VITE_', 'REACT_APP_'],
+    envPrefix: ['VITE_'],
 
     // Dev server configuration - optimized for Docker compatibility
     server: {

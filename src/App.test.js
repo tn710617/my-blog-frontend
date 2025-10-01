@@ -26,7 +26,7 @@ vi.mock("./Pages/About", () => ({
   default: () => React.createElement("div", null, "About")
 }))
 
-import App from "./App"
+import App from "./App.jsx"
 
 test("renders Layout without heavy dependencies", () => {
   render(

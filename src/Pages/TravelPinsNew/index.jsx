@@ -11,6 +11,7 @@ import {useKeyboardHandlers} from './hooks/useKeyboardHandlers';
 import {useLocationListener} from './hooks/useLocationListener';
 import {useGeolocation} from './hooks/useGeolocation';
 import {useResponsive} from './hooks/useResponsive';
+import {enableAll, disableAll} from './utils/mapInteractionController';
 import {ZOOM_LEVELS} from "./utils";
 
 // Travel Pins New - Main Component
@@ -84,31 +85,6 @@ const TravelPinsNew = () => {
         if (!mapInstance) return;
         const m = mapInstance;
 
-        const disableAll = () => {
-            try {
-                m.keyboard?.disable?.();
-                m.dragPan?.disable?.();
-                m.scrollZoom?.disable?.();
-                m.boxZoom?.disable?.();
-                m.doubleClickZoom?.disable?.();
-                m.touchZoomRotate?.disable?.();
-                m.dragRotate?.disable?.();
-            } catch {
-            }
-        };
-        const enableAll = () => {
-            try {
-                m.keyboard?.enable?.();
-                m.dragPan?.enable?.();
-                m.scrollZoom?.enable?.();
-                m.boxZoom?.enable?.();
-                m.doubleClickZoom?.enable?.();
-                m.touchZoomRotate?.enable?.();
-                m.dragRotate?.enable?.();
-            } catch {
-            }
-        };
-
         const root = mapRootEl;
 
         if (isMobile) {
@@ -118,14 +94,14 @@ const TravelPinsNew = () => {
                     if (root) root.classList.add('map--pass-through');
                 } catch {
                 }
-                disableAll();
+                disableAll(m);
             } else {
                 // Mobile rotate: cooperative off，啟用互動並確保可旋轉
                 try {
                     if (typeof m.setCooperativeGestures === 'function') m.setCooperativeGestures(false);
                 } catch {
                 }
-                enableAll();
+                enableAll(m);
                 try {
                     if (root) root.classList.remove('map--pass-through');
                 } catch {
@@ -145,7 +121,7 @@ const TravelPinsNew = () => {
             } catch {
             }
 
-            enableAll();
+            enableAll(m);
         }
 
         return () => {

@@ -1,5 +1,5 @@
 export function getCurrentUri(currentLocation) {
-    const domain = import.meta.env.VITE_DOMAIN || import.meta.env.REACT_APP_DOMAIN
+    const domain = import.meta.env.VITE_DOMAIN
     return domain + currentLocation.pathname + currentLocation.search
 }
 

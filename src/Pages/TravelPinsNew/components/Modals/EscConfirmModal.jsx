@@ -1,6 +1,6 @@
 import React from 'react';
 import {useIntl} from 'react-intl';
-import {useModalStore} from '../../stores/modalStore';
+import {useModalStore, MODAL_TYPES} from '../../stores/modalStore';
 import {createModalClasses} from '../../utils/modalStyles';
 
 const EscConfirmModal = ({withinOverlay = false}) => {
@@ -10,7 +10,7 @@ const EscConfirmModal = ({withinOverlay = false}) => {
     const modalData = store.modalData;
 
     // Render as inline confirm when edit form is active
-    if (!(activeModal === store.formModal && modalData?.confirmOpen)) return null;
+    if (!(activeModal === MODAL_TYPES.FORM && modalData?.confirmOpen)) return null;
 
     const onCancel = () => {
         // 只關閉確認層，保留編輯表單
