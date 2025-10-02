@@ -110,6 +110,9 @@ export default function EditPost() {
                             value={displayForm.post_content}
                             onChange={handleMarkdownChange}
                             height={600}
+                            onRevert={handleResetButtonClick}
+                            onSave={handleUpdateButtonClick}
+                            onQuit={() => navigate('/')}
                         />
                     </div>
                     <div className={"flex justify-between items-center lg:hidden"}>

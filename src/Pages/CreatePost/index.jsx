@@ -131,6 +131,9 @@ export default function CreatePost() {
                             value={form.post_content}
                             onChange={handleMarkdownChange}
                             height={600}
+                            onRevert={handleResetButtonClick}
+                            onSave={handleStoreButtonClick}
+                            onQuit={() => navigate('/')}
                         />
                     </div>
                     <div className={"flex justify-between items-center lg:hidden"}>
