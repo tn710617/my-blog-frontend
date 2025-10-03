@@ -1,9 +1,10 @@
 import React, { useMemo } from 'react';
 import CodeMirror from '@uiw/react-codemirror';
 import { markdown, markdownLanguage } from '@codemirror/lang-markdown';
+import { Prec } from '@codemirror/state';
 import { languages } from '@codemirror/language-data';
 import * as CMVim from '@replit/codemirror-vim';
-import { EditorView } from '@codemirror/view';
+import { EditorView, keymap } from '@codemirror/view';
 import { useCallback } from 'react';
 
 const MarkdownEditor = ({
@@ -15,11 +16,31 @@ const MarkdownEditor = ({
   onQuit,
   ...props
 }) => {
-  const extensions = useMemo(() => [
-    markdown({ base: markdownLanguage, codeLanguages: languages }),
-    EditorView.lineWrapping,
-    CMVim.vim(),
-  ], []);
+  const extensions = useMemo(() => {
+    const baseExtensions = [
+      markdown({ base: markdownLanguage, codeLanguages: languages }),
+      EditorView.lineWrapping,
+      CMVim.vim(),
+    ];
+
+    const isMac = typeof navigator !== 'undefined' && /Mac/i.test(navigator.platform || '');
+
+    if (isMac) {
+      baseExtensions.push(Prec.highest(keymap.of([{
+        key: 'Ctrl-v',
+        run: (view) => {
+          if (CMVim && CMVim.Vim && typeof CMVim.Vim.handleKey === 'function') {
+            CMVim.Vim.handleKey(view, '<C-q>');
+            return true;
+          }
+          return false;
+        },
+        preventDefault: true,
+      }])));
+    }
+
+    return baseExtensions;
+  }, []);
 
   const cmHeight = typeof height === 'number' ? `${height}px` : height;
 
@@ -37,6 +58,7 @@ const MarkdownEditor = ({
       window.scrollBy({ top: rect.bottom - (window.innerHeight - margin), behavior: 'auto' });
     }
   }, []);
+
 
   // Define :cq ex command to trigger parent-provided revert behavior
   // Define once; the handler uses the latest onRevert via closure update below
