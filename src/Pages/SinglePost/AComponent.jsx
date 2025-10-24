@@ -5,6 +5,8 @@ export default function AComponent(incomingProps = {}) {
   const navigate = useNavigate();
   const { children, href, ...rest } = incomingProps || {};
 
+  const isHashLink = typeof href === 'string' && href.startsWith('#');
+
   const isInternal = (() => {
     if (!href) return false;
     try {
@@ -13,7 +15,7 @@ export default function AComponent(incomingProps = {}) {
       return url.origin === window.location.origin;
     } catch {
       // Relative URL treated as internal
-      return typeof href === 'string' && href.startsWith('/');
+      return typeof href === 'string' && (href.startsWith('/') || href.startsWith('#'));
     }
   })();
 
@@ -21,15 +23,21 @@ export default function AComponent(incomingProps = {}) {
     (e) => {
       if (!isInternal || !href) return; // Let browser handle external links
       e.preventDefault();
-      // Use client-side navigation for internal links so query changes are handled
-      try {
-        const url = new URL(href, window.location.origin);
-        navigate(`${url.pathname}${url.search}${url.hash}`);
-      } catch {
-        navigate(href);
+
+      if (isHashLink) {
+        // For hash links on the same page, use window.location.hash to trigger scroll
+        window.location.hash = href;
+      } else {
+        // Use client-side navigation for internal links so query changes are handled
+        try {
+          const url = new URL(href, window.location.origin);
+          navigate(`${url.pathname}${url.search}${url.hash}`);
+        } catch {
+          navigate(href);
+        }
       }
     },
-    [isInternal, href, navigate]
+    [isInternal, href, isHashLink, navigate]
   );
 
   // External links open in new tab; internal links navigate in-app
