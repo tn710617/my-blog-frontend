@@ -5,8 +5,8 @@ const GRAVITY = 9.80665;
 const DEFAULT_WINDOW_MS = 1000;
 const DEFAULT_SAMPLE_LIMIT = 20;
 const SMOOTHING_ALPHA = 0.35;
-const DEFAULT_INTENSITY_MIN = 0.1;
-const DEFAULT_INTENSITY_MAX = 3.0;
+const DEFAULT_INTENSITY_MIN = 0.05;
+const DEFAULT_INTENSITY_MAX = 4.0;
 
 const hasDeviceMotionSupport = () => {
   if (typeof window === 'undefined') {
@@ -101,13 +101,11 @@ export const useDeviceMotion = (options = {}) => {
   }, [samplingRate, windowSize]);
 
   const [intensityBounds, sensitivityDisplay] = useMemo(() => {
-    const clampedScale = clamp(sensitivityScale, 0.5, 2);
-    const span = (DEFAULT_INTENSITY_MAX - DEFAULT_INTENSITY_MIN) / clampedScale;
-    const prevMid = (DEFAULT_INTENSITY_MAX + DEFAULT_INTENSITY_MIN) / 2;
-    const newMin = Math.max(0.01, prevMid - span / 2);
-    const newMax = newMin + span;
+    const clampedScale = clamp(sensitivityScale, 0.1, 10);
+    const min = Math.max(0.001, DEFAULT_INTENSITY_MIN / clampedScale);
+    const max = Math.max(min + 0.05, DEFAULT_INTENSITY_MAX / clampedScale);
     const display = (clampedScale * 100).toFixed(0);
-    return [{ min: newMin, max: newMax }, display];
+    return [{ min, max }, display];
   }, [sensitivityScale]);
 
   const resetBuffers = useCallback(() => {

@@ -172,9 +172,9 @@ const MotionDetector = () => {
           </div>
           <input
             type="range"
-            min="0.5"
-            max="2"
-            step="0.05"
+            min="0.1"
+            max="10"
+            step="0.1"
             value={sensitivity}
             onChange={(event) => setSensitivity(Number(event.target.value))}
             className="w-full accent-blue-500"
@@ -185,7 +185,7 @@ const MotionDetector = () => {
                 ? ` ${deviceMotion.debugInfo.intensityMin} ~ ${deviceMotion.debugInfo.intensityMax}`
                 : ' 調整以增減靈敏度'}
             </p>
-            <p>降低數值 → 更敏感；提高數值 → 更耐震</p>
+            <p>向右拖曳 → 更敏感；向左拖曳 → 更耐震</p>
           </div>
         </div>
 
