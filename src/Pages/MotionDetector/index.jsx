@@ -19,11 +19,10 @@ import PermissionRequest from './components/PermissionRequest';
 const MotionDetector = () => {
   const [isEnabled, setIsEnabled] = useState(false);
   const [lastLevel, setLastLevel] = useState(0);
+  const isDev = import.meta.env.DEV;
 
   // 音頻播放 Hook（提前定義，以便在回調中使用）
-  const audioGenerator = useAudioGenerator({
-    audioDuration: 0.5
-  });
+  const audioGenerator = useAudioGenerator();
 
   // 當強度等級變化時的回調（使用 useCallback 以穩定引用）
   const handleLevelChange = useCallback((level) => {
@@ -64,6 +63,7 @@ const MotionDetector = () => {
       return;
     }
 
+    audioGenerator.unlock?.();
     setIsEnabled(true);
     vibrateShort();
   };
@@ -85,6 +85,7 @@ const MotionDetector = () => {
     const granted = await deviceMotion.requestPermission();
     if (granted) {
       vibrateShort();
+      audioGenerator.unlock?.();
       setIsEnabled(true);
     } else {
       vibrateDouble();
@@ -172,8 +173,49 @@ const MotionDetector = () => {
                 <p>強度: {deviceMotion.debugInfo.intensity || '-'}</p>
                 <p>正規化: {deviceMotion.debugInfo.normalized || '-'}</p>
                 <p>平滑後: {deviceMotion.debugInfo.smooth || '-'}</p>
+                <p>音效狀態: {
+                  audioGenerator.isReady ? '已就緒' : (audioGenerator.isLoading ? '載入中' : '尚未就緒')
+                }</p>
+                {audioGenerator.queueLength > 0 && (
+                  <p>音效佇列: {audioGenerator.queueLength}</p>
+                )}
               </div>
+              {!audioGenerator.isReady && (
+                <p className="mt-3 text-xs text-blue-700">
+                  音效載入中...
+                </p>
+              )}
+              {audioGenerator.error && (
+                <p className="mt-3 text-xs text-red-600">
+                  音效載入失敗：{audioGenerator.error}
+                </p>
+              )}
             </div>
+          </div>
+        )}
+
+        {isDev && audioGenerator.isReady && (
+          <div className="p-4 bg-purple-100 border border-purple-400 rounded-lg">
+            <p className="text-purple-800 text-sm font-semibold mb-3">
+              開發測試：手動播放音效
+            </p>
+            <div className="grid grid-cols-3 gap-2 mb-3">
+              {[1, 2, 3].map((lvl) => (
+                <button
+                  key={lvl}
+                  onClick={() => audioGenerator.play(lvl)}
+                  className="px-3 py-2 text-sm font-semibold text-white bg-purple-500 rounded hover:bg-purple-600 active:bg-purple-700"
+                >
+                  播放等級 {lvl}
+                </button>
+              ))}
+            </div>
+            <button
+              onClick={() => audioGenerator.stop()}
+              className="w-full px-3 py-2 text-sm font-semibold text-purple-700 bg-white border border-purple-400 rounded hover:bg-purple-50"
+            >
+              停止播放
+            </button>
           </div>
         )}
 
