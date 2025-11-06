@@ -2,7 +2,8 @@ import { useState, useCallback, useRef, useEffect, useMemo } from 'react';
 import {
   preloadMotionAudio,
   createAudioInstance,
-  stopAudioInstance
+  stopAudioInstance,
+  getAudioContext
 } from '../utils/audioGenerator';
 import { fetchMotionAudios } from '../../../APIs/motionAudios';
 
@@ -35,6 +36,8 @@ export const useAudioGenerator = (options = {}) => {
   const libraryReadyRef = useRef(false);
   const pendingLevelRef = useRef(null);
   const isUnlockedRef = useRef(false);
+  const currentSourceNodeRef = useRef(null);
+  const currentGainNodeRef = useRef(null);
 
   const selectRandomEntry = useCallback((level) => {
     const entries = audioLibraryRef.current.get(level);
@@ -55,12 +58,42 @@ export const useAudioGenerator = (options = {}) => {
     setError(null);
 
     try {
+      const audioContext = getAudioContext();
+      if (audioContext.state === 'suspended') {
+        audioContext.resume().catch(() => {});
+      }
+
       const audio = createAudioInstance(entry.url);
       currentAudioRef.current = audio;
+
+      const sourceNode = audioContext.createMediaElementSource(audio);
+      const gainNode = audioContext.createGain();
+      gainNode.gain.setValueAtTime(0.0001, audioContext.currentTime);
+      sourceNode.connect(gainNode);
+      gainNode.connect(audioContext.destination);
+      currentSourceNodeRef.current = sourceNode;
+      currentGainNodeRef.current = gainNode;
 
       const cleanup = () => {
         audio.removeEventListener('ended', handleEnded);
         audio.removeEventListener('error', handleError);
+        audio.removeEventListener('loadedmetadata', handleLoadedMetadata);
+        if (currentSourceNodeRef.current === sourceNode) {
+          try {
+            currentSourceNodeRef.current.disconnect();
+          } catch (disconnectError) {
+            console.warn('Failed to disconnect source node:', disconnectError);
+          }
+          currentSourceNodeRef.current = null;
+        }
+        if (currentGainNodeRef.current === gainNode) {
+          try {
+            currentGainNodeRef.current.disconnect();
+          } catch (disconnectError) {
+            console.warn('Failed to disconnect gain node:', disconnectError);
+          }
+          currentGainNodeRef.current = null;
+        }
       };
 
       const handleEnded = () => {
@@ -110,8 +143,31 @@ export const useAudioGenerator = (options = {}) => {
         }
       };
 
+      const fadeInDuration = 0.05;
+      const fadeOutDuration = 0.08;
+
+      const scheduleFadeOut = (duration) => {
+        if (!Number.isFinite(duration) || duration <= 0) {
+          return;
+        }
+        const now = audioContext.currentTime;
+        const fadeInStart = now;
+        gainNode.gain.cancelScheduledValues(now);
+        gainNode.gain.setValueAtTime(0.0001, fadeInStart);
+        gainNode.gain.linearRampToValueAtTime(1, fadeInStart + fadeInDuration);
+
+        const fadeOutStart = fadeInStart + Math.max(duration - fadeOutDuration, fadeInDuration);
+        gainNode.gain.setValueAtTime(1, fadeOutStart);
+        gainNode.gain.linearRampToValueAtTime(0.0001, fadeOutStart + fadeOutDuration);
+      };
+
+      const handleLoadedMetadata = () => {
+        scheduleFadeOut(audio.duration);
+      };
+
       audio.addEventListener('ended', handleEnded);
       audio.addEventListener('error', handleError);
+      audio.addEventListener('loadedmetadata', handleLoadedMetadata);
 
       setIsPlaying(true);
       setCurrentLevel(level);
@@ -125,10 +181,30 @@ export const useAudioGenerator = (options = {}) => {
           handleError(err);
         });
       }
+
+      if (Number.isFinite(audio.duration) && audio.duration > 0) {
+        scheduleFadeOut(audio.duration);
+      }
     } catch (err) {
       if (currentAudioRef.current) {
         stopAudioInstance(currentAudioRef.current);
         currentAudioRef.current = null;
+      }
+      if (currentSourceNodeRef.current) {
+        try {
+          currentSourceNodeRef.current.disconnect();
+        } catch (disconnectError) {
+          console.warn('Failed to disconnect source node:', disconnectError);
+        }
+        currentSourceNodeRef.current = null;
+      }
+      if (currentGainNodeRef.current) {
+        try {
+          currentGainNodeRef.current.disconnect();
+        } catch (disconnectError) {
+          console.warn('Failed to disconnect gain node:', disconnectError);
+        }
+        currentGainNodeRef.current = null;
       }
       setIsPlaying(false);
       throw err instanceof Error ? err : new Error('Audio playback failed');
@@ -173,23 +249,24 @@ export const useAudioGenerator = (options = {}) => {
         const groupedRecords = groupByLevel(apiRecords);
         const levelEntries = Array.from(groupedRecords.entries());
 
-        const prepared = levelEntries.map(([level, records]) => {
-          const entries = records.map((record) => {
+        const prepared = await Promise.all(levelEntries.map(async ([level, records]) => {
+          const entries = await Promise.all(records.map(async (record) => {
             try {
-              preloadMotionAudio(record.audio_url);
+              const cacheRecord = await preloadMotionAudio(record.audio_url);
               return {
                 id: record.id,
-                url: record.audio_url,
-                filename: record.original_filename
+                url: cacheRecord.playbackUrl,
+                filename: record.original_filename,
+                sourceUrl: record.audio_url
               };
             } catch (err) {
               console.error('Failed to preload audio element:', record.audio_url, err);
               return null;
             }
-          }).filter(Boolean);
+          }));
 
-          return [Number(level), entries];
-        });
+          return [Number(level), entries.filter(Boolean)];
+        }));
 
         if (isCancelled) {
           return;
@@ -268,6 +345,22 @@ export const useAudioGenerator = (options = {}) => {
       stopAudioInstance(currentAudioRef.current);
       currentAudioRef.current = null;
     }
+    if (currentSourceNodeRef.current) {
+      try {
+        currentSourceNodeRef.current.disconnect();
+      } catch (err) {
+        console.warn('Failed to disconnect source node on stop:', err);
+      }
+      currentSourceNodeRef.current = null;
+    }
+    if (currentGainNodeRef.current) {
+      try {
+        currentGainNodeRef.current.disconnect();
+      } catch (err) {
+        console.warn('Failed to disconnect gain node on stop:', err);
+      }
+      currentGainNodeRef.current = null;
+    }
 
     setIsPlaying(false);
     setCurrentLevel(null);
@@ -279,6 +372,13 @@ export const useAudioGenerator = (options = {}) => {
     }
 
     try {
+      try {
+        const audioContext = getAudioContext();
+        audioContext.resume().catch(() => {});
+      } catch (err) {
+        console.warn('Failed to ensure audio context during unlock:', err);
+      }
+
       const audio = new Audio(SILENT_AUDIO_DATA_URL);
       audio.volume = 0;
       const playPromise = audio.play();
