@@ -176,9 +176,6 @@ const MotionDetector = () => {
                 <p>音效狀態: {
                   audioGenerator.isReady ? '已就緒' : (audioGenerator.isLoading ? '載入中' : '尚未就緒')
                 }</p>
-                {audioGenerator.queueLength > 0 && (
-                  <p>音效佇列: {audioGenerator.queueLength}</p>
-                )}
               </div>
               {!audioGenerator.isReady && (
                 <p className="mt-3 text-xs text-blue-700">

@@ -30,17 +30,11 @@ export const useAudioGenerator = (options = {}) => {
   const [isLoading, setIsLoading] = useState(false);
   const [isReady, setIsReady] = useState(false);
 
-  const queueRef = useRef([]);
-  const isProcessingRef = useRef(false);
   const currentAudioRef = useRef(null);
   const audioLibraryRef = useRef(new Map());
   const libraryReadyRef = useRef(false);
-  const lastDispatchedLevelRef = useRef(null);
+  const pendingLevelRef = useRef(null);
   const isUnlockedRef = useRef(false);
-
-  const hasLibraryForLevel = useCallback((level) => {
-    return audioLibraryRef.current.has(level) && audioLibraryRef.current.get(level).length > 0;
-  }, []);
 
   const selectRandomEntry = useCallback((level) => {
     const entries = audioLibraryRef.current.get(level);
@@ -52,98 +46,94 @@ export const useAudioGenerator = (options = {}) => {
     return entries[index];
   }, []);
 
-  const playEntry = useCallback((level) => {
+  const startPlayback = useCallback((level) => {
     const entry = selectRandomEntry(level);
     if (!entry) {
       throw new Error(`No audio available for level ${level}`);
     }
 
-    return new Promise((resolve, reject) => {
-      try {
-        const audio = createAudioInstance(entry.url);
-        currentAudioRef.current = audio;
+    setError(null);
 
-        const cleanup = () => {
-          audio.removeEventListener('ended', handleEnded);
-          audio.removeEventListener('error', handleError);
-        };
+    try {
+      const audio = createAudioInstance(entry.url);
+      currentAudioRef.current = audio;
 
-        const handleEnded = () => {
-          cleanup();
-          if (currentAudioRef.current === audio) {
-            currentAudioRef.current = null;
-          }
-          setIsPlaying(false);
-          if (onPlayEnd) {
-            onPlayEnd(level);
-          }
-          resolve();
-        };
+      const cleanup = () => {
+        audio.removeEventListener('ended', handleEnded);
+        audio.removeEventListener('error', handleError);
+      };
 
-        const handleError = (event) => {
-          cleanup();
-          if (currentAudioRef.current === audio) {
-            currentAudioRef.current = null;
-          }
-          setIsPlaying(false);
-          reject(new Error(event?.message || 'Audio playback failed'));
-        };
-
-        audio.addEventListener('ended', handleEnded);
-        audio.addEventListener('error', handleError);
-
-        setIsPlaying(true);
-        setCurrentLevel(level);
-        if (onPlayStart) {
-          onPlayStart(level);
-        }
-
-        const playPromise = audio.play();
-        if (playPromise && typeof playPromise.catch === 'function') {
-          playPromise.catch(handleError);
-        }
-      } catch (err) {
-        if (currentAudioRef.current) {
-          stopAudioInstance(currentAudioRef.current);
+      const handleEnded = () => {
+        cleanup();
+        if (currentAudioRef.current === audio) {
           currentAudioRef.current = null;
         }
         setIsPlaying(false);
-        reject(err instanceof Error ? err : new Error('Audio playback failed'));
+        if (onPlayEnd) {
+          onPlayEnd(level);
+        }
+
+        const nextLevel = pendingLevelRef.current;
+        if (nextLevel !== null && libraryReadyRef.current) {
+          pendingLevelRef.current = null;
+          try {
+            startPlayback(nextLevel);
+          } catch (err) {
+            console.error('Error starting pending audio:', err);
+            setError(err instanceof Error ? err.message : 'Audio playback error');
+          }
+        } else {
+          setCurrentLevel(null);
+        }
+      };
+
+      const handleError = (event) => {
+        cleanup();
+        if (currentAudioRef.current === audio) {
+          currentAudioRef.current = null;
+        }
+        setIsPlaying(false);
+        const message = event?.message || 'Audio playback failed';
+        setError(message);
+
+        const nextLevel = pendingLevelRef.current;
+        if (nextLevel !== null && libraryReadyRef.current) {
+          pendingLevelRef.current = null;
+          try {
+            startPlayback(nextLevel);
+          } catch (err) {
+            console.error('Error starting pending audio after failure:', err);
+            setError(err instanceof Error ? err.message : 'Audio playback error');
+          }
+        } else {
+          setCurrentLevel(null);
+        }
+      };
+
+      audio.addEventListener('ended', handleEnded);
+      audio.addEventListener('error', handleError);
+
+      setIsPlaying(true);
+      setCurrentLevel(level);
+      if (onPlayStart) {
+        onPlayStart(level);
       }
-    });
+
+      const playPromise = audio.play();
+      if (playPromise && typeof playPromise.catch === 'function') {
+        playPromise.catch((err) => {
+          handleError(err);
+        });
+      }
+    } catch (err) {
+      if (currentAudioRef.current) {
+        stopAudioInstance(currentAudioRef.current);
+        currentAudioRef.current = null;
+      }
+      setIsPlaying(false);
+      throw err instanceof Error ? err : new Error('Audio playback failed');
+    }
   }, [onPlayEnd, onPlayStart, selectRandomEntry]);
-
-  const processQueue = useCallback(async () => {
-    if (isProcessingRef.current || !libraryReadyRef.current) {
-      return;
-    }
-
-    isProcessingRef.current = true;
-
-    try {
-      while (queueRef.current.length > 0 && libraryReadyRef.current) {
-        const level = queueRef.current.shift();
-
-        if (!hasLibraryForLevel(level)) {
-          console.warn(`No audio library for level ${level}`);
-          continue;
-        }
-
-        try {
-          await playEntry(level);
-        } catch (err) {
-          console.error('Error playing audio:', err);
-          setError(err instanceof Error ? err.message : 'Audio playback error');
-        }
-      }
-
-      if (queueRef.current.length === 0) {
-        lastDispatchedLevelRef.current = null;
-      }
-    } finally {
-      isProcessingRef.current = false;
-    }
-  }, [hasLibraryForLevel, playEntry]);
 
   const groupByLevel = useCallback((records) => {
     const grouped = new Map();
@@ -210,8 +200,16 @@ export const useAudioGenerator = (options = {}) => {
         libraryReadyRef.current = true;
         setIsReady(true);
 
-        if (queueRef.current.length > 0) {
-          processQueue();
+        if (pendingLevelRef.current !== null && !currentAudioRef.current) {
+          const levelToPlay = pendingLevelRef.current;
+          pendingLevelRef.current = null;
+          try {
+            startPlayback(levelToPlay);
+          } catch (err) {
+            console.error('Error starting pending audio:', err);
+            setError(err instanceof Error ? err.message : 'Audio playback error');
+            pendingLevelRef.current = levelToPlay;
+          }
         }
       } catch (err) {
         if (!isCancelled) {
@@ -230,29 +228,41 @@ export const useAudioGenerator = (options = {}) => {
     return () => {
       isCancelled = true;
     };
-  }, [groupByLevel, processQueue]);
+  }, [groupByLevel, startPlayback]);
 
   const play = useCallback((level) => {
     if (!VALID_LEVELS.has(level)) {
       return;
     }
 
-    if (lastDispatchedLevelRef.current === level && queueRef.current.length === 0 && !isProcessingRef.current) {
+    setError(null);
+
+    if (!libraryReadyRef.current) {
+      pendingLevelRef.current = level;
       return;
     }
 
-    queueRef.current.push(level);
-    lastDispatchedLevelRef.current = level;
-    setError(null);
-
-    if (libraryReadyRef.current) {
-      processQueue();
+    if (!isPlaying && !currentAudioRef.current) {
+      pendingLevelRef.current = null;
+      try {
+        startPlayback(level);
+      } catch (err) {
+        console.error('Error starting audio:', err);
+        setError(err instanceof Error ? err.message : 'Audio playback error');
+        pendingLevelRef.current = level;
+      }
+      return;
     }
-  }, [processQueue]);
+
+    if (isPlaying && currentLevel === level && pendingLevelRef.current === null) {
+      return;
+    }
+
+    pendingLevelRef.current = level;
+  }, [currentLevel, isPlaying, startPlayback]);
 
   const stop = useCallback(() => {
-    queueRef.current = [];
-    lastDispatchedLevelRef.current = null;
+    pendingLevelRef.current = null;
 
     if (currentAudioRef.current) {
       stopAudioInstance(currentAudioRef.current);
@@ -301,8 +311,7 @@ export const useAudioGenerator = (options = {}) => {
     currentLevel,
     error,
     isLoading,
-    isReady,
-    queueLength: queueRef.current.length
+    isReady
   }), [currentLevel, error, isLoading, isPlaying, isReady, play, stop, unlock]);
 };
 
