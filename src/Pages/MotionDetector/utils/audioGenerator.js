@@ -17,32 +17,23 @@ export const getAudioContext = () => {
   return audioContextInstance;
 };
 
-const createRecordFromBlob = (url, blob) => {
-  const objectUrl = URL.createObjectURL(blob);
-  return {
-    sourceUrl: url,
-    playbackUrl: objectUrl,
-    type: 'blob',
-    cleanup: () => {
-      try {
-        URL.revokeObjectURL(objectUrl);
-      } catch (error) {
-        console.warn('Failed to revoke object URL:', error);
-      }
-    }
-  };
-};
-
-const createRecordFromRemote = (url) => ({
+const createBufferRecord = (url, buffer) => ({
   sourceUrl: url,
-  playbackUrl: url,
+  type: 'buffer',
+  buffer,
+  cleanup: () => {}
+});
+
+const createRemoteRecord = (url) => ({
+  sourceUrl: url,
   type: 'remote',
+  url,
   cleanup: () => {}
 });
 
 export const preloadMotionAudio = async (url) => {
   if (typeof window === 'undefined') {
-    return createRecordFromRemote(url);
+    return createRemoteRecord(url);
   }
 
   if (audioRecordCache.has(url)) {
@@ -51,6 +42,7 @@ export const preloadMotionAudio = async (url) => {
 
   const preloadPromise = (async () => {
     try {
+      const audioContext = getAudioContext();
       const response = await fetch(url, {
         credentials: 'include'
       });
@@ -59,27 +51,17 @@ export const preloadMotionAudio = async (url) => {
         throw new Error(`Failed to fetch audio: ${response.status}`);
       }
 
-      const blob = await response.blob();
-      return createRecordFromBlob(url, blob);
+      const arrayBuffer = await response.arrayBuffer();
+      const decoded = await audioContext.decodeAudioData(arrayBuffer.slice(0));
+      return createBufferRecord(url, decoded);
     } catch (error) {
-      console.warn('Falling back to remote audio playback due to preload error:', error);
-      return createRecordFromRemote(url);
+      console.warn('Fallback to remote audio playback due to preload error:', url, error);
+      return createRemoteRecord(url);
     }
   })();
 
   audioRecordCache.set(url, preloadPromise);
   return preloadPromise;
-};
-
-export const createAudioInstance = (url) => {
-  if (typeof window === 'undefined') {
-    throw new Error('Audio playback is not available in this environment');
-  }
-
-  const audio = new Audio(url);
-  audio.preload = 'auto';
-  audio.crossOrigin = 'anonymous';
-  return audio;
 };
 
 export const stopAudioInstance = (audio) => {
@@ -107,5 +89,4 @@ export const clearAudioCache = () => {
   audioRecordCache.clear();
 };
 
-// 舊版 API 的兼容導出（避免舊程式碼導入失敗）
 export const playTone = () => Promise.resolve();

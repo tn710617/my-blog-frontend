@@ -1,7 +1,6 @@
 import { useState, useCallback, useRef, useEffect, useMemo } from 'react';
 import {
   preloadMotionAudio,
-  createAudioInstance,
   stopAudioInstance,
   getAudioContext
 } from '../utils/audioGenerator';
@@ -57,136 +56,13 @@ export const useAudioGenerator = (options = {}) => {
 
     setError(null);
 
-    try {
-      const audioContext = getAudioContext();
-      if (audioContext.state === 'suspended') {
-        audioContext.resume().catch(() => {});
-      }
+    const audioContext = getAudioContext();
 
-      const audio = createAudioInstance(entry.url);
-      currentAudioRef.current = audio;
-
-      const sourceNode = audioContext.createMediaElementSource(audio);
-      const gainNode = audioContext.createGain();
-      gainNode.gain.setValueAtTime(0.0001, audioContext.currentTime);
-      sourceNode.connect(gainNode);
-      gainNode.connect(audioContext.destination);
-      currentSourceNodeRef.current = sourceNode;
-      currentGainNodeRef.current = gainNode;
-
-      const cleanup = () => {
-        audio.removeEventListener('ended', handleEnded);
-        audio.removeEventListener('error', handleError);
-        audio.removeEventListener('loadedmetadata', handleLoadedMetadata);
-        if (currentSourceNodeRef.current === sourceNode) {
-          try {
-            currentSourceNodeRef.current.disconnect();
-          } catch (disconnectError) {
-            console.warn('Failed to disconnect source node:', disconnectError);
-          }
-          currentSourceNodeRef.current = null;
-        }
-        if (currentGainNodeRef.current === gainNode) {
-          try {
-            currentGainNodeRef.current.disconnect();
-          } catch (disconnectError) {
-            console.warn('Failed to disconnect gain node:', disconnectError);
-          }
-          currentGainNodeRef.current = null;
-        }
-      };
-
-      const handleEnded = () => {
-        cleanup();
-        if (currentAudioRef.current === audio) {
-          currentAudioRef.current = null;
-        }
-        setIsPlaying(false);
-        if (onPlayEnd) {
-          onPlayEnd(level);
-        }
-
-        const nextLevel = pendingLevelRef.current;
-        if (nextLevel !== null && libraryReadyRef.current) {
-          pendingLevelRef.current = null;
-          try {
-            startPlayback(nextLevel);
-          } catch (err) {
-            console.error('Error starting pending audio:', err);
-            setError(err instanceof Error ? err.message : 'Audio playback error');
-          }
-        } else {
-          setCurrentLevel(null);
-        }
-      };
-
-      const handleError = (event) => {
-        cleanup();
-        if (currentAudioRef.current === audio) {
-          currentAudioRef.current = null;
-        }
-        setIsPlaying(false);
-        const message = event?.message || 'Audio playback failed';
-        setError(message);
-
-        const nextLevel = pendingLevelRef.current;
-        if (nextLevel !== null && libraryReadyRef.current) {
-          pendingLevelRef.current = null;
-          try {
-            startPlayback(nextLevel);
-          } catch (err) {
-            console.error('Error starting pending audio after failure:', err);
-            setError(err instanceof Error ? err.message : 'Audio playback error');
-          }
-        } else {
-          setCurrentLevel(null);
-        }
-      };
-
-      const fadeInDuration = 0.05;
-      const fadeOutDuration = 0.08;
-
-      const scheduleFadeOut = (duration) => {
-        if (!Number.isFinite(duration) || duration <= 0) {
-          return;
-        }
-        const now = audioContext.currentTime;
-        const fadeInStart = now;
-        gainNode.gain.cancelScheduledValues(now);
-        gainNode.gain.setValueAtTime(0.0001, fadeInStart);
-        gainNode.gain.linearRampToValueAtTime(1, fadeInStart + fadeInDuration);
-
-        const fadeOutStart = fadeInStart + Math.max(duration - fadeOutDuration, fadeInDuration);
-        gainNode.gain.setValueAtTime(1, fadeOutStart);
-        gainNode.gain.linearRampToValueAtTime(0.0001, fadeOutStart + fadeOutDuration);
-      };
-
-      const handleLoadedMetadata = () => {
-        scheduleFadeOut(audio.duration);
-      };
-
-      audio.addEventListener('ended', handleEnded);
-      audio.addEventListener('error', handleError);
-      audio.addEventListener('loadedmetadata', handleLoadedMetadata);
-
-      setIsPlaying(true);
-      setCurrentLevel(level);
-      if (onPlayStart) {
-        onPlayStart(level);
-      }
-
-      const playPromise = audio.play();
-      if (playPromise && typeof playPromise.catch === 'function') {
-        playPromise.catch((err) => {
-          handleError(err);
-        });
-      }
-
-      if (Number.isFinite(audio.duration) && audio.duration > 0) {
-        scheduleFadeOut(audio.duration);
-      }
-    } catch (err) {
+    const cleanupPlayback = () => {
       if (currentAudioRef.current) {
+        currentAudioRef.current.onended = null;
+        currentAudioRef.current.onerror = null;
+        currentAudioRef.current.onloadedmetadata = null;
         stopAudioInstance(currentAudioRef.current);
         currentAudioRef.current = null;
       }
@@ -206,8 +82,152 @@ export const useAudioGenerator = (options = {}) => {
         }
         currentGainNodeRef.current = null;
       }
+    };
+
+    const onPlaybackComplete = () => {
+      cleanupPlayback();
       setIsPlaying(false);
-      throw err instanceof Error ? err : new Error('Audio playback failed');
+      if (onPlayEnd) {
+        onPlayEnd(level);
+      }
+
+      const nextLevel = pendingLevelRef.current;
+      if (nextLevel !== null && libraryReadyRef.current) {
+        pendingLevelRef.current = null;
+        try {
+          startPlayback(nextLevel);
+          return;
+        } catch (err) {
+          console.error('Error starting pending audio:', err);
+          setError(err instanceof Error ? err.message : 'Audio playback error');
+        }
+      }
+
+      setCurrentLevel(null);
+    };
+
+    const onPlaybackError = (err) => {
+      cleanupPlayback();
+      setIsPlaying(false);
+      setError(err instanceof Error ? err.message : 'Audio playback error');
+
+      const nextLevel = pendingLevelRef.current;
+      if (nextLevel !== null && libraryReadyRef.current) {
+        pendingLevelRef.current = null;
+        try {
+          startPlayback(nextLevel);
+          return;
+        } catch (nextErr) {
+          console.error('Error starting pending audio after failure:', nextErr);
+          setError(nextErr instanceof Error ? nextErr.message : 'Audio playback error');
+        }
+      }
+
+      setCurrentLevel(null);
+    };
+
+    const fadeInDuration = 0.05;
+    const fadeOutDuration = 0.08;
+
+    if (audioContext.state === 'suspended') {
+      audioContext.resume().catch(() => {});
+    }
+
+    if (entry.type === 'buffer') {
+      try {
+        const sourceNode = audioContext.createBufferSource();
+        const gainNode = audioContext.createGain();
+        sourceNode.buffer = entry.buffer;
+        gainNode.gain.setValueAtTime(0.0001, audioContext.currentTime);
+        sourceNode.connect(gainNode);
+        gainNode.connect(audioContext.destination);
+        currentSourceNodeRef.current = sourceNode;
+        currentGainNodeRef.current = gainNode;
+
+        const scheduleGain = (duration) => {
+          const now = audioContext.currentTime;
+          const fadeInStart = now;
+          gainNode.gain.cancelScheduledValues(now);
+          gainNode.gain.setValueAtTime(0.0001, fadeInStart);
+          gainNode.gain.linearRampToValueAtTime(1, fadeInStart + fadeInDuration);
+
+          const fadeOutStart = fadeInStart + Math.max(duration - fadeOutDuration, fadeInDuration);
+          gainNode.gain.setValueAtTime(1, fadeOutStart);
+          gainNode.gain.linearRampToValueAtTime(0.0001, fadeOutStart + fadeOutDuration);
+        };
+
+        sourceNode.onended = () => {
+          onPlaybackComplete();
+        };
+
+        setIsPlaying(true);
+        setCurrentLevel(level);
+        if (onPlayStart) {
+          onPlayStart(level);
+        }
+
+        scheduleGain(entry.buffer.duration);
+        sourceNode.start();
+      } catch (err) {
+        onPlaybackError(err instanceof Error ? err : new Error('Audio playback failed'));
+      }
+      return;
+    }
+
+    // fallback to remote HTMLAudio element
+    const audio = new Audio(entry.url);
+    audio.preload = 'auto';
+    audio.crossOrigin = 'anonymous';
+    currentAudioRef.current = audio;
+
+    try {
+      const sourceNode = audioContext.createMediaElementSource(audio);
+      const gainNode = audioContext.createGain();
+      gainNode.gain.setValueAtTime(0.0001, audioContext.currentTime);
+      sourceNode.connect(gainNode);
+      gainNode.connect(audioContext.destination);
+      currentSourceNodeRef.current = sourceNode;
+      currentGainNodeRef.current = gainNode;
+
+      const scheduleGain = (duration) => {
+        if (!Number.isFinite(duration) || duration <= 0) {
+          return;
+        }
+        const now = audioContext.currentTime;
+        const fadeInStart = now;
+        gainNode.gain.cancelScheduledValues(now);
+        gainNode.gain.setValueAtTime(0.0001, fadeInStart);
+        gainNode.gain.linearRampToValueAtTime(1, fadeInStart + fadeInDuration);
+
+        const fadeOutStart = fadeInStart + Math.max(duration - fadeOutDuration, fadeInDuration);
+        gainNode.gain.setValueAtTime(1, fadeOutStart);
+        gainNode.gain.linearRampToValueAtTime(0.0001, fadeOutStart + fadeOutDuration);
+      };
+
+      audio.onended = () => onPlaybackComplete();
+      audio.onerror = () => onPlaybackError(new Error('Audio playback failed'));
+      audio.onloadedmetadata = () => {
+        scheduleGain(audio.duration);
+      };
+
+      setIsPlaying(true);
+      setCurrentLevel(level);
+      if (onPlayStart) {
+        onPlayStart(level);
+      }
+
+      const playPromise = audio.play();
+      if (playPromise && typeof playPromise.catch === 'function') {
+        playPromise.catch((err) => {
+          onPlaybackError(err instanceof Error ? err : new Error('Audio playback failed'));
+        });
+      }
+
+      if (Number.isFinite(audio.duration) && audio.duration > 0) {
+        scheduleGain(audio.duration);
+      }
+    } catch (err) {
+      onPlaybackError(err instanceof Error ? err : new Error('Audio playback failed'));
     }
   }, [onPlayEnd, onPlayStart, selectRandomEntry]);
 
@@ -255,7 +275,9 @@ export const useAudioGenerator = (options = {}) => {
               const cacheRecord = await preloadMotionAudio(record.audio_url);
               return {
                 id: record.id,
-                url: cacheRecord.playbackUrl,
+                type: cacheRecord.type,
+                url: cacheRecord.type === 'buffer' ? record.audio_url : cacheRecord.url,
+                buffer: cacheRecord.type === 'buffer' ? cacheRecord.buffer : undefined,
                 filename: record.original_filename,
                 sourceUrl: record.audio_url
               };
