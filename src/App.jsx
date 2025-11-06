@@ -9,6 +9,7 @@ import EditPost from "./Pages/EditPost";
 import About from "./Pages/About";
 import TravelPinsNew from "./Pages/TravelPinsNew";
 import PositionDemoPage from "./Pages/Demo/PositionDemo";
+import MotionDetector from "./Pages/MotionDetector";
 
 function App() {
     return (
@@ -18,6 +19,7 @@ function App() {
                 <Route path={"/about"} element={<About/>}/>
                 <Route path={"/travel-pins-new"} element={<TravelPinsNew/>}/>
                 <Route path={"/demo/css-position"} element={<PositionDemoPage/>}/>
+                <Route path={"/motion-detector"} element={<MotionDetector/>}/>
                 <Route element={<ProtectedRoute/>}>
                     <Route path={"/create-post"} element={<CreatePost/>}/>
                     <Route path={"/edit-post"} element={<EditPost/>}/>
