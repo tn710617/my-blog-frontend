@@ -19,6 +19,7 @@ import PermissionRequest from './components/PermissionRequest';
 const MotionDetector = () => {
   const [isEnabled, setIsEnabled] = useState(false);
   const [lastLevel, setLastLevel] = useState(0);
+  const [sensitivity, setSensitivity] = useState(1);
   const isDev = import.meta.env.DEV;
 
   // 音頻播放 Hook（提前定義，以便在回調中使用）
@@ -41,7 +42,8 @@ const MotionDetector = () => {
     enabled: isEnabled,
     windowSize: 1000,
     samplingRate: 60,
-    onLevelChange: handleLevelChange
+    onLevelChange: handleLevelChange,
+    sensitivityScale: sensitivity
   });
 
   // 長按邏輯 Hook（用於停用）
@@ -142,14 +144,50 @@ const MotionDetector = () => {
           />
         )}
 
-        {/* 權限已授予提示 */}
-        {deviceMotion.permissionStatus === 'granted' && !isEnabled && (
-          <div className="p-4 bg-green-100 border border-green-400 rounded-lg">
-            <p className="text-green-800 text-center font-semibold">
-              ✓ 已授予權限，點擊下方按鈕開始使用
-            </p>
+       {/* 權限已授予提示 */}
+       {deviceMotion.permissionStatus === 'granted' && !isEnabled && (
+         <div className="p-4 bg-green-100 border border-green-400 rounded-lg">
+           <p className="text-green-800 text-center font-semibold">
+             ✓ 已授予權限，點擊下方按鈕開始使用
+           </p>
+         </div>
+       )}
+
+        {/* 靈敏度調整 */}
+        <div className="p-4 bg-gray-100 border border-gray-300 rounded-lg">
+          <div className="flex items-center justify-between mb-3">
+            <div>
+              <p className="text-sm font-semibold text-gray-800">震動靈敏度</p>
+              <p className="text-xs text-gray-600">
+                {deviceMotion.debugInfo.sensitivity ? `${deviceMotion.debugInfo.sensitivity}%` : `${Math.round(sensitivity * 100)}%`}
+              </p>
+            </div>
+            <button
+              type="button"
+              onClick={() => setSensitivity(1)}
+              className="text-xs text-blue-600 underline"
+            >
+              重置
+            </button>
           </div>
-        )}
+          <input
+            type="range"
+            min="0.5"
+            max="2"
+            step="0.05"
+            value={sensitivity}
+            onChange={(event) => setSensitivity(Number(event.target.value))}
+            className="w-full accent-blue-500"
+          />
+          <div className="mt-3 text-xs text-gray-600 space-y-1">
+            <p>臨界範圍：
+              {deviceMotion.debugInfo.intensityMin && deviceMotion.debugInfo.intensityMax
+                ? ` ${deviceMotion.debugInfo.intensityMin} ~ ${deviceMotion.debugInfo.intensityMax}`
+                : ' 調整以增減靈敏度'}
+            </p>
+            <p>降低數值 → 更敏感；提高數值 → 更耐震</p>
+          </div>
+        </div>
 
         {/* 強度顯示區域（啟用時） */}
         {isEnabled && (
@@ -173,6 +211,10 @@ const MotionDetector = () => {
                 <p>強度: {deviceMotion.debugInfo.intensity || '-'}</p>
                 <p>正規化: {deviceMotion.debugInfo.normalized || '-'}</p>
                 <p>平滑後: {deviceMotion.debugInfo.smooth || '-'}</p>
+                <p>靈敏度: {deviceMotion.debugInfo.sensitivity || `${Math.round(sensitivity * 100)}%`}</p>
+                {deviceMotion.debugInfo.intensityMin && deviceMotion.debugInfo.intensityMax && (
+                  <p>閾值：{deviceMotion.debugInfo.intensityMin} ~ {deviceMotion.debugInfo.intensityMax}</p>
+                )}
                 <p>音效狀態: {
                   audioGenerator.isReady ? '已就緒' : (audioGenerator.isLoading ? '載入中' : '尚未就緒')
                 }</p>

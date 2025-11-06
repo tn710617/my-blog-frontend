@@ -5,8 +5,8 @@ const GRAVITY = 9.80665;
 const DEFAULT_WINDOW_MS = 1000;
 const DEFAULT_SAMPLE_LIMIT = 20;
 const SMOOTHING_ALPHA = 0.35;
-const INTENSITY_MIN = 0.1;
-const INTENSITY_MAX = 3.0;
+const DEFAULT_INTENSITY_MIN = 0.1;
+const DEFAULT_INTENSITY_MAX = 3.0;
 
 const hasDeviceMotionSupport = () => {
   if (typeof window === 'undefined') {
@@ -58,7 +58,8 @@ export const useDeviceMotion = (options = {}) => {
     enabled = false,
     windowSize = DEFAULT_WINDOW_MS,
     samplingRate = 60,
-    onLevelChange = null
+    onLevelChange = null,
+    sensitivityScale = 1
   } = options;
 
   const [level, setLevel] = useState(0);
@@ -98,6 +99,16 @@ export const useDeviceMotion = (options = {}) => {
     }
     return DEFAULT_SAMPLE_LIMIT;
   }, [samplingRate, windowSize]);
+
+  const [intensityBounds, sensitivityDisplay] = useMemo(() => {
+    const clampedScale = clamp(sensitivityScale, 0.5, 2);
+    const span = (DEFAULT_INTENSITY_MAX - DEFAULT_INTENSITY_MIN) / clampedScale;
+    const prevMid = (DEFAULT_INTENSITY_MAX + DEFAULT_INTENSITY_MIN) / 2;
+    const newMin = Math.max(0.01, prevMid - span / 2);
+    const newMax = newMin + span;
+    const display = (clampedScale * 100).toFixed(0);
+    return [{ min: newMin, max: newMax }, display];
+  }, [sensitivityScale]);
 
   const resetBuffers = useCallback(() => {
     samplesRef.current = [];
@@ -272,7 +283,7 @@ export const useDeviceMotion = (options = {}) => {
       const std = standardDeviation(diffs);
       const intensity = 0.4 * mean + 0.6 * std;
       const normalized = clamp(
-        (intensity - INTENSITY_MIN) / (INTENSITY_MAX - INTENSITY_MIN),
+        (intensity - intensityBounds.min) / (intensityBounds.max - intensityBounds.min),
         0,
         1
       );
@@ -304,7 +315,10 @@ export const useDeviceMotion = (options = {}) => {
         intensity: intensity.toFixed(2),
         normalized: normalized.toFixed(2),
         smooth: smooth.toFixed(2),
-        lastAccelData: lastAccelDataRef.current
+        lastAccelData: lastAccelDataRef.current,
+        sensitivity: sensitivityDisplay,
+        intensityMin: intensityBounds.min.toFixed(2),
+        intensityMax: intensityBounds.max.toFixed(2)
       });
 
       if (nextLevel !== lastLevelRef.current) {
@@ -322,7 +336,7 @@ export const useDeviceMotion = (options = {}) => {
       clearInterval(interval);
       intervalRef.current = null;
     };
-  }, [enabled, isListening, sampleLimit]);
+  }, [enabled, intensityBounds.max, intensityBounds.min, isListening, sampleLimit, sensitivityDisplay]);
 
   const requestPermission = useCallback(async () => {
     if (!isSupported) {
