@@ -173,7 +173,7 @@ const MotionDetector = () => {
           <input
             type="range"
             min="0.1"
-            max="10"
+            max="25"
             step="0.1"
             value={sensitivity}
             onChange={(event) => setSensitivity(Number(event.target.value))}
@@ -206,11 +206,14 @@ const MotionDetector = () => {
                 <p>事件計數: {deviceMotion.debugInfo.eventCount}</p>
                 <p>最後合加速度: {deviceMotion.debugInfo.lastMagnitude || '-'}</p>
                 <p>最後差值: {deviceMotion.debugInfo.lastDiff || '-'}</p>
+                <p>旋轉能量: {deviceMotion.debugInfo.lastRotation || '-'}</p>
                 <p>平均值: {deviceMotion.debugInfo.mean || '-'}</p>
                 <p>標準差: {deviceMotion.debugInfo.std || '-'}</p>
                 <p>強度: {deviceMotion.debugInfo.intensity || '-'}</p>
+                <p>調整後強度: {deviceMotion.debugInfo.boostedIntensity || '-'}</p>
                 <p>正規化: {deviceMotion.debugInfo.normalized || '-'}</p>
                 <p>平滑後: {deviceMotion.debugInfo.smooth || '-'}</p>
+                <p>基準/σ: {deviceMotion.debugInfo.baseline || '-'} / {deviceMotion.debugInfo.sigma || '-'}</p>
                 <p>靈敏度: {deviceMotion.debugInfo.sensitivity || `${Math.round(sensitivity * 100)}%`}</p>
                 {deviceMotion.debugInfo.intensityMin && deviceMotion.debugInfo.intensityMax && (
                   <p>閾值：{deviceMotion.debugInfo.intensityMin} ~ {deviceMotion.debugInfo.intensityMax}</p>

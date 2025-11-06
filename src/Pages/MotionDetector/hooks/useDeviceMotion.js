@@ -6,7 +6,11 @@ const DEFAULT_WINDOW_MS = 1000;
 const DEFAULT_SAMPLE_LIMIT = 20;
 const SMOOTHING_ALPHA = 0.35;
 const DEFAULT_INTENSITY_MIN = 0.05;
-const DEFAULT_INTENSITY_MAX = 4.0;
+const DEFAULT_INTENSITY_MAX = 3.5;
+const MAX_SENSITIVITY_SCALE = 25;
+const MOTION_WEIGHT = 0.7;
+const ROTATION_WEIGHT = 0.3;
+const DEG_TO_RAD = Math.PI / 180;
 
 const hasDeviceMotionSupport = () => {
   if (typeof window === 'undefined') {
@@ -70,11 +74,16 @@ export const useDeviceMotion = (options = {}) => {
     eventCount: 0,
     lastMagnitude: null,
     lastDiff: null,
+    lastRotation: null,
     mean: null,
     std: null,
     intensity: null,
+    boostedIntensity: null,
     normalized: null,
     smooth: null,
+    baseline: null,
+    sigma: null,
+    sensitivity: null,
     lastAccelData: null
   });
 
@@ -100,12 +109,12 @@ export const useDeviceMotion = (options = {}) => {
     return DEFAULT_SAMPLE_LIMIT;
   }, [samplingRate, windowSize]);
 
-  const [intensityBounds, sensitivityDisplay] = useMemo(() => {
-    const clampedScale = clamp(sensitivityScale, 0.1, 10);
-    const min = Math.max(0.001, DEFAULT_INTENSITY_MIN / clampedScale);
-    const max = Math.max(min + 0.05, DEFAULT_INTENSITY_MAX / clampedScale);
-    const display = (clampedScale * 100).toFixed(0);
-    return [{ min, max }, display];
+  const sensitivityConfig = useMemo(() => {
+    const clampedScale = clamp(sensitivityScale, 0.1, MAX_SENSITIVITY_SCALE);
+    return {
+      scale: clampedScale,
+      display: (clampedScale * 100).toFixed(0)
+    };
   }, [sensitivityScale]);
 
   const resetBuffers = useCallback(() => {
@@ -116,7 +125,7 @@ export const useDeviceMotion = (options = {}) => {
   }, []);
 
   const handleMotionEvent = useCallback((event) => {
-    const { accelerationIncludingGravity } = event;
+    const { accelerationIncludingGravity, rotationRate } = event;
 
     if (!accelerationIncludingGravity) {
       return;
@@ -130,12 +139,22 @@ export const useDeviceMotion = (options = {}) => {
 
     const magnitude = calculateMagnitude(sanitized);
     const diff = Math.max(0, Math.abs(magnitude - GRAVITY));
+
+    let rotationMagnitude = 0;
+    if (rotationRate) {
+      const rx = Number.isFinite(rotationRate.alpha) ? rotationRate.alpha * DEG_TO_RAD : 0;
+      const ry = Number.isFinite(rotationRate.beta) ? rotationRate.beta * DEG_TO_RAD : 0;
+      const rz = Number.isFinite(rotationRate.gamma) ? rotationRate.gamma * DEG_TO_RAD : 0;
+      rotationMagnitude = Math.sqrt(rx * rx + ry * ry + rz * rz);
+    }
+
     const timestamp = Date.now();
 
     samplesRef.current.push({
       timestamp,
       diff,
-      magnitude
+      magnitude,
+      rotation: rotationMagnitude
     });
 
     if (samplesRef.current.length > sampleLimit) {
@@ -265,23 +284,42 @@ export const useDeviceMotion = (options = {}) => {
           eventCount: eventCountRef.current,
           lastMagnitude: samples[samples.length - 1]?.magnitude.toFixed(2) ?? null,
           lastDiff: samples[samples.length - 1]?.diff.toFixed(2) ?? null,
+          lastRotation: samples[samples.length - 1]?.rotation?.toFixed(3) ?? null,
           mean: null,
           std: null,
           intensity: null,
+          boostedIntensity: null,
           normalized: null,
           smooth: prevSmoothRef.current.toFixed(2),
-          lastAccelData: lastAccelDataRef.current
+          baseline: null,
+          sigma: null,
+          lastAccelData: lastAccelDataRef.current,
+          sensitivity: sensitivityConfig.display,
+          intensityMin: DEFAULT_INTENSITY_MIN.toFixed(2),
+          intensityMax: DEFAULT_INTENSITY_MAX.toFixed(2)
         }));
 
         return;
       }
 
       const diffs = samples.map((sample) => sample.diff);
-      const mean = average(diffs);
-      const std = standardDeviation(diffs);
-      const intensity = 0.4 * mean + 0.6 * std;
+      const rotations = samples.map((sample) => sample.rotation ?? 0);
+
+      const combined = diffs.map((motion, index) => {
+        const rotation = rotations[index] ?? 0;
+        return MOTION_WEIGHT * motion + ROTATION_WEIGHT * rotation;
+      });
+
+      const baseline = average(combined);
+      const sigma = standardDeviation(combined);
+      const latestMotion = diffs[diffs.length - 1] ?? 0;
+      const latestRotation = rotations[rotations.length - 1] ?? 0;
+      const latestCombined = combined[combined.length - 1] ?? 0;
+
+      const boostedIntensity = latestCombined * sensitivityConfig.scale;
+      const adaptiveRange = Math.max(sigma * 2, DEFAULT_INTENSITY_MIN);
       const normalized = clamp(
-        (intensity - intensityBounds.min) / (intensityBounds.max - intensityBounds.min),
+        (boostedIntensity - baseline) / adaptiveRange,
         0,
         1
       );
@@ -307,16 +345,20 @@ export const useDeviceMotion = (options = {}) => {
       setDebugInfo({
         eventCount: eventCountRef.current,
         lastMagnitude: samples[samples.length - 1]?.magnitude.toFixed(2) ?? null,
-        lastDiff: diffs[diffs.length - 1]?.toFixed(2) ?? null,
-        mean: mean.toFixed(2),
-        std: std.toFixed(2),
-        intensity: intensity.toFixed(2),
+        lastDiff: latestMotion.toFixed(2),
+        lastRotation: latestRotation.toFixed(3),
+        mean: baseline.toFixed(2),
+        std: sigma.toFixed(2),
+        intensity: latestCombined.toFixed(2),
+        boostedIntensity: boostedIntensity.toFixed(2),
         normalized: normalized.toFixed(2),
         smooth: smooth.toFixed(2),
+        baseline: baseline.toFixed(2),
+        sigma: sigma.toFixed(2),
         lastAccelData: lastAccelDataRef.current,
-        sensitivity: sensitivityDisplay,
-        intensityMin: intensityBounds.min.toFixed(2),
-        intensityMax: intensityBounds.max.toFixed(2)
+        sensitivity: sensitivityConfig.display,
+        intensityMin: DEFAULT_INTENSITY_MIN.toFixed(2),
+        intensityMax: DEFAULT_INTENSITY_MAX.toFixed(2)
       });
 
       if (nextLevel !== lastLevelRef.current) {
@@ -334,7 +376,7 @@ export const useDeviceMotion = (options = {}) => {
       clearInterval(interval);
       intervalRef.current = null;
     };
-  }, [enabled, intensityBounds.max, intensityBounds.min, isListening, sampleLimit, sensitivityDisplay]);
+  }, [enabled, isListening, sampleLimit, sensitivityConfig.display, sensitivityConfig.scale]);
 
   const requestPermission = useCallback(async () => {
     if (!isSupported) {

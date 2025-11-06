@@ -57,6 +57,9 @@ export const useAudioGenerator = (options = {}) => {
     setError(null);
 
     const audioContext = getAudioContext();
+    if (audioContext.state === 'suspended') {
+      audioContext.resume().catch(() => {});
+    }
 
     const cleanupPlayback = () => {
       if (currentAudioRef.current) {
@@ -350,10 +353,6 @@ export const useAudioGenerator = (options = {}) => {
         setError(err instanceof Error ? err.message : 'Audio playback error');
         pendingLevelRef.current = level;
       }
-      return;
-    }
-
-    if (isPlaying && currentLevel === level && pendingLevelRef.current === null) {
       return;
     }
 
