@@ -19,8 +19,8 @@ function App() {
                 <Route path={"/about"} element={<About/>}/>
                 <Route path={"/travel-pins-new"} element={<TravelPinsNew/>}/>
                 <Route path={"/demo/css-position"} element={<PositionDemoPage/>}/>
-                <Route path={"/motion-detector"} element={<MotionDetector/>}/>
                 <Route element={<ProtectedRoute/>}>
+                    <Route path={"/motion-detector"} element={<MotionDetector/>}/>
                     <Route path={"/create-post"} element={<CreatePost/>}/>
                     <Route path={"/edit-post"} element={<EditPost/>}/>
                 </Route>
