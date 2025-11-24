@@ -10,7 +10,6 @@ import {
 
 import ToggleButton from './components/ToggleButton';
 import MotionDisplay from './components/MotionDisplay';
-import PermissionRequest from './components/PermissionRequest';
 
 /**
  * Motion Detector 主頁面
@@ -20,6 +19,7 @@ const MotionDetector = () => {
   const [isEnabled, setIsEnabled] = useState(false);
   const [lastLevel, setLastLevel] = useState(0);
   const [sensitivity, setSensitivity] = useState(1);
+  const [isInfoOpen, setIsInfoOpen] = useState(false);
   const isDev = import.meta.env.DEV;
 
   // 音頻播放 Hook（提前定義，以便在回調中使用）
@@ -45,6 +45,12 @@ const MotionDetector = () => {
     onLevelChange: handleLevelChange,
     sensitivityScale: sensitivity
   });
+
+  const clampSensitivity = (value) => Math.min(25, Math.max(0.1, Number(value.toFixed(2))));
+
+  const adjustSensitivity = (delta) => {
+    setSensitivity((prev) => clampSensitivity(prev + delta));
+  };
 
   // 長按邏輯 Hook（用於停用）
   const longPress = useLongPress({
@@ -88,15 +94,13 @@ const MotionDetector = () => {
     if (granted) {
       vibrateShort();
       audioGenerator.unlock?.();
-      setIsEnabled(true);
-    } else {
+      setIsEnabled(true); } else {
       vibrateDouble();
     }
   };
 
-  const shouldShowPermissionRequest =
-    deviceMotion.isSupported &&
-    deviceMotion.permissionStatus !== 'granted';
+
+  const canEnable = deviceMotion.isSupported && deviceMotion.permissionStatus === 'granted';
 
   return (
     <div className="w-full h-screen flex flex-col items-center bg-white overflow-hidden mobile-container">
@@ -135,19 +139,10 @@ const MotionDetector = () => {
           </div>
         )}
 
-        {/* 權限申請 */}
-        {shouldShowPermissionRequest && (
-          <PermissionRequest
-            permissionStatus={deviceMotion.permissionStatus}
-            onRequestPermission={handleRequestPermission}
-            isLoading={deviceMotion.permissionStatus === 'requesting'}
-          />
-        )}
-
-       {/* 權限已授予提示 */}
-       {deviceMotion.permissionStatus === 'granted' && !isEnabled && (
-         <div className="p-4 bg-green-100 border border-green-400 rounded-lg">
-           <p className="text-green-800 text-center font-semibold">
+        {/* 權限已授予提示 */}
+        {deviceMotion.permissionStatus === 'granted' && !isEnabled && (
+          <div className="p-4 bg-green-100 border border-green-400 rounded-lg">
+            <p className="text-green-800 text-center font-semibold">
              ✓ 已授予權限，點擊下方按鈕開始使用
            </p>
          </div>
@@ -162,13 +157,29 @@ const MotionDetector = () => {
                 {deviceMotion.debugInfo.sensitivity ? `${deviceMotion.debugInfo.sensitivity}%` : `${Math.round(sensitivity * 100)}%`}
               </p>
             </div>
-            <button
-              type="button"
-              onClick={() => setSensitivity(1)}
-              className="text-xs text-blue-600 underline"
-            >
-              重置
-            </button>
+            <div className="flex items-center gap-2">
+              <button
+                type="button"
+                onClick={() => adjustSensitivity(-0.05)}
+                className="px-2 py-1 text-xs font-semibold text-gray-700 bg-white border border-gray-300 rounded"
+              >
+                −5%
+              </button>
+              <button
+                type="button"
+                onClick={() => adjustSensitivity(0.05)}
+                className="px-2 py-1 text-xs font-semibold text-gray-700 bg-white border border-gray-300 rounded"
+              >
+                +5%
+              </button>
+              <button
+                type="button"
+                onClick={() => setSensitivity(1)}
+                className="text-xs text-blue-600 underline"
+              >
+                重置
+              </button>
+            </div>
           </div>
           <input
             type="range"
@@ -190,47 +201,58 @@ const MotionDetector = () => {
         </div>
 
         {/* 強度顯示區域（啟用時） */}
-        {isEnabled && (
+        {(isEnabled || !canEnable) && (
           <div className="flex flex-col items-center gap-4">
             <MotionDisplay level={deviceMotion.level ?? lastLevel} isVisible={true} />
-            <div className="w-full p-4 bg-blue-100 border border-blue-400 rounded-lg">
-              <p className="text-blue-800 text-center font-semibold mb-3">
-                ✓ 正在監聽震動...
-              </p>
-              <div className="bg-white rounded p-3 text-xs font-mono text-gray-700 space-y-1">
-                <p className={deviceMotion.isListening ? 'text-green-600' : 'text-red-600'}>
-                  監聽狀態: {deviceMotion.isListening ? '✓ ON' : '✗ OFF'}
-                </p>
-                <p>權限: {deviceMotion.permissionStatus}</p>
-                <p>支援: {deviceMotion.isSupported ? '✓' : '✗'}</p>
-                <p>事件計數: {deviceMotion.debugInfo.eventCount}</p>
-                <p>最後合加速度: {deviceMotion.debugInfo.lastMagnitude || '-'}</p>
-                <p>最後差值: {deviceMotion.debugInfo.lastDiff || '-'}</p>
-                <p>旋轉能量: {deviceMotion.debugInfo.lastRotation || '-'}</p>
-                <p>平均值: {deviceMotion.debugInfo.mean || '-'}</p>
-                <p>標準差: {deviceMotion.debugInfo.std || '-'}</p>
-                <p>強度: {deviceMotion.debugInfo.intensity || '-'}</p>
-                <p>調整後強度: {deviceMotion.debugInfo.boostedIntensity || '-'}</p>
-                <p>正規化: {deviceMotion.debugInfo.normalized || '-'}</p>
-                <p>平滑後: {deviceMotion.debugInfo.smooth || '-'}</p>
-                <p>基準/σ: {deviceMotion.debugInfo.baseline || '-'} / {deviceMotion.debugInfo.sigma || '-'}</p>
-                <p>靈敏度: {deviceMotion.debugInfo.sensitivity || `${Math.round(sensitivity * 100)}%`}</p>
-                {deviceMotion.debugInfo.intensityMin && deviceMotion.debugInfo.intensityMax && (
-                  <p>閾值：{deviceMotion.debugInfo.intensityMin} ~ {deviceMotion.debugInfo.intensityMax}</p>
-                )}
-                <p>音效狀態: {
-                  audioGenerator.isReady ? '已就緒' : (audioGenerator.isLoading ? '載入中' : '尚未就緒')
-                }</p>
-              </div>
-              {!audioGenerator.isReady && (
-                <p className="mt-3 text-xs text-blue-700">
-                  音效載入中...
-                </p>
-              )}
-              {audioGenerator.error && (
-                <p className="mt-3 text-xs text-red-600">
-                  音效載入失敗：{audioGenerator.error}
-                </p>
+            <div className="w-full">
+              <button
+                type="button"
+                onClick={() => setIsInfoOpen((prev) => !prev)}
+                className="w-full mb-2 px-4 py-2 text-sm font-semibold text-blue-700 bg-blue-50 border border-blue-200 rounded"
+              >
+                {isInfoOpen ? '隱藏震動資訊' : '顯示震動資訊'}
+              </button>
+              {isInfoOpen && (
+                <div className="w-full p-4 bg-blue-100 border border-blue-400 rounded-lg">
+                  <p className="text-blue-800 text-center font-semibold mb-3">
+                    ✓ 正在監聽震動...
+                  </p>
+                  <div className="bg-white rounded p-3 text-xs font-mono text-gray-700 space-y-1">
+                    <p className={deviceMotion.isListening ? 'text-green-600' : 'text-red-600'}>
+                      監聽狀態: {deviceMotion.isListening ? '✓ ON' : '✗ OFF'}
+                    </p>
+                    <p>權限: {deviceMotion.permissionStatus}</p>
+                    <p>支援: {deviceMotion.isSupported ? '✓' : '✗'}</p>
+                    <p>事件計數: {deviceMotion.debugInfo.eventCount}</p>
+                    <p>最後合加速度: {deviceMotion.debugInfo.lastMagnitude || '-'}</p>
+                    <p>最後差值: {deviceMotion.debugInfo.lastDiff || '-'}</p>
+                    <p>旋轉能量: {deviceMotion.debugInfo.lastRotation || '-'}</p>
+                    <p>平均值: {deviceMotion.debugInfo.mean || '-'}</p>
+                    <p>標準差: {deviceMotion.debugInfo.std || '-'}</p>
+                    <p>強度: {deviceMotion.debugInfo.intensity || '-'}</p>
+                    <p>調整後強度: {deviceMotion.debugInfo.boostedIntensity || '-'}</p>
+                    <p>正規化: {deviceMotion.debugInfo.normalized || '-'}</p>
+                    <p>平滑後: {deviceMotion.debugInfo.smooth || '-'}</p>
+                    <p>基準/σ: {deviceMotion.debugInfo.baseline || '-'} / {deviceMotion.debugInfo.sigma || '-'}</p>
+                    <p>靈敏度: {deviceMotion.debugInfo.sensitivity || `${Math.round(sensitivity * 100)}%`}</p>
+                    {deviceMotion.debugInfo.intensityMin && deviceMotion.debugInfo.intensityMax && (
+                      <p>閾值：{deviceMotion.debugInfo.intensityMin} ~ {deviceMotion.debugInfo.intensityMax}</p>
+                    )}
+                    <p>音效狀態: {
+                      audioGenerator.isReady ? '已就緒' : (audioGenerator.isLoading ? '載入中' : '尚未就緒')
+                    }</p>
+                  </div>
+                  {!audioGenerator.isReady && (
+                    <p className="mt-3 text-xs text-blue-700">
+                      音效載入中...
+                    </p>
+                  )}
+                  {audioGenerator.error && (
+                    <p className="mt-3 text-xs text-red-600">
+                      音效載入失敗：{audioGenerator.error}
+                    </p>
+                  )}
+                </div>
               )}
             </div>
           </div>
@@ -283,17 +305,25 @@ const MotionDetector = () => {
                 longPress.handlers.onMouseUp?.(e);
               }
             } : null}
-            disabled={
-              !deviceMotion.isSupported || deviceMotion.permissionStatus !== 'granted'
-            }
-            onClick={!isEnabled ? handleEnable : undefined}
+            disabled={!deviceMotion.isSupported}
+            onClick={() => {
+              if (!canEnable) {
+                handleRequestPermission();
+              } else if (!isEnabled) {
+                handleEnable();
+              }
+            }}
           />
 
-          {isEnabled && (
-            <p className="text-gray-600 text-sm font-semibold">
-              {longPress.isPressed ? `按住停用 (${Math.round(longPress.progress)}%)` : '長按按鈕 3 秒停用'}
-            </p>
-          )}
+          <p className="text-gray-600 text-sm font-semibold">
+            {isEnabled
+              ? longPress.isPressed
+                ? `按住停用 (${Math.round(longPress.progress)}%)`
+                : '長按按鈕 3 秒停用'
+              : canEnable
+                ? '點擊啟用感測'
+                : '點擊授權存取感測器'}
+          </p>
         </div>
       </div>
     </div>
