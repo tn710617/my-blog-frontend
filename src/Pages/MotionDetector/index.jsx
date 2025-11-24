@@ -55,8 +55,16 @@ const MotionDetector = () => {
   // 長按邏輯 Hook（用於停用）
   const longPress = useLongPress({
     duration: 3000,
-    onComplete: () => {
-      handleDisable();
+    onComplete: async () => {
+      if (!canEnable) {
+        await handleRequestPermission();
+        return;
+      }
+      if (isEnabled) {
+        await handleDisable();
+        return;
+      }
+      await handleEnable();
     },
     onProgress: (value) => {
       if (value < 100) {
@@ -288,31 +296,25 @@ const MotionDetector = () => {
           <ToggleButton
             isEnabled={isEnabled}
             isPressed={longPress.isPressed}
-            progress={isEnabled ? longPress.progress : 0}
-            onLongPressStart={isEnabled ? (e) => {
+            progress={longPress.progress}
+            onLongPressStart={(e) => {
               const eventType = e?.type ?? '';
               if (eventType.startsWith('touch')) {
                 longPress.handlers.onTouchStart?.(e);
               } else {
                 longPress.handlers.onMouseDown?.(e);
               }
-            } : null}
-            onLongPressEnd={isEnabled ? (e) => {
+            }}
+            onLongPressEnd={(e) => {
               const eventType = e?.type ?? '';
               if (eventType.startsWith('touch')) {
                 longPress.handlers.onTouchEnd?.(e);
               } else {
                 longPress.handlers.onMouseUp?.(e);
               }
-            } : null}
-            disabled={!deviceMotion.isSupported}
-            onClick={() => {
-              if (!canEnable) {
-                handleRequestPermission();
-              } else if (!isEnabled) {
-                handleEnable();
-              }
             }}
+            disabled={!deviceMotion.isSupported}
+            onClick={null}
           />
 
           <p className="text-gray-600 text-sm font-semibold">
@@ -320,9 +322,11 @@ const MotionDetector = () => {
               ? longPress.isPressed
                 ? `按住停用 (${Math.round(longPress.progress)}%)`
                 : '長按按鈕 3 秒停用'
-              : canEnable
-                ? '點擊啟用感測'
-                : '點擊授權存取感測器'}
+              : longPress.isPressed
+                ? `按住啟用 (${Math.round(longPress.progress)}%)`
+                : canEnable
+                  ? '長按 3 秒啟用感測'
+                  : '長按 3 秒授權存取感測器'}
           </p>
         </div>
       </div>
