@@ -5,12 +5,25 @@ const GRAVITY = 9.80665;
 const DEFAULT_WINDOW_MS = 1000;
 const DEFAULT_SAMPLE_LIMIT = 20;
 const SMOOTHING_ALPHA = 0.35;
-const DEFAULT_INTENSITY_MIN = 0.05;
-const DEFAULT_INTENSITY_MAX = 3.5;
-const MAX_SENSITIVITY_SCALE = 25;
+const DEFAULT_INTENSITY_MIN = 0.2;
+const MAX_SENSITIVITY_SCALE = 5;
 const MOTION_WEIGHT = 0.7;
 const ROTATION_WEIGHT = 0.3;
 const DEG_TO_RAD = Math.PI / 180;
+const IDLE_RESET_TICKS = 6;
+const MIN_SIGMA_FOR_LEVEL = 0.05;
+const HYSTERESIS_THRESHOLDS = {
+  up: {
+    1: 0.18,
+    2: 0.45,
+    3: 0.7
+  },
+  down: {
+    1: 0.1,
+    2: 0.32,
+    3: 0.55
+  }
+};
 
 const hasDeviceMotionSupport = () => {
   if (typeof window === 'undefined') {
@@ -84,7 +97,13 @@ export const useDeviceMotion = (options = {}) => {
     baseline: null,
     sigma: null,
     sensitivity: null,
-    lastAccelData: null
+    lastAccelData: null,
+    normalizedUp1: null,
+    normalizedUp2: null,
+    normalizedUp3: null,
+    normalizedDown1: null,
+    normalizedDown2: null,
+    normalizedDown3: null
   });
 
   const samplesRef = useRef([]);
@@ -96,6 +115,7 @@ export const useDeviceMotion = (options = {}) => {
   const onLevelChangeRef = useRef(onLevelChange);
   const forceListeningRef = useRef(false);
   const prevSmoothRef = useRef(0);
+  const idleTickRef = useRef(0);
 
   onLevelChangeRef.current = onLevelChange;
 
@@ -122,6 +142,7 @@ export const useDeviceMotion = (options = {}) => {
     eventCountRef.current = 0;
     lastLevelRef.current = 0;
     prevSmoothRef.current = 0;
+    idleTickRef.current = 0;
   }, []);
 
   const handleMotionEvent = useCallback((event) => {
@@ -262,6 +283,28 @@ export const useDeviceMotion = (options = {}) => {
     }
 
     const intervalDelay = 150;
+    const getNextLevel = (value, currentLevel) => {
+      if (value >= HYSTERESIS_THRESHOLDS.up[3]) {
+        return 3;
+      }
+      if (value >= HYSTERESIS_THRESHOLDS.up[2]) {
+        return currentLevel === 3 && value < HYSTERESIS_THRESHOLDS.down[3] ? 3 : 2;
+      }
+      if (value >= HYSTERESIS_THRESHOLDS.up[1]) {
+        if (currentLevel === 3 && value >= HYSTERESIS_THRESHOLDS.down[3]) {
+          return 3;
+        }
+        if (currentLevel === 2 && value >= HYSTERESIS_THRESHOLDS.down[2]) {
+          return 2;
+        }
+        return 1;
+      }
+      if (currentLevel > 0 && value >= HYSTERESIS_THRESHOLDS.down[currentLevel]) {
+        return currentLevel;
+      }
+      return 0;
+    };
+
     const interval = setInterval(() => {
       const samples = samplesRef.current;
 
@@ -295,8 +338,14 @@ export const useDeviceMotion = (options = {}) => {
           sigma: null,
           lastAccelData: lastAccelDataRef.current,
           sensitivity: sensitivityConfig.display,
-          intensityMin: DEFAULT_INTENSITY_MIN.toFixed(2),
-          intensityMax: DEFAULT_INTENSITY_MAX.toFixed(2)
+          intensityMin: HYSTERESIS_THRESHOLDS.up[1].toFixed(2),
+          intensityMax: HYSTERESIS_THRESHOLDS.up[3].toFixed(2),
+          normalizedUp1: HYSTERESIS_THRESHOLDS.up[1].toFixed(2),
+          normalizedUp2: HYSTERESIS_THRESHOLDS.up[2].toFixed(2),
+          normalizedUp3: HYSTERESIS_THRESHOLDS.up[3].toFixed(2),
+          normalizedDown1: HYSTERESIS_THRESHOLDS.down[1].toFixed(2),
+          normalizedDown2: HYSTERESIS_THRESHOLDS.down[2].toFixed(2),
+          normalizedDown3: HYSTERESIS_THRESHOLDS.down[3].toFixed(2)
         }));
 
         return;
@@ -318,11 +367,10 @@ export const useDeviceMotion = (options = {}) => {
 
       const boostedIntensity = latestCombined * sensitivityConfig.scale;
       const adaptiveRange = Math.max(sigma * 2, DEFAULT_INTENSITY_MIN);
-      const normalized = clamp(
-        (boostedIntensity - baseline) / adaptiveRange,
-        0,
-        1
-      );
+      const hasStableSigma = sigma >= MIN_SIGMA_FOR_LEVEL;
+      const normalized = hasStableSigma
+        ? clamp((boostedIntensity - baseline) / adaptiveRange, 0, 1)
+        : 0;
 
       let smooth = SMOOTHING_ALPHA * normalized +
         (1 - SMOOTHING_ALPHA) * prevSmoothRef.current;
@@ -331,16 +379,20 @@ export const useDeviceMotion = (options = {}) => {
         smooth = 0;
       }
 
+      if (normalized < 0.05) {
+        idleTickRef.current += 1;
+      } else {
+        idleTickRef.current = 0;
+      }
+
+      if (idleTickRef.current >= IDLE_RESET_TICKS) {
+        smooth = 0;
+        prevSmoothRef.current = 0;
+      }
+
       prevSmoothRef.current = smooth;
 
-      let nextLevel = 0;
-      if (smooth >= 0.7) {
-        nextLevel = 3;
-      } else if (smooth >= 0.4) {
-        nextLevel = 2;
-      } else if (smooth >= 0.15) {
-        nextLevel = 1;
-      }
+      const nextLevel = getNextLevel(smooth, lastLevelRef.current);
 
       setDebugInfo({
         eventCount: eventCountRef.current,
@@ -357,8 +409,14 @@ export const useDeviceMotion = (options = {}) => {
         sigma: sigma.toFixed(2),
         lastAccelData: lastAccelDataRef.current,
         sensitivity: sensitivityConfig.display,
-        intensityMin: DEFAULT_INTENSITY_MIN.toFixed(2),
-        intensityMax: DEFAULT_INTENSITY_MAX.toFixed(2)
+        intensityMin: HYSTERESIS_THRESHOLDS.up[1].toFixed(2),
+        intensityMax: HYSTERESIS_THRESHOLDS.up[3].toFixed(2),
+        normalizedUp1: HYSTERESIS_THRESHOLDS.up[1].toFixed(2),
+        normalizedUp2: HYSTERESIS_THRESHOLDS.up[2].toFixed(2),
+        normalizedUp3: HYSTERESIS_THRESHOLDS.up[3].toFixed(2),
+        normalizedDown1: HYSTERESIS_THRESHOLDS.down[1].toFixed(2),
+        normalizedDown2: HYSTERESIS_THRESHOLDS.down[2].toFixed(2),
+        normalizedDown3: HYSTERESIS_THRESHOLDS.down[3].toFixed(2)
       });
 
       if (nextLevel !== lastLevelRef.current) {

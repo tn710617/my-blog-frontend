@@ -46,7 +46,7 @@ const MotionDetector = () => {
     sensitivityScale: sensitivity
   });
 
-  const clampSensitivity = (value) => Math.min(25, Math.max(0.1, Number(value.toFixed(2))));
+  const clampSensitivity = (value) => Math.min(5, Math.max(0.5, Number(value.toFixed(2))));
 
   const adjustSensitivity = (delta) => {
     setSensitivity((prev) => clampSensitivity(prev + delta));
@@ -154,7 +154,7 @@ const MotionDetector = () => {
             <div>
               <p className="text-sm font-semibold text-gray-800">震動靈敏度</p>
               <p className="text-xs text-gray-600">
-                {deviceMotion.debugInfo.sensitivity ? `${deviceMotion.debugInfo.sensitivity}%` : `${Math.round(sensitivity * 100)}%`}
+                倍率 {deviceMotion.debugInfo.sensitivity ? `${deviceMotion.debugInfo.sensitivity}%` : `${Math.round(sensitivity * 100)}%`}
               </p>
             </div>
             <div className="flex items-center gap-2">
@@ -183,20 +183,17 @@ const MotionDetector = () => {
           </div>
           <input
             type="range"
-            min="0.1"
-            max="25"
-            step="0.1"
+            min="0.5"
+            max="5"
+            step="0.05"
             value={sensitivity}
             onChange={(event) => setSensitivity(Number(event.target.value))}
             className="w-full accent-blue-500"
           />
           <div className="mt-3 text-xs text-gray-600 space-y-1">
-            <p>臨界範圍：
-              {deviceMotion.debugInfo.intensityMin && deviceMotion.debugInfo.intensityMax
-                ? ` ${deviceMotion.debugInfo.intensityMin} ~ ${deviceMotion.debugInfo.intensityMax}`
-                : ' 調整以增減靈敏度'}
-            </p>
-            <p>向右拖曳 → 更敏感；向左拖曳 → 更耐震</p>
+            <p>正規化升級閾值：1→2 {deviceMotion.debugInfo.normalizedUp2 ?? '-'} / 2→3 {deviceMotion.debugInfo.normalizedUp3 ?? '-'}</p>
+            <p>降級閾值：3→2 {deviceMotion.debugInfo.normalizedDown3 ?? '-'} / 2→1 {deviceMotion.debugInfo.normalizedDown2 ?? '-'}</p>
+            <p>向右拖曳 → 更敏感；向左拖曳 → 更耐震（倍率 0.5x-5x）</p>
           </div>
         </div>
 
@@ -235,8 +232,11 @@ const MotionDetector = () => {
                     <p>平滑後: {deviceMotion.debugInfo.smooth || '-'}</p>
                     <p>基準/σ: {deviceMotion.debugInfo.baseline || '-'} / {deviceMotion.debugInfo.sigma || '-'}</p>
                     <p>靈敏度: {deviceMotion.debugInfo.sensitivity || `${Math.round(sensitivity * 100)}%`}</p>
-                    {deviceMotion.debugInfo.intensityMin && deviceMotion.debugInfo.intensityMax && (
-                      <p>閾值：{deviceMotion.debugInfo.intensityMin} ~ {deviceMotion.debugInfo.intensityMax}</p>
+                    {(deviceMotion.debugInfo.normalizedUp1 || deviceMotion.debugInfo.normalizedUp2) && (
+                      <p>升級閾值：1→2 {deviceMotion.debugInfo.normalizedUp2} / 2→3 {deviceMotion.debugInfo.normalizedUp3}</p>
+                    )}
+                    {(deviceMotion.debugInfo.normalizedDown1 || deviceMotion.debugInfo.normalizedDown2) && (
+                      <p>降級閾值：3→2 {deviceMotion.debugInfo.normalizedDown3} / 2→1 {deviceMotion.debugInfo.normalizedDown2}</p>
                     )}
                     <p>音效狀態: {
                       audioGenerator.isReady ? '已就緒' : (audioGenerator.isLoading ? '載入中' : '尚未就緒')
