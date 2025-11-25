@@ -1,6 +1,6 @@
 import React from "react";
 import {useIntl} from "react-intl";
-import {usePaginationStore, useCategoryStore, usePostTagsStore} from "../../stores";
+import {usePaginationStore, useCategoryStore, usePostTagsStore, useAuthStore} from "../../stores";
 import {useNavigate, useLocation} from "react-router";
 import CategoryIcon from "../CategoryIcon";
 
@@ -9,6 +9,7 @@ export default function EnhancedMobileNav({categories, onNavigate, showCategorie
     const navigate = useNavigate();
     const location = useLocation();
     const isOnTravelPinsPage = location.pathname === '/travel-pins-new';
+    const isLoggedIn = useAuthStore((state) => state.isLoggedIn);
     const categoryId = useCategoryStore((state) => state.categoryId);
     const setCategoryId = useCategoryStore((state) => state.setCategoryId);
     const setCurrentPage = usePaginationStore((state) => state.setCurrentPage);
@@ -43,6 +44,12 @@ export default function EnhancedMobileNav({categories, onNavigate, showCategorie
     const handleTravelPinsClick = () => {
         resetFilters();
         navigate("/travel-pins-new");
+        if (onNavigate) onNavigate();
+    };
+
+    const handleMotionDetectorClick = () => {
+        resetFilters();
+        navigate("/motion-detector");
         if (onNavigate) onNavigate();
     };
 
@@ -109,11 +116,21 @@ export default function EnhancedMobileNav({categories, onNavigate, showCategorie
                 
                 <NavItem 
                     icon="📍" 
-                    onClick={handleTravelPinsClick}
-                    isActive={window.location.pathname === '/travel-pins-new'}
+                onClick={handleTravelPinsClick}
+                isActive={window.location.pathname === '/travel-pins-new'}
+            >
+                Travel Pins
+            </NavItem>
+
+            {isLoggedIn && (
+                <NavItem
+                    icon="📳"
+                    onClick={handleMotionDetectorClick}
+                    isActive={window.location.pathname === '/motion-detector'}
                 >
-                    Travel Pins
+                    {intl.formatMessage({id: "nav.motion_detector", defaultMessage: "Motion Detector"})}
                 </NavItem>
+            )}
             </div>
 
             {/* Article Categories Section */}
