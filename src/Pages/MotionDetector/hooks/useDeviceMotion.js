@@ -12,6 +12,7 @@ const ROTATION_WEIGHT = 0.3;
 const DEG_TO_RAD = Math.PI / 180;
 const IDLE_RESET_TICKS = 6;
 const MIN_SIGMA_FOR_LEVEL = 0.05;
+const EMIT_COOLDOWN_MS = 600;
 const HYSTERESIS_THRESHOLDS = {
   up: {
     1: 0.18,
@@ -116,6 +117,7 @@ export const useDeviceMotion = (options = {}) => {
   const forceListeningRef = useRef(false);
   const prevSmoothRef = useRef(0);
   const idleTickRef = useRef(0);
+  const lastEmitRef = useRef(0);
 
   onLevelChangeRef.current = onLevelChange;
 
@@ -393,6 +395,16 @@ export const useDeviceMotion = (options = {}) => {
       prevSmoothRef.current = smooth;
 
       const nextLevel = getNextLevel(smooth, lastLevelRef.current);
+      const now = Date.now();
+      let shouldEmit = false;
+
+      if (nextLevel !== lastLevelRef.current) {
+        lastLevelRef.current = nextLevel;
+        setLevel(nextLevel);
+        shouldEmit = true;
+      } else if (nextLevel > 0 && now - lastEmitRef.current >= EMIT_COOLDOWN_MS) {
+        shouldEmit = true;
+      }
 
       setDebugInfo({
         eventCount: eventCountRef.current,
@@ -419,9 +431,8 @@ export const useDeviceMotion = (options = {}) => {
         normalizedDown3: HYSTERESIS_THRESHOLDS.down[3].toFixed(2)
       });
 
-      if (nextLevel !== lastLevelRef.current) {
-        lastLevelRef.current = nextLevel;
-        setLevel(nextLevel);
+      if (shouldEmit) {
+        lastEmitRef.current = now;
         if (onLevelChangeRef.current) {
           onLevelChangeRef.current(nextLevel);
         }

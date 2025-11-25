@@ -52,27 +52,6 @@ const MotionDetector = () => {
     setSensitivity((prev) => clampSensitivity(prev + delta));
   };
 
-  // 長按邏輯 Hook（用於停用）
-  const longPress = useLongPress({
-    duration: 3000,
-    onComplete: async () => {
-      if (!canEnable) {
-        await handleRequestPermission();
-        return;
-      }
-      if (isEnabled) {
-        await handleDisable();
-        return;
-      }
-      await handleEnable();
-    },
-    onProgress: (value) => {
-      if (value < 100) {
-        vibrateProgress();
-      }
-    }
-  });
-
   // 啟用震動檢測
   const handleEnable = async () => {
     if (deviceMotion.permissionStatus !== 'granted') {
@@ -102,10 +81,56 @@ const MotionDetector = () => {
     if (granted) {
       vibrateShort();
       audioGenerator.unlock?.();
-      setIsEnabled(true); } else {
-      vibrateDouble();
+      return true;
+    }
+    vibrateDouble();
+    return false;
+  };
+
+  const handleLongPressStart = (e) => {
+    const eventType = e?.type ?? '';
+    if (eventType.startsWith('touch')) {
+      longPress.handlers.onTouchStart?.(e);
+    } else {
+      longPress.handlers.onMouseDown?.(e);
+    }
+
+    if (deviceMotion.permissionStatus !== 'granted' && deviceMotion.permissionStatus !== 'requesting') {
+      handleRequestPermission();
     }
   };
+
+  const handleLongPressEnd = (e) => {
+    const eventType = e?.type ?? '';
+    if (eventType.startsWith('touch')) {
+      longPress.handlers.onTouchEnd?.(e);
+    } else {
+      longPress.handlers.onMouseUp?.(e);
+    }
+  };
+
+  const handleLongPressComplete = async () => {
+    if (deviceMotion.permissionStatus !== 'granted') {
+      vibrateDouble();
+      return;
+    }
+    if (isEnabled) {
+      await handleDisable();
+      return;
+    }
+    await handleEnable();
+  };
+
+  // 長按邏輯 Hook
+  const longPress = useLongPress({
+    duration: 3000,
+    onComplete: handleLongPressComplete,
+    onProgress: (value) => {
+      if (value < 100) {
+        vibrateProgress();
+      }
+    }
+  });
 
 
   const canEnable = deviceMotion.isSupported && deviceMotion.permissionStatus === 'granted';
@@ -297,22 +322,8 @@ const MotionDetector = () => {
             isEnabled={isEnabled}
             isPressed={longPress.isPressed}
             progress={longPress.progress}
-            onLongPressStart={(e) => {
-              const eventType = e?.type ?? '';
-              if (eventType.startsWith('touch')) {
-                longPress.handlers.onTouchStart?.(e);
-              } else {
-                longPress.handlers.onMouseDown?.(e);
-              }
-            }}
-            onLongPressEnd={(e) => {
-              const eventType = e?.type ?? '';
-              if (eventType.startsWith('touch')) {
-                longPress.handlers.onTouchEnd?.(e);
-              } else {
-                longPress.handlers.onMouseUp?.(e);
-              }
-            }}
+            onLongPressStart={handleLongPressStart}
+            onLongPressEnd={handleLongPressEnd}
             disabled={!deviceMotion.isSupported}
             onClick={null}
           />
