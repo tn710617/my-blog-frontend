@@ -163,6 +163,7 @@
   "travel_pins.location.position_unavailable": "位置資訊無法取得。",
   "travel_pins.location.timeout": "定位請求逾時，請重試。",
   "travel_pins.location.unknown_error": "無法取得您的位置。",
+  "travel_pins.place_pin_here": "在目前視角放置足跡",
   "mapbox.scroll_zoom_blocker.ctrl_message": "按住 Ctrl + 滾輪縮放地圖",
   "mapbox.scroll_zoom_blocker.cmd_message": "按住 ⌘ + 滾輪縮放地圖",
   "mapbox.touch_pan_blocker.message": "請點擊左下角切換按鈕以操作地圖",

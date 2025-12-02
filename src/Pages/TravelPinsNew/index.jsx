@@ -1,11 +1,13 @@
 import React from 'react';
 import {useMapStore} from './stores/mapStore';
+import {useModalStore} from './stores/modalStore';
 import MapContainer from './components/MapContainer';
 import MapLoadingIndicator from './components/MapLoadingIndicator';
 import MobileGestureToggle from './components/MobileGestureToggle';
 import SymbolsManager from './components/SymbolsManager';
 import OverlayRoot from './components/OverlayRoot';
 import LocationButton from './components/LocationButton';
+import PlacePinButton from './components/PlacePinButton';
 import MapboxCooperativeGesturesOverlay from '../../Components/MapboxCooperativeGesturesOverlay';
 import {useKeyboardHandlers} from './hooks/useKeyboardHandlers';
 import {useLocationListener} from './hooks/useLocationListener';
@@ -13,6 +15,7 @@ import {useGeolocation} from './hooks/useGeolocation';
 import {useResponsive} from './hooks/useResponsive';
 import {enableAll, disableAll} from './utils/mapInteractionController';
 import {ZOOM_LEVELS} from "./utils";
+import {useLoginModalStore, useAuthStore} from "../../stores";
 
 // Travel Pins New - Main Component
 // Entry point for the new Travel Pins implementation
@@ -22,6 +25,8 @@ const TravelPinsNew = () => {
     const overlayHideRafRef = React.useRef(null);
     const lastActivityTsRef = React.useRef(0);
     const HIDE_DELAY_MS = 1300;
+    const isLoggedIn = useAuthStore((s) => s.isLoggedIn);
+    const setShowLoginModal = useLoginModalStore((s) => s.setShowLoginModal);
 
     // Centralized ESC handling (delete/photo/display)
     useKeyboardHandlers();
@@ -144,6 +149,35 @@ const TravelPinsNew = () => {
 
     const [showCooperativeOverlay, setShowCooperativeOverlay] = React.useState(false);
 
+    const handlePlacePinAtCenter = React.useCallback(() => {
+        if (!mapInstance) return;
+
+        if (!isLoggedIn) {
+            try { setShowLoginModal(true); } catch {}
+            return;
+        }
+
+        const center = mapInstance.getCenter?.();
+        if (!center) return;
+
+        const targetZoom = Math.max(ZOOM_LEVELS.STREET, mapInstance.getZoom?.() || ZOOM_LEVELS.STREET);
+        try {
+            mapInstance.flyTo({
+                center: [center.lng, center.lat],
+                zoom: targetZoom,
+                duration: 1200
+            });
+        } catch {}
+
+        try {
+            const draft = { coordinates: [center.lng, center.lat] };
+            // open form modal with draft (consistent with map background click)
+            useModalStore.getState().openModal('form', { draft });
+        } catch (err) {
+            console.error('Failed to open pin form from center button:', err);
+        }
+    }, [isLoggedIn, mapInstance, setShowLoginModal]);
+
     return (
         <div className="h-screen">
             <MapContainer/>
@@ -154,6 +188,12 @@ const TravelPinsNew = () => {
             <SymbolsManager/>
             <OverlayRoot/>
 
+            {isLoggedIn && (
+                <PlacePinButton
+                    onPlacePin={handlePlacePinAtCenter}
+                    disabled={!mapInstance}
+                />
+            )}
             <LocationButton
                 isLocating={isLocating}
                 locationError={locationError}
