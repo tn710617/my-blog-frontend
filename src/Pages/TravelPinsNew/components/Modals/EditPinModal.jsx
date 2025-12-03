@@ -1,4 +1,4 @@
-import React, { useMemo, useState } from 'react';
+import React, { useMemo, useState, useRef, useEffect } from 'react';
 import { useIntl } from 'react-intl';
 import { useModalStore } from '../../stores/modalStore';
 import { useCreateTravelPin, useUpdateTravelPin } from '../../hooks/useTravelPinsApi';
@@ -30,6 +30,7 @@ const EditPinModal = ({ withinOverlay = false }) => {
   const [note, setNote] = useState(editingPin?.note || '');
   const [visitedAt, setVisitedAt] = useState(toDateInput(editingPin?.visited_at));
   const [photoUrl, setPhotoUrl] = useState(editingPin?.photo_url || '');
+  const noteRef = useRef(null);
   const initialRef = useMemo(() => ({
     title: editingPin?.title || '',
     note: editingPin?.note || '',
@@ -71,6 +72,19 @@ const EditPinModal = ({ withinOverlay = false }) => {
   }, [isOpen, title, note, visitedAt, photoUrl, initialRef, updateModalData]);
 
   if (!isOpen) return null;
+
+  const resizeNote = () => {
+    const el = noteRef.current;
+    if (!el) return;
+    el.style.height = 'auto';
+    const clamped = Math.min(500, Math.max(120, el.scrollHeight));
+    el.style.height = `${clamped}px`;
+  };
+
+  useEffect(() => {
+    if (!isOpen) return;
+    resizeNote();
+  }, [note, isOpen]);
 
   const onCancel = () => {
     closeModal();
@@ -152,7 +166,18 @@ const EditPinModal = ({ withinOverlay = false }) => {
               <h4 className="text-sm font-bold text-slate-700 uppercase tracking-wide">{t('travel_pins.form.travel_notes_label')}</h4>
             </div>
             <div className="bg-gradient-to-br from-amber-50 to-orange-50 border border-amber-200/50 rounded-xl p-4">
-              <textarea rows={4} value={note} onChange={(e) => setNote(e.target.value)} className="w-full bg-transparent border-none resize-none focus:outline-none text-slate-700 placeholder:text-slate-500" style={{ fontSize: '16px' }} placeholder={t('travel_pins.form.travel_notes_placeholder')} />
+              <textarea
+                ref={noteRef}
+                rows={4}
+                value={note}
+                onChange={(e) => {
+                  setNote(e.target.value);
+                  resizeNote();
+                }}
+                className="w-full bg-transparent border-none resize-none focus:outline-none text-slate-700 placeholder:text-slate-500"
+                style={{ fontSize: '16px', minHeight: 120 }}
+                placeholder={t('travel_pins.form.travel_notes_placeholder')}
+              />
             </div>
           </div>
 
