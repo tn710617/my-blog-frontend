@@ -89,7 +89,7 @@ export default function TravelPinsSearchBar({ onLocationSelect }) {
         const response = await fetch(
           `https://api.mapbox.com/geocoding/v5/mapbox.places/${encodeURIComponent(query)}.json?` +
           `access_token=${mapboxgl.accessToken}&` +
-          `types=country,place&` +
+          `types=place,region,district,locality&` +
           `limit=6&` +
           `autocomplete=true`
         );
