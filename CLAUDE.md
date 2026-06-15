@@ -2,165 +2,82 @@
 
 This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
 
-## Development Commands
+## 這是什麼
 
-**Important**: This project uses Docker for development. All commands should be run through Docker containers.
+個人部落格 + 旅遊地圖標記（travel-pins）的前端，是純 client，所有資料來自獨立的 Laravel 後端（見 `../my-blog-backend`）。**Vite 7 + React 19** 單頁應用，套件管理用 **Yarn**，Node `20.11.1`（`.nvmrc`；`package.json` engines 要求 `>=18.9.0`）。
 
-### Docker Development (Primary)
-- **Setup Docker environment**: `./docker/setup.sh` (creates .env.local with Docker-compatible settings)
-- **Start Docker development**: `docker-compose up` (builds and starts container on port 3000)
-- **Stop Docker containers**: `docker-compose down`
-- **Rebuild Docker containers**: `docker-compose build`
-- **Add packages**: `docker-compose exec app yarn add <package-name>`
-- **Add dev packages**: `docker-compose exec app yarn add -D <package-name>`
-- **Run tests**: `docker-compose exec app yarn test`
-- **Run tests (watch mode)**: `docker-compose exec app yarn test --watchAll`
-- **Run tests (coverage)**: `docker-compose exec app yarn test --coverage --watchAll=false`
-- **Build for production**: `docker-compose exec app yarn run build-production`
-- **Build for development**: `docker-compose exec app yarn run build`
-- **Lint code**: `docker-compose exec app yarn run lint`
-- **Run any command**: `docker-compose exec app <command>`
+> 注意：建置工具是 **Vite，不是 Create React App**；測試是 **Vitest，不是 Jest**。請以 `package.json` 的 scripts 為準。
 
-### Local Development (Alternative)
-- **Start development server**: `yarn start` (uses .env.local with sourcemaps disabled)
-- **Build for production**: `yarn run build-production` (uses .env.production)
-- **Build for development**: `yarn run build`
-- **Run tests**: `yarn test`
-- **Lint code**: `yarn run lint`
-- **Deploy**: `yarn run deploy` (runs custom deployment script)
+## 常用指令
 
-## Architecture Overview
+```bash
+yarn dev               # 開發伺服器（vite --mode development），:3000
+yarn build             # 一般 build → 輸出到 build/
+yarn build-production  # 正式 build（vite build --mode production）
+yarn test              # 跑測試（vitest run --config vite.config.js，搭配 MSW）
+yarn lint              # eslint，掃 src 下 .js/.jsx/.ts/.tsx
+yarn preview           # 預覽 build 產物
+yarn deploy            # 執行 scripts/deploy.sh 部署
+```
 
-This is a React blog frontend built with Create React App. The application uses a modern React stack with:
+單一測試檔：`yarn test <path/to/file.test.js>`。
 
-- **State Management**: Zustand for global state management
-- **Data Fetching**: TanStack React Query (v4) with Axios for API calls
-- **Routing**: React Router DOM v6
-- **Styling**: Tailwind CSS with custom scrollbar utilities
-- **Internationalization**: React Intl with locale stores
-- **Rich Text**: Toast UI React Editor with markdown support
+### Docker
 
-### Key Directory Structure
+`docker-compose.yml` 的 service 名為 `app`（node:22-alpine，port 3000，原始碼掛載做熱重載）。它的 `env_file` 實際載入 **`.env.development`**（內含 `VITE_API_URL=http://localhost/api`）。`host.docker.internal` 只寫在 `.env.docker.template`；若要讓容器連到 host 上的後端，需自行把該 template 複製成 `.env.local` 並改用 `host.docker.internal`。`docker-compose.yml` 雖宣告了 `extra_hosts: host.docker.internal:host-gateway`，但預設啟動仍是 localhost 版。
 
-- `src/APIs/` - API client functions organized by domain (auth, posts, categories, tags)
-- `src/Components/` - Reusable UI components (Nav, Footer, Modal, Layout, etc.)
-- `src/Pages/` - Route-level page components (Posts, About, CreatePost, EditPost, SinglePost)
-- `src/stores/` - Zustand stores for global state (locale, auth, categories, pagination)
-- `src/locales/` - i18n translation files (en.json, zh-TW.json)
+## 環境變數（皆為 `VITE_` 前綴）
 
-### State Management Pattern
+| 變數 | dev (`.env.development`) | production (`.env.production`) | 用途 |
+|---|---|---|---|
+| `VITE_API_URL` | `http://localhost/api` | `https://blog-api.learn-or-die.com/api` | 後端 API base |
+| `VITE_API_VERSION` | `v1` | `v1` | API 版本路由段 |
+| `VITE_ENV` | `local` | `production` | 環境識別 |
+| `VITE_DOMAIN` | `localhost:3000` | `blog.learn-or-die.com` | 前端網域 |
+| `VITE_MAPBOX_TOKEN` | （有值） | （有值） | Mapbox GL token |
+| `VITE_WC_PROJECT_ID` | （有值） | （有值） | WalletConnect 專案 ID（無則行動端登入會丟錯） |
+| `VITE_CHAIN_ID` | `1` | `1` | 以太坊主網 |
+| `VITE_GA_ID` | 空 | `G-…` | Google Analytics |
+| `VITE_DEBUG_TRAVEL_PINS` | `1` | — | travel-pins debug |
 
-Uses Zustand stores for:
-- `useLocaleStore` - Current language/locale with localStorage persistence
-- `useAuthStore` - Authentication state
-- `useCategoryStore` - Selected category filtering
-- `usePaginationStore` - Pagination state
-- `usePostSortStore` - Post sorting preferences
-- `usePostTagsStore` - Tag filtering
-- `useLoginModalStore` - Login modal visibility
-- `useMetaMaskModalStore` - MetaMask installation modal
+API 實際 base URL 在 `src/APIs/axios.js` 組成：`${VITE_API_URL}/${VITE_API_VERSION}`（如 `http://localhost/api/v1`）。
 
-### API Integration
+## 架構
 
-- Base API client in `src/APIs/axios.js` using environment variables
-- API URL configured via `REACT_APP_API_URL` environment variable
-- Credentials included for authentication (`withCredentials: true`)
-- Organized by domain: `auth.js`, `posts.js`, `categories.js`, `tags.js`
+### 進入點與 Provider 疊層
+`src/main.jsx`：`QueryClientProvider`（react-query，預設 `retry:false`）→ `BrowserRouter`（React Router v7，啟用 future flags）→ `SetLocale`（react-intl `IntlProvider`）→ `App`。DEV 下掛 `ReactQueryDevtools`。
 
-### Authentication Flow
+### 路由（`src/App.jsx`）
+所有頁面巢狀在 `Layout` 下：
 
-Protected routes use `ProtectedRoute` component wrapper. Authentication modal managed via `useLoginModalStore` and rendered in the main `Layout` component.
+- 公開：`/`（Posts 首頁）、`/about`、`/single-post`、`/travel-pins-new`、`/demo/css-position`、`*`（fallback 回 Posts）。
+- 受保護（包在 `ProtectedRoute`）：`/create-post`、`/edit-post`、`/motion-detector`。
 
-### Deployment
+`ProtectedRoute` 先看 `useAuthStore` 的登入狀態，未登入則導回 `/` 並開登入彈窗。`Layout` 內含 `Nav`、`Outlet`、`Footer`、`Toaster`(react-hot-toast)、`CheckLogin`、`LoginModal`。
 
-Custom deployment script (`scripts/deploy.sh`) that:
-1. Builds production version
-2. Creates tarball
-3. Deploys to remote server via SCP/SSH
-4. Extracts and replaces live version
+### 目錄
+- `src/APIs/` —— 依 domain 分檔的 react-query hooks：`auth.js`、`posts.js`、`categories.js`、`tags.js`、`travel-pins.js`、`motionAudios.js`；底層 `axios.js`（base URL、`withCredentials:true`、XSRF cookie 設定）與 `useAxios.js`（攔截器：401 開登入彈窗、403 導回首頁）。
+- `src/stores/` —— 所有 Zustand store 集中在 `index.js`（見下）。
+- `src/Pages/` —— 路由級頁面（Posts、SinglePost、CreatePost、EditPost、About、TravelPinsNew、MotionDetector、Demo）。
+- `src/Components/` —— 共用元件（Nav、Layout、LoginModal、ProtectedRoute、Modal、MarkdownEditor、PostMetadata、Footer…）。
+- `src/hooks/` —— 自訂 hooks（`useCreatePostForm`、`useEditPostForm`、`useDebounce`、`usePostFormCache`、`useScrollDirection`、`useBodyScrollLock`、`useTagifyManager`）。
+- `src/wallet/getProvider.js` —— 取得 ethers provider：桌機用 injected `window.ethereum`，行動端用 WalletConnect（`EthereumProvider` + QR modal）。
+- `src/locales/` —— `en.json`、`zh-TW.json`。
+- `src/mocks/` —— MSW（`server.js`、`handlers.js`），測試用。
 
-### Docker Development Environment
+### Zustand stores（`src/stores/index.js`）
+持久化到 localStorage 的：`useAuthStore`（isLoggedIn）、`useLocaleStore`（locale，預設 en，含 `initializeFromNavigator`）、`usePostFormStore`、`useEditPostFormStore`（依 postId 分存）。非持久化的：`useCategoryStore`、`usePaginationStore`、`usePostSortStore`、`usePostTagsStore`、`useLoginModalStore`、`useMetaMaskModalStore`。store 內有 `isClient` 等 SSR 安全檢查。
 
-The project includes Docker support for consistent development environments:
+### 認證流程（Web3）
+登入由 `src/APIs/auth.js` 的 `useLoginWithMetaMask` 驅動：取得 provider → `eth_requestAccounts` → `getAddress` → `GET /to-be-signed-message`（帶 wallet_address 與 locale）→ `signMessage` →（桌機先 `GET /csrf-cookie`）→ `POST /login/metamask` 帶 `{signature, address}` → 成功設 `setIsLoggedIn(true)`。登出 `POST /logout`。詳細跨端契約見 `../my-blog-backend` 的 CLAUDE.md。
 
-- **Dockerfile**: Multi-stage build with development and production targets
-- **docker-compose.yml**: Development setup with hot reloading and volume mounting
-- **Network Configuration**: Uses `host.docker.internal` to access backend API from container
-- **Environment Setup**: `.env.docker.template` provides Docker-compatible environment variables
+## 測試
+Vitest 設定在 `vite.config.js` 的 `test` 區塊（`globals:true`、`environment:'jsdom'`、`setupFiles:['./src/setupTests.js']`）。`setupTests.js` 載入 `@testing-library/jest-dom` matchers，並以 MSW 啟動 mock server（`beforeAll listen` / `afterEach resetHandlers` / `afterAll close`）。mock handler 在 `src/mocks/handlers.js`。
 
-**Important**: For Docker development, the API URL must use `host.docker.internal` instead of `localhost` to access the backend server running on the host machine.
+## Vite 細節
+- 自訂 plugin 把 `.js` 當 JSX 處理；path alias `@/*` 與 `src/*`。
+- dev server `host: 0.0.0.0`、`port: 3000`（方便 Docker 連入）；正式 build 關閉 sourcemap，輸出到 `build/`（沿用 CRA 風格的輸出目錄名）。
+- TypeScript 設定寬鬆（`strict:false`），JSX 用 `react-jsx`。Tailwind content 掃 `./src/**/*.{js,jsx,ts,tsx}`，自訂 `.no-scrollbar`。
 
-Environment files (.env.local, .env.production) are not tracked in git - ensure these exist for proper builds. Use `./docker/setup.sh` to create Docker-compatible environment files.
-
-## Development Guidelines
-
-### 🚨 Docker Environment Requirement
-**ALWAYS use Docker commands for all operations**
-- **WHY**: Consistent development environment, avoids Node.js version conflicts
-- **WHAT**: Use `docker-compose exec app <command>` for all development commands
-- **CONTAINER RESTART REQUIREMENT**: Always restart containers after code modifications
-  - **WHY**: File changes may not reflect immediately in container
-  - **HOW**: `docker-compose restart` or `docker-compose down && docker-compose up -d`
-  - **WHEN**: After creating/modifying files, after significant code changes, **ESPECIALLY before running tests**
-- **BENEFIT**: Matches deployment environment, consistent results
-
-### 📋 Version Control and Testing Workflow
-**Work incrementally with proper version control:**
-- **SMALL INCREMENTS**: Complete one feature/task at a time, not entire phases
-- **COMMIT FREQUENTLY**: Git commit after each working feature or significant progress
-- **TEST EACH STEP**: Verify functionality works before moving to the next step
-- **VERIFY ALL TESTS PASS**: Always run full test suite and ensure all tests pass before making any commit
-  - **WHY**: Prevents introducing broken functionality into version control
-  - **HOW**: `docker-compose restart && docker-compose exec app yarn test --run` before each commit
-  - **WHEN**: Before every commit, after completing any step or increment
-  - **CRITICAL**: Always restart container before running tests to ensure code changes are reflected
-- **DOCUMENT PROGRESS**: Use TodoWrite tool to track progress and completion status
-- **ROLLBACK READY**: Each commit should be a working state we can return to
-
-### 🧪 Testing Workflow Requirements
-**Essential testing practices:**
-- **CONTAINER RESTART BEFORE TESTS**: Always run `docker-compose restart` before running any tests
-  - **WHY**: Code changes may not be reflected in the container without restart
-  - **CRITICAL**: This is the most common cause of test failures after code modifications
-- **TEST COMMAND SEQUENCE**: `docker-compose restart && docker-compose exec app yarn test --run`
-- **WATCH MODE**: For development, use `docker-compose exec app yarn test --watchAll` (no restart needed during development)
-- **COVERAGE**: `docker-compose exec app yarn test --coverage --watchAll=false`
-
-### 🚨 Error Handling and Research
-**When encountering persistent errors after several attempts:**
-- **RESEARCH ONLINE**: Use WebSearch to find solutions, documentation, or similar issues
-- **CHECK CURRENT PRACTICES**: Look for updated patterns, React Router v7 changes, etc.
-- **RESTART CONTAINERS**: Docker containers may need restart after code modifications
-- **VERIFY ENVIRONMENT**: Ensure development environment matches expectations
-- **DOCUMENT FINDINGS**: Update documentation with discovered solutions and patterns
-
-### 🔍 Transparency and Communication
-**ALWAYS explain WHY and WHAT approach is being taken**
-- Focus on practical value over perfect coverage numbers
-- Test critical user journeys and business logic
-- Explain strategy behind each decision
-- Let user understand reasoning behind priorities
-
-### 🎨 UI/UX Design Standards
-**Professional styling and interaction principles:**
-- **Consistent design patterns**: Follow established component styling and layouts
-- **Responsive design**: Ensure mobile-friendly interfaces with proper breakpoint usage
-- **Accessibility compliance**: Include ARIA attributes and keyboard navigation support
-- **Performance optimization**: Use debounced interactions to prevent excessive API calls
-- **Error handling**: Implement comprehensive error states with user-friendly messages
-
-### 🔧 React Development Best Practices
-**Component and state management guidelines:**
-- **Effect cleanup**: Always remove event listeners, timers, and subscriptions in useEffect cleanup
-- **Dependency management**: Properly manage effect dependencies to prevent memory leaks
-- **State separation**: Keep editing state separate from display state for better UX
-- **Loading states**: Implement proper loading indicators and error handling
-- **Global function cleanup**: Clean up any global functions or window properties
-
-### 📱 Mobile & Cross-Platform Guidelines
-**Responsive and inclusive development:**
-- **Mobile-first approach**: Design and test mobile experiences as primary consideration
-- **Touch-friendly interfaces**: Proper button sizes and spacing for mobile devices
-- **Keyboard accessibility**: Implement ESC key handling and arrow key navigation where appropriate
-- **Modal management**: Use dedicated mobile modals for complex interactions
-- **Performance testing**: Verify functionality across desktop and mobile breakpoints
+## commit 訊息
+依 `.gitmessage.txt` 的格式，且不要加「Claude generated」之類標註。
