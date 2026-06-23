@@ -65,6 +65,12 @@ export default function SearchBoxInput({
     }
 
     const handleKeyDown = (event) => {
+        // Ignore keys fired while an IME is composing (e.g. pressing Enter to pick a
+        // Chinese candidate), otherwise it would wrongly trigger search/navigation.
+        if (event.nativeEvent.isComposing || event.keyCode === 229) {
+            return
+        }
+
         const allResults = activeResult.isSuccess ? activeResult.data.pages.flatMap(page => page.data) : []
 
         if (event.key === 'ArrowDown') {

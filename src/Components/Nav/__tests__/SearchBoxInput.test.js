@@ -274,4 +274,21 @@ describe('SearchBoxInput Core Functionality', () => {
     fireEvent.keyDown(input, { key: 'Enter' })
     expect(mockUseSemanticSearchPosts).toHaveBeenLastCalledWith('how to deploy', { enabled: true })
   })
+
+  it('does not submit a semantic query when Enter is pressed during IME composition', () => {
+    authState.isLoggedIn = true
+    renderWithProviders(<SearchBoxInput {...defaultProps} />)
+
+    fireEvent.click(screen.getByText('Semantic'))
+    const input = screen.getByRole('textbox')
+    fireEvent.change(input, { target: { value: '資料庫' } })
+
+    // Enter while composing (selecting a Chinese candidate) must not run the query.
+    fireEvent.keyDown(input, { key: 'Enter', isComposing: true })
+    expect(mockUseSemanticSearchPosts).toHaveBeenLastCalledWith('', { enabled: false })
+
+    // A normal Enter afterwards submits.
+    fireEvent.keyDown(input, { key: 'Enter' })
+    expect(mockUseSemanticSearchPosts).toHaveBeenLastCalledWith('資料庫', { enabled: true })
+  })
 })
