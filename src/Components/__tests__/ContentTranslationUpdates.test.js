@@ -15,7 +15,7 @@ import LoginModal from '../LoginModal'
 // Mock the stores
 vi.mock('../../stores', () => ({
   useLocaleStore: vi.fn(),
-  useAuthStore: vi.fn(() => ({ isAuthenticated: false })),
+  useAuthStore: vi.fn((selector) => selector({ isLoggedIn: false })),
   useLoginModalStore: vi.fn(() => ({ 
     isLoginModalOpen: true,
     setIsLoginModalOpen: vi.fn()
@@ -27,6 +27,10 @@ vi.mock('../../APIs/posts', () => ({
   useInfinitePosts: vi.fn(() => ({
     isSuccess: true,
     data: { pages: [] }
+  })),
+  useSemanticSearchPosts: vi.fn(() => ({
+    isSuccess: false,
+    data: { pages: [{ data: [] }] }
   }))
 }))
 

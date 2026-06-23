@@ -117,3 +117,24 @@ export function useStorePost() {
         }
     })
 }
+export function useSemanticSearchPosts(query = "", options = {}) {
+    const intl = useIntl()
+    const axios = useAxios()
+    return useQuery({
+        queryKey: ['semantic-posts', 'query', query, 'locale', intl.locale],
+        queryFn: async () => {
+            const queryObject = {
+                query: query,
+                locale: intl.locale
+            }
+            const queryStr = queryString.stringify(queryObject)
+            const res = await axios.get(`posts/semantic-search?${queryStr}`)
+            return res.data
+        },
+        // Shape into the same {pages:[{data}]} structure as the infinite query so the
+        // result dropdown/components can be reused. Semantic results are a single top-N page.
+        select: (res) => ({pages: [{data: res.data}]}),
+        enabled: query !== "",
+        ...options
+    })
+}

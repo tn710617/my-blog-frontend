@@ -27,8 +27,23 @@ const mockUseInfinitePosts = vi.fn(() => ({
   error: null
 }))
 
+// Mock the semantic search API (admin-only; disabled in these logged-out tests)
+const mockUseSemanticSearchPosts = vi.fn(() => ({
+  data: { pages: [{ data: [] }] },
+  isSuccess: false,
+  isLoading: false,
+  error: null
+}))
+
 vi.mock('../../../APIs/posts', () => ({
-  useInfinitePosts: (...args) => mockUseInfinitePosts(...args)
+  useInfinitePosts: (...args) => mockUseInfinitePosts(...args),
+  useSemanticSearchPosts: (...args) => mockUseSemanticSearchPosts(...args)
+}))
+
+// Mutable auth state so individual tests can toggle logged-in/out.
+const authState = vi.hoisted(() => ({ isLoggedIn: false }))
+vi.mock('../../../stores', () => ({
+  useAuthStore: (selector) => selector({ isLoggedIn: authState.isLoggedIn })
 }))
 
 // Mock SearchResultDropdown
@@ -65,6 +80,7 @@ describe('SearchBoxInput Core Functionality', () => {
 
   beforeEach(() => {
     vi.clearAllMocks()
+    authState.isLoggedIn = false
   })
 
   const defaultProps = {
@@ -223,5 +239,39 @@ describe('SearchBoxInput Core Functionality', () => {
       null,
       'test'
     )
+  })
+
+  it('hides the semantic toggle when logged out', () => {
+    renderWithProviders(<SearchBoxInput {...defaultProps} />)
+
+    expect(screen.queryByText('Semantic')).not.toBeInTheDocument()
+    expect(screen.queryByText('Keyword')).not.toBeInTheDocument()
+  })
+
+  it('shows the semantic toggle and switches placeholder when logged in', () => {
+    authState.isLoggedIn = true
+    renderWithProviders(<SearchBoxInput {...defaultProps} />)
+
+    expect(screen.getByText('Keyword')).toBeInTheDocument()
+    fireEvent.click(screen.getByText('Semantic'))
+
+    expect(screen.getByRole('textbox'))
+      .toHaveAttribute('placeholder', en['nav.search_box.placeholder.semantic'])
+  })
+
+  it('runs a semantic query only after Enter, not on each keystroke', () => {
+    authState.isLoggedIn = true
+    renderWithProviders(<SearchBoxInput {...defaultProps} />)
+
+    fireEvent.click(screen.getByText('Semantic'))
+    const input = screen.getByRole('textbox')
+
+    // Typing must not trigger an enabled semantic request (cost control).
+    fireEvent.change(input, { target: { value: 'how to deploy' } })
+    expect(mockUseSemanticSearchPosts).toHaveBeenLastCalledWith('', { enabled: false })
+
+    // Enter submits the query.
+    fireEvent.keyDown(input, { key: 'Enter' })
+    expect(mockUseSemanticSearchPosts).toHaveBeenLastCalledWith('how to deploy', { enabled: true })
   })
 })
