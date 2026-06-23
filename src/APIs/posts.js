@@ -135,6 +135,8 @@ export function useSemanticSearchPosts(query = "", options = {}) {
         // result dropdown/components can be reused. Semantic results are a single top-N page.
         select: (res) => ({pages: [{data: res.data}]}),
         enabled: query !== "",
+        // Each query hits the embedding API server-side; reuse the cached result for repeat searches.
+        staleTime: 5 * 60 * 1000,
         ...options
     })
 }
