@@ -42,7 +42,8 @@ vi.mock('../../../APIs/posts', () => ({
 }))
 
 // Mock @uiw/react-md-editor
-vi.mock('@uiw/react-md-editor', () => ({
+// CreatePost uses the local MarkdownEditor wrapper (codemirror), not @uiw/react-md-editor directly.
+vi.mock('../../../Components/MarkdownEditor', () => ({
   default: React.forwardRef((props, ref) => {
     return (
       <textarea

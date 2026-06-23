@@ -25,7 +25,8 @@ describe('usePostFormCache', () => {
       is_public: true,
       locale: 'zh-TW',
       created_at: '',
-      should_publish_medium: false
+      should_publish_medium: false,
+      is_preview_displayed: true
     })
   })
 })
