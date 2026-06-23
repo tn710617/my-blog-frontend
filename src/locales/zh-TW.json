@@ -37,6 +37,7 @@
   "nav.search_box.placeholder.semantic": "用自然語言描述你想找的內容，按 Enter 搜尋",
   "nav.search_box.mode.fulltext": "關鍵字",
   "nav.search_box.mode.semantic": "語意",
+  "nav.search_box.searching": "搜尋中…",
   "nav.about_me_button": "關於我",
   "nav.main_navigation": "主要導航",
   "nav.motion_detector": "運動檢測器",

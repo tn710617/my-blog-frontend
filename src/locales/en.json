@@ -37,6 +37,7 @@
   "nav.search_box.placeholder.semantic": "Describe what you're looking for, then press Enter",
   "nav.search_box.mode.fulltext": "Keyword",
   "nav.search_box.mode.semantic": "Semantic",
+  "nav.search_box.searching": "Searching…",
   "nav.about_me_button": "About Me",
   "nav.main_navigation": "Main Navigation",
   "nav.motion_detector": "Motion Detector",

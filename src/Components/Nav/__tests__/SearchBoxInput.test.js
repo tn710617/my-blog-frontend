@@ -28,12 +28,14 @@ const mockUseInfinitePosts = vi.fn(() => ({
 }))
 
 // Mock the semantic search API (admin-only; disabled in these logged-out tests)
-const mockUseSemanticSearchPosts = vi.fn(() => ({
+const semanticDefault = {
   data: { pages: [{ data: [] }] },
   isSuccess: false,
+  isFetching: false,
   isLoading: false,
   error: null
-}))
+}
+const mockUseSemanticSearchPosts = vi.fn(() => semanticDefault)
 
 vi.mock('../../../APIs/posts', () => ({
   useInfinitePosts: (...args) => mockUseInfinitePosts(...args),
@@ -81,6 +83,7 @@ describe('SearchBoxInput Core Functionality', () => {
   beforeEach(() => {
     vi.clearAllMocks()
     authState.isLoggedIn = false
+    mockUseSemanticSearchPosts.mockReturnValue(semanticDefault)
   })
 
   const defaultProps = {
@@ -290,5 +293,18 @@ describe('SearchBoxInput Core Functionality', () => {
     // A normal Enter afterwards submits.
     fireEvent.keyDown(input, { key: 'Enter' })
     expect(mockUseSemanticSearchPosts).toHaveBeenLastCalledWith('資料庫', { enabled: true })
+  })
+
+  it('shows a searching spinner while a semantic query is in flight', () => {
+    authState.isLoggedIn = true
+    mockUseSemanticSearchPosts.mockReturnValue({...semanticDefault, isFetching: true})
+    renderWithProviders(<SearchBoxInput {...defaultProps} showSearchResultDropdown={true} />)
+
+    fireEvent.click(screen.getByText('Semantic'))
+    const input = screen.getByRole('textbox')
+    fireEvent.change(input, { target: { value: 'docker' } })
+    fireEvent.keyDown(input, { key: 'Enter' })
+
+    expect(screen.getByText(en['nav.search_box.searching'])).toBeInTheDocument()
   })
 })

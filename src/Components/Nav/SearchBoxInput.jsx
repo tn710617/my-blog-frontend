@@ -6,6 +6,7 @@ import {useInfinitePosts, useSemanticSearchPosts} from "../../APIs/posts";
 import {useIntl} from "react-intl";
 import {useNavigate} from "react-router";
 import {useAuthStore} from "../../stores";
+import Spinner from "../Spinner";
 
 export default function SearchBoxInput({
                                            showSearchResultDropdown,
@@ -142,11 +143,20 @@ export default function SearchBoxInput({
                 />
             </div>
             {
-                showSearchResultDropdown && activeResult.isSuccess && activeTerm !== '' &&
-                <SearchResultDropdown searchTerm={activeTerm} searchedPosts={activeResult}
-                                      setShowSearchBoxComponent={setShowSearchBoxComponent}
-                                      selectedResultIndex={selectedResultIndex}
-                                      paginated={! isSemantic}/>
+                showSearchResultDropdown && activeTerm !== '' && (
+                    activeResult.isFetching && ! activeResult.isSuccess
+                        ?
+                        <div className={"mt-3 flex items-center justify-center gap-2 text-base text-gray-400"}>
+                            <Spinner className={"!text-emerald-400"}/>
+                            <span>{intl.formatMessage({id: "nav.search_box.searching"})}</span>
+                        </div>
+                        :
+                        activeResult.isSuccess &&
+                        <SearchResultDropdown searchTerm={activeTerm} searchedPosts={activeResult}
+                                              setShowSearchBoxComponent={setShowSearchBoxComponent}
+                                              selectedResultIndex={selectedResultIndex}
+                                              paginated={! isSemantic}/>
+                )
             }
         </div>
     )
