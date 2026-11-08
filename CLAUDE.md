@@ -17,7 +17,7 @@ yarn build-production  # 正式 build（vite build --mode production）
 yarn test              # 跑測試（vitest run --config vite.config.js，搭配 MSW）
 yarn lint              # eslint，掃 src 下 .js/.jsx/.ts/.tsx
 yarn preview           # 預覽 build 產物
-yarn deploy            # 執行 scripts/deploy.sh 部署
+yarn deploy            # 推一版到正式環境；步驟、前置條件、回滾見 scripts/README.md（部署手冊）
 ```
 
 單一測試檔：`yarn test <path/to/file.test.js>`。
