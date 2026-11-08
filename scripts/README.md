@@ -32,10 +32,11 @@ tar -czf build.tar.gz ./build ─────────────▶  ├─
 |---|---|---|---|
 | 1 | 要出貨的程式碼已在工作目錄裡（通常是 `main` 最新） | `git status --short` 無輸出；`git log -1 --oneline` 是你要出貨的 commit | 先 commit / pull；工作目錄有未 commit 的改動也會被 build 進去 |
 | 2 | 正式環境變數檔 `.env.production` 在 repo 根 | `test -f .env.production && echo ok` | 它被 `.gitignore` 忽略，要從上一個部署的人那裡拿；該有哪些變數見 `CLAUDE.md`〈環境變數〉的 production 欄。**不要把內容貼到任何地方** |
-| 3 | docker compose 的 `app` 容器**正在跑** | `docker compose ps` 看到 `app` 是 `Up` | `docker compose up -d`。腳本用的是 `docker compose exec`，容器沒在跑就直接失敗 |
-| 4 | ssh 別名 `linode-blog` 可用、免密碼（或 agent 裡有 key） | `ssh linode-blog 'echo ok'` 印 `ok` | 在 `~/.ssh/config` 加 `Host linode-blog`（主機、使用者、key 向擁有伺服器的人要）。scp 與 ssh 共用這個別名 |
-| 5 | 伺服器端 `/var/www/html/blog` 對你的登入帳號可寫 | `ssh linode-blog 'test -w /var/www/html/blog && echo ok'` | 要能 `rm -rf` 與 `mv` 那裡的 `build` 目錄 |
-| 6 | 本機有 `scripts/deploy.sh`，而且它裡面寫死的路徑就是你的 checkout | `grep -n "cd " scripts/deploy.sh` 印出的路徑 `ls -d` 得到 | 見〈5. 已知限制〉第一條；路徑不對就照〈3. 手動執行〉跑 |
+| 3 | 開發環境變數檔 `.env.development` 也在 repo 根 | `test -f .env.development && echo ok` | 它同樣被 `.gitignore` 忽略，而 `docker-compose.yml` 的 `env_file` 指著它、沒有標 `required: false`：少了它 `docker compose up` / `config` 直接印 `Failed to load …/.env.development … no such file or directory`。向上一個部署的人要；`.env.docker.template` 複製改名也能讓 compose 起來，但它只有 API / domain 那七個變數，沒有 Mapbox、WalletConnect 的值 |
+| 4 | docker compose 的 `app` 容器**正在跑** | `docker compose ps` 看到 `app` 是 `Up` | `docker compose up -d`（要先過第 3 列）。腳本用的是 `docker compose exec`，容器沒在跑就直接失敗 |
+| 5 | ssh 別名 `linode-blog` 可用、免密碼（或 agent 裡有 key） | `ssh linode-blog 'echo ok'` 印 `ok` | 在 `~/.ssh/config` 加 `Host linode-blog`（主機、使用者、key 向擁有伺服器的人要）。scp 與 ssh 共用這個別名 |
+| 6 | 伺服器端 `/var/www/html/blog` 對你的登入帳號可寫 | `ssh linode-blog 'test -w /var/www/html/blog && echo ok'` | 要能 `rm -rf` 與 `mv` 那裡的 `build` 目錄 |
+| 7 | 本機有 `scripts/deploy.sh`，而且它裡面寫死的路徑就是你的 checkout | `grep -n "cd " scripts/deploy.sh` 印出的路徑 `ls -d` 得到 | 見〈5. 已知限制〉第一條；路徑不對就照〈3. 手動執行〉跑 |
 
 ## 2. 腳本每一步做什麼
 
@@ -48,14 +49,25 @@ tar -czf build.tar.gz ./build ─────────────▶  ├─
 |---|---|---|---|---|---|
 | 1 | `start build...` | 本機 | `rm -rf $REPO/build` | 清掉上一次的 build 輸出，確保這次不混到舊檔 | 目錄不存在也靜默通過；會失敗的只有權限問題 |
 | 2 | （同上） | 本機 | `cd $REPO` | 進到 checkout 根，之後的相對路徑以它為準 | 印 `No such file or directory` ⇒ 寫死的路徑在這台機器上不存在（〈5〉第一條）。什麼都還沒動 |
-| 3 | （同上） | 容器 `app` | `docker compose exec app yarn run build-production` | 在容器裡跑 `vite build --mode production`，讀 `.env.production`，輸出到 `$REPO/build/`（容器把 repo 掛在 `/app`，所以本機看得到） | `service "app" is not running` ⇒ 前置條件 3。Vite 報錯 ⇒ 程式本身 build 不過，先在本機修。本機 `build/` 可能是空的或半成品，**還沒碰伺服器** |
+| 3 | （同上） | 容器 `app` | `docker compose exec app yarn run build-production` | 在容器裡跑 `vite build --mode production`，輸出到 `$REPO/build/`（容器把 repo 掛在 `/app`，所以本機看得到）。**值從哪來**：Vite 先讀 `.env.production`，但**容器環境裡已經有的 `VITE_*` 會蓋過它**（Vite 7.1.3 的 `loadEnv`，見〈5〉第 4 條）；容器環境來自 compose 的 `env_file: .env.development`。做完第 3 步**先跑下面〈build 出來的東西對不對〉那兩道 grep 再往下** | `service "app" is not running` ⇒ 前置條件 4。Vite 報錯 ⇒ 程式本身 build 不過，先在本機修。本機 `build/` 可能是空的或半成品，**還沒碰伺服器** |
 | 4 | `build success` / `start tar...` | 本機 | `tar -czf build.tar.gz ./build` | 把整個 `build/` 目錄（含目錄本身這一層）打成 `build.tar.gz`，放在 `$REPO` 根 | 磁碟滿或 `build/` 不存在。留下半個 `build.tar.gz`，刪掉重來即可（它在 `.gitignore` 裡） |
-| 5 | `tar success` / `start scp...` | 本機 → 伺服器 | `scp $REPO/build.tar.gz linode-blog:$SRV` | 把壓縮檔送到伺服器的 `$SRV/build.tar.gz` | 連不上、key 不對、`$SRV` 不可寫 ⇒ 前置條件 4、5。伺服器上可能留下半個 `build.tar.gz`；線上版本不受影響 |
-| 6 | `scp success` / `start deploy...` | 伺服器 | `mkdir -p $SRV/build_temp` | 開暫存目錄 | 權限問題 ⇒ 前置條件 5 |
+| 5 | `tar success` / `start scp...` | 本機 → 伺服器 | `scp $REPO/build.tar.gz linode-blog:$SRV` | 把壓縮檔送到伺服器的 `$SRV/build.tar.gz` | 連不上、key 不對、`$SRV` 不可寫 ⇒ 前置條件 5、6。伺服器上可能留下半個 `build.tar.gz`；線上版本不受影響 |
+| 6 | `scp success` / `start deploy...` | 伺服器 | `mkdir -p $SRV/build_temp` | 開暫存目錄 | 權限問題 ⇒ 前置條件 6 |
 | 7 | （同上） | 伺服器 | `tar -xzf $SRV/build.tar.gz -C $SRV/build_temp` | 解壓到暫存目錄，得到 `$SRV/build_temp/build/` | 壓縮檔壞掉（通常是第 5 步傳一半）。線上版本仍是舊的；重跑整個腳本即可 |
 | 8 | （同上） | 伺服器 | `rm -rf $SRV/build && mv $SRV/build_temp/build $SRV/` | **真正切換的一步**：刪掉線上的 `build/`，把新的搬過去。nginx 的 root 就是這個目錄，所以 `mv` 完下一個請求拿到的就是新版 | `rm` 成功但 `mv` 失敗 ⇒ **線上沒有 `build/`，站會 404**。立刻手動 `ssh linode-blog 'mv $SRV/build_temp/build $SRV/'`；還是不行就走〈4. 回滾〉。這兩個指令之間沒有原子性，`rm` 到 `mv` 之間打進來的請求會 404（通常不到一秒） |
 | 9 | `deploy success` / `clean...` | 伺服器 | `rm -rf $SRV/build.tar.gz && rm -rf $SRV/build_temp` | 清掉壓縮檔與暫存目錄 | 失敗只是沒清乾淨，站已經是新版；手動刪掉即可 |
 | 10 | `clean success` | — | — | 結束。**本機的 `build.tar.gz` 腳本不刪**，留在 `$REPO` 根（已被 `.gitignore` 忽略） | — |
+
+### build 出來的東西對不對（第 3 步之後、第 4 步之前）
+
+腳本沒有這一步，自己跑。兩道都要如預期才繼續 `tar`／`scp`；不對就停，什麼都還沒上線：
+
+```bash
+grep -l 'blog-api.learn-or-die.com' build/static/js/*.js   # 預期印出至少一個檔
+grep -l 'localhost/api' build/static/js/*.js               # 預期什麼都不印
+```
+
+2026-11-08 用票 03 的 worktree（真的 `.env.development` / `.env.production`、同一份 `docker-compose.yml`）起 `app` 容器照第 3 步 build 一次：第一道印 1 個檔、第二道 0 個。原因與它守不住的那幾個變數見〈5〉第 4 條。
 
 ## 3. 手動執行（腳本的路徑不合你的機器時）
 
@@ -68,6 +80,8 @@ SRV=/var/www/html/blog
 rm -rf "$REPO/build"
 cd "$REPO"
 docker compose exec app yarn run build-production
+grep -l 'blog-api.learn-or-die.com' build/static/js/*.js   # 要有命中（見〈build 出來的東西對不對〉）
+grep -l 'localhost/api' build/static/js/*.js               # 要沒有命中
 tar -czf build.tar.gz ./build
 scp "$REPO/build.tar.gz" linode-blog:"$SRV"
 ssh linode-blog "mkdir -p $SRV/build_temp"
@@ -90,8 +104,7 @@ curl -s "https://blog.learn-or-die.com$JS" | grep -c 'blog-api.learn-or-die.com'
 curl -s "https://blog.learn-or-die.com$JS" | grep -c 'localhost/api'               # 預期 0
 ```
 
-第 2 項值得跑的理由：build 是在開發用容器裡做的，那個容器的 `env_file` 是 `.env.development`（見 `CLAUDE.md`〈Docker〉）。
-2026-11-08 對線上 bundle 跑過這兩道，結果是 `blog-api` 命中、`localhost/api` 為 0；要知道今天的狀況就再跑一次，不要相信這一句。
+第 2 項是〈build 出來的東西對不對〉那兩道的線上版：上線前那一道沒跑，這裡是最後一次機會看到；但到這裡才發現，站已經是壞的，要走〈4. 回滾〉。
 
 然後開瀏覽器走一遍首頁、單篇文章、旅遊地圖；用錢包登入一次（登入打的是後端，前端換版不該影響它）。
 
@@ -110,7 +123,7 @@ git checkout main                          # 回到原本的分支
 要點：
 
 - 腳本不記錄它部署了哪個 commit，所以「上一版」是哪個靠部署的人知道（commit 訊息、tag、或部署前自己記一筆）。**建議每次部署前先記下 `git log -1 --oneline`。**
-- 回滾一樣要走 build，所以前置條件 1～5 都要成立；build 失敗的舊 commit 回不去。
+- 回滾一樣要走 build，所以前置條件 1～6 都要成立；build 失敗的舊 commit 回不去。
 - 想要「秒切」的保險：部署前手動在伺服器留一份 `ssh linode-blog 'cp -a /var/www/html/blog/build /var/www/html/blog/build.prev'`，出事時 `ssh linode-blog 'rm -rf /var/www/html/blog/build && mv /var/www/html/blog/build.prev /var/www/html/blog/build'`。**腳本不做這件事**，用了就記得事後把 `build.prev` 刪掉。
 
 ## 5. 已知限制
@@ -118,7 +131,11 @@ git checkout main                          # 回到原本的分支
 1. **腳本寫死本機路徑 `/Users/ray/code/my-blog-frontend`**（第 1、2、5 步各一次）。它只在 checkout 剛好放在那裡的機器上能跑；放在別處就在第 2 步 `cd` 失敗，什麼都還沒動。2026-11-08 在這台機器上 `ls -d /Users/ray/code/my-blog-frontend` 印 `No such file or directory`（checkout 在 `my-blog/` 工作區底下），所以當天 `yarn deploy` 照原樣跑會停在第 2 步；要出貨就照〈3. 手動執行〉。改腳本不在寫這份手冊那張票的範圍，要另開票。
 2. **不保留上一版、切換不是原子的**：見第 8 步與〈4. 回滾〉。
 3. **`deploy.sh` 不進版控**（`.gitignore` 的 `/scripts/*`）：新機器拿不到腳本，只能照〈3〉手動跑，或向上一個部署的人要。
-4. **build 用開發用容器做**：容器的環境來自 `.env.development`（compose 的 `env_file`），正式值靠 Vite 讀 `.env.production`。兩邊若有衝突，〈部署後驗證〉第 2 項會抓到。
+4. **build 用開發用容器做，容器環境會蓋過 `.env.production`**。Vite 7.1.3 的 `loadEnv`：執行時 process.env 裡已有的 `VITE_*` 優先於 `.env.<mode>` 檔（2026-11-08 用 worktree 的 `node_modules/vite` 實跑：同一個變數 process.env 設了就回 process.env 的值，沒設才回 `.env.production` 的）。而 compose 的 `env_file: .env.development` 會把那個檔的值放進容器環境。它今天沒有打壞 API URL，是因為 `docker-compose.yml` 的 `environment:` 把 `VITE_API_URL`、`VITE_ENV`、`VITE_DOMAIN`、`VITE_API_VERSION` 等七個寫成不帶值的條目 —— compose 以 host shell 的值蓋過 `env_file`，host 沒設它們，容器裡就沒有這幾個 ⇒ 這幾個照 `.env.production`。**守不住的是 `.env.development` 有、`environment:` 沒列的那幾個**：它們在正式 bundle 裡是開發值。2026-11-08 量到容器裡剩下的 `VITE_*` 是 `VITE_CHAIN_ID`、`VITE_DEBUG_TRAVEL_PINS`、`VITE_GA_ID`、`VITE_MAPBOX_TOKEN`、`VITE_WC_PROJECT_ID`；要知道今天是哪幾個：`docker compose exec app sh -c 'env | grep -o "^VITE_[A-Z_]*"'`（只印名字，不印值）。要讓 `.env.production` 成為唯一來源，第 3 步改用先清掉容器 `VITE_*` 的寫法：
+   ```bash
+   docker compose exec app sh -c 'for v in $(env | grep -o "^VITE_[A-Z_]*"); do unset $v; done; yarn run build-production'
+   ```
+   （2026-11-08 這樣 build 一次，〈build 出來的東西對不對〉兩道結果與原寫法相同：1 個檔命中 `blog-api`、0 個命中 `localhost/api`。）腳本本身用的是原寫法，改腳本不在本手冊的票。
 5. **沒有 CI**：沒有東西替你跑 lint、test；部署前自己跑 `yarn lint`、`yarn test`。
 
 ## 6. 伺服器端怎麼出靜態檔
