@@ -4,7 +4,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## 這是什麼
 
-個人部落格 + 旅遊地圖標記（travel-pins）的前端，是純 client，所有資料來自獨立的 Laravel 後端（見 `../my-blog-backend`）。**Vite 7 + React 19** 單頁應用，套件管理用 **Yarn**，Node `20.11.1`（`.nvmrc`；`package.json` engines 要求 `>=18.9.0`）。
+個人部落格 + 旅遊地圖標記（travel-pins）的前端，是純 client，所有資料來自獨立的 Laravel 後端（見 `../my-blog-backend`）。**Vite 7 + React 19** 單頁應用，套件管理用 **Yarn**，Node `22.18.0`（`.nvmrc`，與 `Dockerfile` 的 node:22 一致；`package.json` engines 要求 `>=20.19.0`，那是 cesium 的底線）。
 
 > 注意：建置工具是 **Vite，不是 Create React App**；測試是 **Vitest，不是 Jest**。請以 `package.json` 的 scripts 為準。
 
@@ -14,8 +14,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 yarn dev               # 開發伺服器（vite --mode development），:3000
 yarn build             # 一般 build → 輸出到 build/
 yarn build-production  # 正式 build（vite build --mode production）
-yarn test              # 跑測試（vitest run --config vite.config.js，搭配 MSW）
-yarn lint              # eslint，掃 src 下 .js/.jsx/.ts/.tsx
+yarn test              # 跑測試（TZ=UTC vitest run --config vite.config.js，搭配 MSW；時區釘在 UTC，日期斷言才不隨機器時區變）
 yarn preview           # 預覽 build 產物
 yarn deploy            # 執行 scripts/deploy.sh 部署
 ```
