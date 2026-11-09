@@ -4,7 +4,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## 這是什麼
 
-個人部落格 + 旅遊地圖標記（travel-pins）的前端，是純 client，所有資料來自獨立的 Laravel 後端（見 `../my-blog-backend`）。**Vite 7 + React 19** 單頁應用，套件管理用 **Yarn**，Node `20.11.1`（`.nvmrc`；`package.json` engines 要求 `>=18.9.0`）。
+個人部落格 + 旅遊地圖標記（travel-pins）的前端，是純 client，所有資料來自獨立的 Laravel 後端（見 `../my-blog-backend`）。**Vite 7 + React 19** 單頁應用，套件管理用 **Yarn**，Node `22.18.0`（`.nvmrc`，與 `Dockerfile` 的 node:22 一致；`package.json` engines 要求 `>=20.19.0`，那是 cesium 的底線）。
 
 > 注意：建置工具是 **Vite，不是 Create React App**；測試是 **Vitest，不是 Jest**。請以 `package.json` 的 scripts 為準。
 
@@ -14,8 +14,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 yarn dev               # 開發伺服器（vite --mode development），:3000
 yarn build             # 一般 build → 輸出到 build/
 yarn build-production  # 正式 build（vite build --mode production）
-yarn test              # 跑測試（vitest run --config vite.config.js，搭配 MSW）
-yarn lint              # eslint，掃 src 下 .js/.jsx/.ts/.tsx
+yarn test              # 跑測試（TZ=UTC vitest run --config vite.config.js，搭配 MSW；時區釘在 UTC，日期斷言才不隨機器時區變）
 yarn preview           # 預覽 build 產物
 yarn deploy            # 執行 scripts/deploy.sh 部署
 ```
@@ -69,7 +68,7 @@ API 實際 base URL 在 `src/APIs/axios.js` 組成：`${VITE_API_URL}/${VITE_API
 持久化到 localStorage 的：`useAuthStore`（isLoggedIn）、`useLocaleStore`（locale，預設 en，含 `initializeFromNavigator`）、`usePostFormStore`、`useEditPostFormStore`（依 postId 分存）。非持久化的：`useCategoryStore`、`usePaginationStore`、`usePostSortStore`、`usePostTagsStore`、`useLoginModalStore`、`useMetaMaskModalStore`。store 內有 `isClient` 等 SSR 安全檢查。
 
 ### 認證流程（Web3）
-登入由 `src/APIs/auth.js` 的 `useLoginWithMetaMask` 驅動：取得 provider → `eth_requestAccounts` → `getAddress` → `GET /to-be-signed-message`（帶 wallet_address 與 locale）→ `signMessage` →（桌機先 `GET /csrf-cookie`）→ `POST /login/metamask` 帶 `{signature, address}` → 成功設 `setIsLoggedIn(true)`。登出 `POST /logout`。詳細跨端契約見 `../my-blog-backend` 的 CLAUDE.md。
+登入流程的正本是後端 `my-blog-backend/CLAUDE.md`〈Web3 / MetaMask authentication〉那一段（決策 5：API 契約由後端持有），這裡不另寫一遍；前端這一側的實作在 `src/APIs/auth.js` 的 `useLoginWithMetaMask`，provider 取得在 `src/wallet/getProvider.js`。
 
 ## 測試
 Vitest 設定在 `vite.config.js` 的 `test` 區塊（`globals:true`、`environment:'jsdom'`、`setupFiles:['./src/setupTests.js']`）。`setupTests.js` 載入 `@testing-library/jest-dom` matchers，並以 MSW 啟動 mock server（`beforeAll listen` / `afterEach resetHandlers` / `afterAll close`）。mock handler 在 `src/mocks/handlers.js`。
@@ -80,4 +79,4 @@ Vitest 設定在 `vite.config.js` 的 `test` 區塊（`globals:true`、`environm
 - TypeScript 設定寬鬆（`strict:false`），JSX 用 `react-jsx`。Tailwind content 掃 `./src/**/*.{js,jsx,ts,tsx}`，自訂 `.no-scrollbar`。
 
 ## commit 訊息
-依 `.gitmessage.txt` 的格式，且不要加「Claude generated」之類標註。
+commit 訊息依 dispatch-flow plugin 的規矩，不加 AI 署名。
