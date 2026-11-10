@@ -54,16 +54,9 @@
     "dev": "vite --mode development",
     "build-production": "vite build --mode production",
     "build": "vite build",
-    "test": "vitest run --config vite.config.js",
+    "test": "TZ=UTC vitest run --config vite.config.js",
     "deploy": "sh ./scripts/deploy.sh",
-    "preview": "vite preview",
-    "lint": "eslint src --ext .js,.jsx,.ts,.tsx"
-  },
-  "eslintConfig": {
-    "extends": [
-      "react-app",
-      "react-app/jest"
-    ]
+    "preview": "vite preview"
   },
   "browserslist": {
     "production": [
@@ -78,7 +71,7 @@
     ]
   },
   "engines": {
-    "node": ">=18.9.0",
+    "node": ">=20.19.0",
     "yarn": ">=1.22.0"
   },
   "devDependencies": {
