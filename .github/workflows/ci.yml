@@ -1,0 +1,31 @@
+# 票 04 ⑥(決策 12-1):每次 push 與每週一次跑測試與套件掃描;一開始只回報不擋(continue-on-error)。
+name: CI
+
+on:
+  push:
+  schedule:
+    - cron: '0 2 * * 1' # 每週一 02:00 UTC
+  workflow_dispatch:
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    continue-on-error: true
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: .nvmrc
+          cache: yarn
+      - run: yarn install --frozen-lockfile
+      - run: yarn test
+
+  audit:
+    runs-on: ubuntu-latest
+    continue-on-error: true
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: .nvmrc
+      - run: yarn audit
