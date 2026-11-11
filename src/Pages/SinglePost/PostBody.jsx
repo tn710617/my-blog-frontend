@@ -1,5 +1,6 @@
 import ReactMarkdown from 'react-markdown';
 import rehypeRaw from 'rehype-raw';
+import rehypeSanitize from 'rehype-sanitize';
 import remarkGfm from 'remark-gfm';
 import remarkToc from 'remark-toc';
 import rehypeSlug from "rehype-slug";
@@ -15,6 +16,7 @@ import PreComponent from "./PreComponent";
 import CodeComponent from "./CodeComponent";
 import ImgComponent from "./ImgComponent";
 import AComponent from "./AComponent";
+import { postSanitizeSchema, rehypeDropIframesWithoutSrc, rehypeLowercaseUrlScheme } from "./sanitizeSchema";
 
 export default function PostBody({content}) {
     const intl = useIntl();
@@ -36,7 +38,7 @@ export default function PostBody({content}) {
     return (
         <div className='markdown'>
             <ReactMarkdown
-            rehypePlugins={[rehypeRaw, rehypeSlug, rehypeAutolinkHeadings]}
+            rehypePlugins={[rehypeRaw, rehypeLowercaseUrlScheme, [rehypeSanitize, postSanitizeSchema], rehypeDropIframesWithoutSrc, rehypeSlug, rehypeAutolinkHeadings]}
             remarkPlugins={[remarkGfm, [remarkToc, {heading: '(table[ -]of[ -])?contents?|toc|目錄'}]]}
             components={{
                 a: AComponent,
