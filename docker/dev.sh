@@ -76,9 +76,6 @@ case "${1:-}" in
     # Safer apply: only minor/patch upgrades
     exec_or_run sh -lc "npx npm-check-updates -u -t minor && yarn install"
     ;;
-  build-prod)
-    exec_or_run yarn run build-production
-    ;;
   *)
     cat <<'USAGE'
 Usage: docker/dev.sh <command>
@@ -95,7 +92,6 @@ Commands (run entirely inside Docker):
   upgrade-plan       Show available dependency upgrades (ncu dry-run)
   upgrade-apply      Apply upgrades with ncu -u and yarn install
   upgrade-apply-minor Apply only minor/patch upgrades with ncu -u -t minor
-  build-prod         Production build using env.production
 
 Environment:
   SERVICE=app        Override compose service name (default: app)
