@@ -26,7 +26,3 @@ yarn-debug.log*
 yarn-error.log*
 
 .idea
-
-# scripts（deploy.sh 等腳本不進版控；部署手冊除外）
-/scripts/*
-!/scripts/README.md
