@@ -70,7 +70,7 @@ API 實際 base URL 在 `src/APIs/axios.js` 組成：`${VITE_API_URL}/${VITE_API
 ### 認證流程（passkey 與 Web3）
 登入流程的正本是後端 `my-blog-backend/CLAUDE.md`〈Web3 / MetaMask authentication〉與〈Passkey (WebAuthn) authentication〉那兩段（決策 5：API 契約由後端持有），這裡不另寫一遍。前端這一側的實作位置：
 
-- **passkey**（決策 15，登入小視窗的主按鈕）：`src/APIs/passkeys.js`（`usePasskeyLogin` 與管理頁用的 hooks，瀏覽器端 WebAuthn 交給 `@simplewebauthn/browser`）、`src/Components/LoginModal.jsx`、管理頁 `src/Pages/Passkeys/`。這一側不 import 任何錢包程式。
+- **passkey**（決策 15，登入小視窗的主按鈕）：`src/APIs/passkeys.js`（`usePasskeyLogin` 與管理頁用的 hooks，瀏覽器端 WebAuthn 交給 `@simplewebauthn/browser`）、`src/Components/LoginModal.jsx`、管理頁 `src/Pages/Passkeys/`。這一側不 import 錢包程式（`src/Pages/Passkeys/__tests__/Passkeys.test.js` 最後一條守著）。
 - **錢包**：`src/APIs/auth.js` 的 `useLoginWithMetaMask`，provider 取得在 `src/wallet/getProvider.js`；在登入小視窗裡收在「改用錢包登入」底下。
 - 導覽列的登入按鈕只打開登入小視窗，不直接叫錢包。
 

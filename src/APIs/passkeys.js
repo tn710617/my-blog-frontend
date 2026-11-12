@@ -7,7 +7,7 @@ import useAxios from "./useAxios";
 import {useCsrfToken} from "./auth";
 
 // passkey 登入與管理。流程契約的正本在後端 CLAUDE.md〈Passkey (WebAuthn) authentication〉(決策 5、15),這裡不另寫。
-// 這一側刻意不 import 任何錢包程式(決策 15-1 第 2 點「兩者隔開」)。
+// 這一側刻意不 import 錢包程式(決策 15-1 第 2 點「兩者隔開」),守它的是 Pages/Passkeys/__tests__/Passkeys.test.js 最後一條。
 
 const PASSKEYS_QUERY_KEY = ['passkeys']
 

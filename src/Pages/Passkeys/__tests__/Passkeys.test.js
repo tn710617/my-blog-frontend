@@ -116,3 +116,17 @@ describe('Passkeys page', () => {
     expect(screen.getByRole('button', { name: en['passkeys.add_button'] })).toBeInTheDocument()
   })
 })
+
+// 決策 15-1 第 2 點「兩者隔開」:passkey 這一側(API hooks 與管理頁)不 import 錢包程式。
+describe('passkey code stays apart from wallet code', () => {
+  it('does not import wallet modules', async () => {
+    const fs = await vi.importActual('node:fs')
+    const path = await vi.importActual('node:path')
+    for (const file of ['src/APIs/passkeys.js', 'src/Pages/Passkeys/index.jsx']) {
+      const source = fs.readFileSync(path.resolve(process.cwd(), file), 'utf8')
+      for (const walletThing of ['wallet/getProvider', 'useLoginWithMetaMask', 'ethers', 'walletconnect']) {
+        expect(source, `${file} mentions ${walletThing}`).not.toContain(walletThing)
+      }
+    }
+  })
+})
