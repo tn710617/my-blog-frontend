@@ -10,6 +10,7 @@ import About from "./Pages/About";
 import TravelPinsNew from "./Pages/TravelPinsNew";
 import PositionDemoPage from "./Pages/Demo/PositionDemo";
 import MotionDetector from "./Pages/MotionDetector";
+import Passkeys from "./Pages/Passkeys";
 
 function App() {
     return (
@@ -23,6 +24,7 @@ function App() {
                     <Route path={"/motion-detector"} element={<MotionDetector/>}/>
                     <Route path={"/create-post"} element={<CreatePost/>}/>
                     <Route path={"/edit-post"} element={<EditPost/>}/>
+                    <Route path={"/passkeys"} element={<Passkeys/>}/>
                 </Route>
                 <Route path={"/single-post"} element={<SinglePost/>}/>
                 <Route path="*" element={<Posts/>}/>

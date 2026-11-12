@@ -50,14 +50,14 @@ API 實際 base URL 在 `src/APIs/axios.js` 組成：`${VITE_API_URL}/${VITE_API
 所有頁面巢狀在 `Layout` 下：
 
 - 公開：`/`（Posts 首頁）、`/about`、`/single-post`、`/travel-pins-new`、`/demo/css-position`、`*`（fallback 回 Posts）。
-- 受保護（包在 `ProtectedRoute`）：`/create-post`、`/edit-post`、`/motion-detector`。
+- 受保護（包在 `ProtectedRoute`）：`/create-post`、`/edit-post`、`/motion-detector`、`/passkeys`（passkey 管理頁）。
 
 `ProtectedRoute` 先看 `useAuthStore` 的登入狀態，未登入則導回 `/` 並開登入彈窗。`Layout` 內含 `Nav`、`Outlet`、`Footer`、`Toaster`(react-hot-toast)、`CheckLogin`、`LoginModal`。
 
 ### 目錄
-- `src/APIs/` —— 依 domain 分檔的 react-query hooks：`auth.js`、`posts.js`、`categories.js`、`tags.js`、`travel-pins.js`、`motionAudios.js`；底層 `axios.js`（base URL、`withCredentials:true`、XSRF cookie 設定）與 `useAxios.js`（攔截器：401 開登入彈窗、403 導回首頁）。
+- `src/APIs/` —— 依 domain 分檔的 react-query hooks：`auth.js`、`passkeys.js`、`posts.js`、`categories.js`、`tags.js`、`travel-pins.js`、`motionAudios.js`；底層 `axios.js`（base URL、`withCredentials:true`、XSRF cookie 設定）與 `useAxios.js`（攔截器：401 開登入彈窗、403 導回首頁）。
 - `src/stores/` —— 所有 Zustand store 集中在 `index.js`（見下）。
-- `src/Pages/` —— 路由級頁面（Posts、SinglePost、CreatePost、EditPost、About、TravelPinsNew、MotionDetector、Demo）。
+- `src/Pages/` —— 路由級頁面（Posts、SinglePost、CreatePost、EditPost、About、TravelPinsNew、MotionDetector、Passkeys、Demo）。
 - `src/Components/` —— 共用元件（Nav、Layout、LoginModal、ProtectedRoute、Modal、MarkdownEditor、PostMetadata、Footer…）。
 - `src/hooks/` —— 自訂 hooks（`useCreatePostForm`、`useEditPostForm`、`useDebounce`、`usePostFormCache`、`useScrollDirection`、`useBodyScrollLock`、`useTagifyManager`）。
 - `src/wallet/getProvider.js` —— 取得 ethers provider：桌機用 injected `window.ethereum`，行動端用 WalletConnect（`EthereumProvider` + QR modal）。
@@ -67,8 +67,23 @@ API 實際 base URL 在 `src/APIs/axios.js` 組成：`${VITE_API_URL}/${VITE_API
 ### Zustand stores（`src/stores/index.js`）
 持久化到 localStorage 的：`useAuthStore`（isLoggedIn）、`useLocaleStore`（locale，預設 en，含 `initializeFromNavigator`）、`usePostFormStore`、`useEditPostFormStore`（依 postId 分存）。非持久化的：`useCategoryStore`、`usePaginationStore`、`usePostSortStore`、`usePostTagsStore`、`useLoginModalStore`、`useMetaMaskModalStore`。store 內有 `isClient` 等 SSR 安全檢查。
 
-### 認證流程（Web3）
-登入流程的正本是後端 `my-blog-backend/CLAUDE.md`〈Web3 / MetaMask authentication〉那一段（決策 5：API 契約由後端持有），這裡不另寫一遍；前端這一側的實作在 `src/APIs/auth.js` 的 `useLoginWithMetaMask`，provider 取得在 `src/wallet/getProvider.js`。
+### 認證流程（passkey 與 Web3）
+登入流程的正本是後端 `my-blog-backend/CLAUDE.md`〈Web3 / MetaMask authentication〉與〈Passkey (WebAuthn) authentication〉那兩段（決策 5：API 契約由後端持有），這裡不另寫一遍。前端這一側的實作位置：
+
+- **passkey**（決策 15，登入小視窗的主按鈕）：`src/APIs/passkeys.js`（`usePasskeyLogin` 與管理頁用的 hooks，瀏覽器端 WebAuthn 交給 `@simplewebauthn/browser`）、`src/Components/LoginModal.jsx`、管理頁 `src/Pages/Passkeys/`。這一側不 import 任何錢包程式。
+- **錢包**：`src/APIs/auth.js` 的 `useLoginWithMetaMask`，provider 取得在 `src/wallet/getProvider.js`；在登入小視窗裡收在「改用錢包登入」底下。
+- 導覽列的登入按鈕只打開登入小視窗，不直接叫錢包。
+
+## 怎麼跑起來截圖
+
+（票 09 摸出來的做法；不碰別人起的容器，自己起的用自己的專案名 / 連接埠、截完收掉。）
+
+- **只看畫面、不連後端**：用一次性容器跑 dev server，連接埠避開 3000，例如
+  `docker run --rm -d --name <名字> -p 3009:3000 -v "$PWD":/app -w /app node:22.18.0-alpine sh -c "yarn dev --host 0.0.0.0"`
+  （先在同樣的容器裡 `yarn install` 過）。開 `http://localhost:3009/`。dev 模式讀 `.env.development`，API 打 `http://localhost/api`；後端沒起時讀取類 API 會失敗，但版面照樣出來。
+- **登入小視窗**：未登入時按導覽列右上角的登入按鈕就會打開。
+- **要登入才看得到的頁**（例如 `/passkeys`）：`ProtectedRoute` 先看 localStorage 裡 zustand 的 `learn_or_die_auth_storage`（`state.isLoggedIn`）；沒有後端時可以用瀏覽器自動化把 API 回應攔下來假造（例如 Playwright 的 route），只為截圖，不代表真的登入。
+- 樣式：Tailwind 3（`tailwind.config.js`），共用元件在 `src/Components/`（`Modal.jsx` 是 Headless UI 的對話框，登入小視窗與確認刪除都用它），導覽列按鈕在 `src/Components/Nav/`。
 
 ## 測試
 Vitest 設定在 `vite.config.js` 的 `test` 區塊（`globals:true`、`environment:'jsdom'`、`setupFiles:['./src/setupTests.js']`）。`setupTests.js` 載入 `@testing-library/jest-dom` matchers，並以 MSW 啟動 mock server（`beforeAll listen` / `afterEach resetHandlers` / `afterAll close`）。mock handler 在 `src/mocks/handlers.js`。

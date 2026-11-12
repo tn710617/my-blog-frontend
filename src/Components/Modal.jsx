@@ -15,7 +15,8 @@ export default function Modal({
                                   type = "info",
                                   secondaryButtonText,
                                   onSecondaryClick,
-                                  isSecondaryLoading = false
+                                  isSecondaryLoading = false,
+                                  children
                               }) {
 
     const Mark = () => {
@@ -109,6 +110,7 @@ export default function Modal({
                                     <MainButton/>
                                     <SecondaryButton/>
                                 </div>
+                                {children}
                             </DialogPanel>
                         </TransitionChild>
                     </div>

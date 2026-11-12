@@ -256,7 +256,7 @@ describe('Content Translation Updates', () => {
       )
 
       expect(screen.getByText('Oops! You are not the owner')).toBeInTheDocument()
-      expect(screen.getByText('Please chant the spell')).toBeInTheDocument()
+      expect(screen.getByText('Sign in with passkey')).toBeInTheDocument()
 
       // Re-render with Chinese locale
       useLocaleStore.mockReturnValue('zh-TW')
@@ -271,9 +271,9 @@ describe('Content Translation Updates', () => {
       )
 
       expect(screen.getByText('哎呀, 您並非擁有者')).toBeInTheDocument()
-      expect(screen.getByText('請詠唱擁有者的咒語')).toBeInTheDocument()
+      expect(screen.getByText('用 passkey 登入')).toBeInTheDocument()
       expect(screen.queryByText('Oops! You are not the owner')).not.toBeInTheDocument()
-      expect(screen.queryByText('Please chant the spell')).not.toBeInTheDocument()
+      expect(screen.queryByText('Sign in with passkey')).not.toBeInTheDocument()
     })
   })
 

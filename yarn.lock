@@ -1845,6 +1845,11 @@
     "@noble/hashes" "~1.8.0"
     "@scure/base" "~1.2.5"
 
+"@simplewebauthn/browser@^13":
+  version "13.3.0"
+  resolved "https://registry.yarnpkg.com/@simplewebauthn/browser/-/browser-13.3.0.tgz#e12153e71f4a8f4f8f17f94ca9c5161115306239"
+  integrity sha512-BE/UWv6FOToAdVk0EokzkqQQDOWtNydYlY6+OrmiZ5SCNmb41VehttboTetUM3T/fr6EAFYVXjz4My2wg230rQ==
+
 "@solana-program/system@^0.14.0":
   version "0.14.1"
   resolved "https://registry.yarnpkg.com/@solana-program/system/-/system-0.14.1.tgz#9c035233cc55b4ca6e57bd8a1d0dd66043af4135"
