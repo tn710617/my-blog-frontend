@@ -5,7 +5,14 @@ import TnpLogo from "./TnpLogo.png"
 export function getWorkExperiencesZhTw() {
     return [
         {
-            "work_experience_title": "資深網頁工程師 | 2022 年 8 月 ~ 至今",
+            "title": "資深網頁工程師",
+            "period": "2022.08 ~ 至今",
+            "highlights": [
+                "規劃並實作高可用部署:GCP Load Balancer + Instance Group + Docker Swarm,分層健康檢查,異常即通知 Slack / Email",
+                "規劃並實作多版本共存 API,App 送審期間新舊兩版同時可用",
+                "實作 API key rotation,突破第三方區塊鏈服務的 rate limit",
+                "SSH 之前加掛 VPN;產品通過 VAPT 檢測,無任何 Medium 以上威脅",
+            ],
             "work_company_name": "台灣銘板股份有限公司",
             "work_company_logo": TnpLogo,
             "work_experience_description": (
@@ -44,7 +51,13 @@ export function getWorkExperiencesZhTw() {
             )
         },
         {
-            "work_experience_title": "資深後端工程師 | 2018 年 11 月 ~ 2022 年 8 月",
+            "title": "資深後端工程師",
+            "period": "2018.11 ~ 2022.08",
+            "highlights": [
+                "以佇列漸進發送十萬張券給五萬個 LINE 使用者,並非同步匯出數萬筆資料",
+                "發現並排除 race condition,優化 SQL query",
+                "為多間公司負責專案開發、主機與資料庫管理、CI/CD 建置與架構規劃",
+            ],
             "work_company_name": "好想工作室",
             "work_company_logo": GoodIdeasStudioLogo,
             "work_experience_description": (
@@ -75,7 +88,13 @@ export function getWorkExperiencesZhTw() {
             )
         },
         {
-            "work_experience_title": "後端工程師 | 2018 年 4 月 ~ 2018 年 11 月",
+            "title": "後端工程師",
+            "period": "2018.04 ~ 2018.11",
+            "highlights": [
+                "優化程式碼,費用降低 70%,response time 由 30 分鐘降至 10 秒",
+                "導入 Load Balancer 提高可用性,建立機器 health check 並以 Slack、Email 回報",
+                "使用 GitLab Runner 搭配 PM2 建立 CI/CD 管道",
+            ],
             "work_company_name": "QINFRA",
             "work_company_logo": QINFRALogo,
             "work_experience_description": (

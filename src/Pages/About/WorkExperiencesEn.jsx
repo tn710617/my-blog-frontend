@@ -5,7 +5,14 @@ import TnpLogo from "./TnpLogo.png"
 export function getWorkExperiencesEn() {
     return [
         {
-            "work_experience_title": "Senior Web Engineer | August 2022 ~ Present",
+            "title": "Senior Web Engineer",
+            "period": "Aug 2022 ~ Present",
+            "highlights": [
+                "Designed and built a high-availability deployment: GCP Load Balancer + Instance Group + Docker Swarm, layered health checks, alerts to Slack / Email",
+                "Designed and built a multi-version API so old and new app versions both work while an update is under store review",
+                "Built API key rotation to get past third-party blockchain providers' rate limits",
+                "Put a VPN in front of SSH; the product passed VAPT with no threat rated Medium or above",
+            ],
             "work_company_name": "Taiwan Numerical Powers Co., Ltd.",
             "work_company_logo": TnpLogo,
             "work_experience_description": (
@@ -62,7 +69,13 @@ export function getWorkExperiencesEn() {
             )
         },
         {
-            "work_experience_title": "Senior Backend Engineer | November 2018 ~ August 2022",
+            "title": "Senior Backend Engineer",
+            "period": "Nov 2018 ~ Aug 2022",
+            "highlights": [
+                "Sent 100,000 coupons to 50,000 LINE users through gradually loaded queues, and exported tens of thousands of rows asynchronously",
+                "Found and fixed race conditions; optimized SQL queries",
+                "Owned development, server and database administration, CI/CD and architecture for multiple client companies",
+            ],
             "work_company_name": "Good Ideas Studio",
             "work_company_logo": GoodIdeasStudioLogo,
             "work_experience_description": (
@@ -95,7 +108,13 @@ export function getWorkExperiencesEn() {
             )
         },
         {
-            "work_experience_title": "Backend Engineer | April 2018 ~ November 2018",
+            "title": "Backend Engineer",
+            "period": "Apr 2018 ~ Nov 2018",
+            "highlights": [
+                "Optimized code: cost down 70%, response time from 30 minutes to 10 seconds",
+                "Introduced a load balancer for availability; built machine health checks reporting to Slack and Email",
+                "Built a CI/CD pipeline with GitLab Runner and PM2",
+            ],
             "work_company_name": "QINFRA",
             "work_company_logo": QINFRALogo,
             "work_experience_description": (

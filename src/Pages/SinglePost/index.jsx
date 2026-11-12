@@ -7,6 +7,7 @@ import PostTags from "../../Components/PostTags";
 import {useAuthStore} from "../../stores";
 import EditButton from "./EditButton";
 import DeleteButton from "./DeleteButton";
+import useScrollToHash from "./useScrollToHash";
 
 export default function SinglePost() {
     const isLoggedIn = useAuthStore((state) => state.isLoggedIn)
@@ -19,6 +20,8 @@ export default function SinglePost() {
     const {isSuccess, isError, data} = useShowPost(postId, {
         enabled: !!postId,
     })
+
+    useScrollToHash(isSuccess)
 
     useEffect(() => {
         if (!postId) {
