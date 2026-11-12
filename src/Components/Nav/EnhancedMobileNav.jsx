@@ -53,6 +53,12 @@ export default function EnhancedMobileNav({categories, onNavigate, showCategorie
         if (onNavigate) onNavigate();
     };
 
+    const handlePasskeysClick = () => {
+        resetFilters();
+        navigate("/passkeys");
+        if (onNavigate) onNavigate();
+    };
+
     const getIsCurrentCategory = (id) => {
         return parseInt(categoryId) === parseInt(id);
     };
@@ -129,6 +135,16 @@ export default function EnhancedMobileNav({categories, onNavigate, showCategorie
                     isActive={window.location.pathname === '/motion-detector'}
                 >
                     {intl.formatMessage({id: "nav.motion_detector", defaultMessage: "Motion Detector"})}
+                </NavItem>
+            )}
+
+            {isLoggedIn && (
+                <NavItem
+                    icon="🔑"
+                    onClick={handlePasskeysClick}
+                    isActive={window.location.pathname === '/passkeys'}
+                >
+                    {intl.formatMessage({id: "nav.passkeys"})}
                 </NavItem>
             )}
             </div>

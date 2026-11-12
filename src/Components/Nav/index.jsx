@@ -10,10 +10,11 @@ import Categories from "./Categories";
 import SearchBoxComponent from "./SearchBoxComponent";
 import MobileCategories from "./MobileCategories";
 import EnhancedMobileNav from "./EnhancedMobileNav";
-import {useLoginWithMetaMask, useLogout} from "../../APIs/auth";
-import {useAuthStore} from "../../stores";
+import {useLogout} from "../../APIs/auth";
+import {useAuthStore, useLoginModalStore} from "../../stores";
 import LogoutButton from "./LogoutButton";
 import LoginButton from "./LoginButton";
+import PasskeysButton from "./PasskeysButton";
 import AboutButton from "./AboutButton";
 import TravelPinsButton from "./TravelPinsButton";
 import LocaleDropdown from "./LocaleDropdown";
@@ -49,7 +50,8 @@ export default function Nav() {
 
     }, [showSearchBoxComponent])
 
-    const login = useLoginWithMetaMask()
+    // 登入一律先開登入小視窗,主按鈕是 passkey(決策 15-1 第 3 點);不在這裡直接叫錢包
+    const setShowLoginModal = useLoginModalStore((state) => state.setShowLoginModal)
     const logout = useLogout()
     const isLoggedIn = useAuthStore((state) => state.isLoggedIn)
 
@@ -136,11 +138,14 @@ export default function Nav() {
                         )}
                         {
                             isLoggedIn ?
-                                <LogoutButton onClick={async () => await logout.mutateAsync()}
-                                              isLoading={logout.isPending}/>
+                                <>
+                                    <PasskeysButton/>
+                                    <LogoutButton onClick={async () => await logout.mutateAsync()}
+                                                  isLoading={logout.isPending}/>
+                                </>
                                 :
-                                <LoginButton onClick={async () => await login.mutateAsync()}
-                                             isLoading={login.isPending}/>
+                                <LoginButton onClick={() => setShowLoginModal(true)}
+                                             isLoading={false}/>
                         }
                     </div>
                 </nav>

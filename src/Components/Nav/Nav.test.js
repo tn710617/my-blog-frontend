@@ -1,6 +1,6 @@
 /* eslint-disable import/first */
 import React from 'react'
-import { render, screen } from '@testing-library/react'
+import { render, screen, fireEvent } from '@testing-library/react'
 import { MemoryRouter } from 'react-router'
 import { IntlProvider } from 'react-intl'
 import en from '../../locales/en.json'
@@ -9,8 +9,9 @@ import en from '../../locales/en.json'
 vi.mock('../../APIs/categories', () => ({
   useCategories: () => ({ isSuccess: true, data: [] }),
 }))
+const { mockWalletLogin } = vi.hoisted(() => ({ mockWalletLogin: vi.fn() }))
 vi.mock('../../APIs/auth', () => ({
-  useLoginWithMetaMask: () => ({ mutateAsync: vi.fn(), isPending: false }),
+  useLoginWithMetaMask: () => ({ mutateAsync: mockWalletLogin, isPending: false }),
   useLogout: () => ({ mutateAsync: vi.fn(), isPending: false }),
 }))
 vi.mock('./SearchBoxComponent', () => ({
@@ -39,7 +40,7 @@ vi.mock('../../stores', async (importOriginal) => {
 })
 
 import Nav from '.'
-import { useAuthStore } from '../../stores'
+import { useAuthStore, useLoginModalStore } from '../../stores'
 
 const renderNav = () => {
   return render(
@@ -68,5 +69,23 @@ describe('Nav', () => {
     renderNav()
     expect(screen.getByText('Logout')).toBeInTheDocument()
     expect(screen.queryByText('Login')).toBeNull()
+  })
+
+  it('opens the login modal (passkey first) instead of calling the wallet directly', () => {
+    useLoginModalStore.setState({ showLoginModal: false })
+    useAuthStore.mockImplementation((selector) => selector({ isLoggedIn: false }))
+    renderNav()
+
+    fireEvent.click(screen.getByText('Login'))
+
+    expect(useLoginModalStore.getState().showLoginModal).toBe(true)
+    expect(mockWalletLogin).not.toHaveBeenCalled()
+  })
+
+  it('links to the passkey page when logged in', () => {
+    useAuthStore.mockImplementation((selector) => selector({ isLoggedIn: true }))
+    renderNav()
+
+    expect(screen.getAllByText(en['nav.passkeys']).length).toBeGreaterThan(0)
   })
 })
