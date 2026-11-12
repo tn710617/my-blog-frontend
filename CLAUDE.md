@@ -80,9 +80,9 @@ API 實際 base URL 在 `src/APIs/axios.js` 組成：`${VITE_API_URL}/${VITE_API
 
 - **只看畫面、不連後端**：用一次性容器跑 dev server，連接埠避開 3000，例如
   `docker run --rm -d --name <名字> -p 3009:3000 -v "$PWD":/app -w /app node:22.18.0-alpine sh -c "yarn dev --host 0.0.0.0"`
-  （先在同樣的容器裡 `yarn install` 過）。開 `http://localhost:3009/`。dev 模式讀 `.env.development`，API 打 `http://localhost/api`；後端沒起時讀取類 API 會失敗，但版面照樣出來。
+  （先在同樣的容器裡 `yarn install` 過）。開 `http://localhost:3009/`。dev 模式讀 `.env.development`（API 打 `http://localhost/api`）；後端沒起時讀取類 API 會失敗，但版面照樣出來。⚠️ git worktree 裡沒有 `.env.development`（不進版控），這時 `VITE_API_URL`、`VITE_API_VERSION` 都是 `undefined`，API 請求會打到同源的 `/undefined/undefined/…`；首頁 `/` 會因為讀不到文章而整頁空白，拍登入小視窗改用 `/about`。
 - **登入小視窗**：未登入時按導覽列右上角的登入按鈕就會打開。
-- **要登入才看得到的頁**（例如 `/passkeys`）：`ProtectedRoute` 先看 localStorage 裡 zustand 的 `learn_or_die_auth_storage`（`state.isLoggedIn`）；沒有後端時可以用瀏覽器自動化把 API 回應攔下來假造（例如 Playwright 的 route），只為截圖，不代表真的登入。
+- **要登入才看得到的頁**（例如 `/passkeys`）：`ProtectedRoute` 先看 localStorage 裡 zustand 的 `learn_or_die_auth_storage`（`state.isLoggedIn`）；沒有後端時可以先在 localStorage 寫 `learn_or_die_auth_storage` = `{"state":{"isLoggedIn":true},"version":0}`，再用瀏覽器自動化把 API 回應攔下來假造（例如 Playwright 的 `context.route`：`is-logged-in` 回 204、`passkeys` 回 `{data:[…]}`），只為截圖，不代表真的登入。語系可寫 `learn_or_die_locale_storage` = `{"state":{"locale":"zh-TW"},"version":0}`。
 - 樣式：Tailwind 3（`tailwind.config.js`），共用元件在 `src/Components/`（`Modal.jsx` 是 Headless UI 的對話框，登入小視窗與確認刪除都用它），導覽列按鈕在 `src/Components/Nav/`。
 
 ## 測試
