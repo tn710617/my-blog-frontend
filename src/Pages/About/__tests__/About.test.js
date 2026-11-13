@@ -12,7 +12,8 @@ import portfolioData from '../portfolioData.json'
 import {getWorkExperiencesEn} from '../WorkExperiencesEn'
 import {skillGroups, sections} from '../aboutData'
 
-// Email 還沒定(票 10 QUESTION.md Q1),測試給一個假的,驗頁面有把它做成 mailto
+// 頁面測試給固定的假聯絡方式(LinkedIn / Medium 來自環境變數,測試環境沒有),驗頁面有把它們做成連結;
+// 真正的 Email 值由 aboutData.test.js 守
 vi.mock('../aboutData', async (importOriginal) => {
     const actual = await importOriginal()
     return {

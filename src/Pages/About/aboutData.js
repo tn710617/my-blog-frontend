@@ -2,10 +2,10 @@
 // 文案本身(句子)在 src/locales/*.json 的 about.* 底下;這裡只放「連到哪裡」。
 
 // 聯絡方式。LinkedIn / Medium 沿用頁尾已在用的環境變數,不另寫一份。
-// Email 待需求方決定要公開哪一個信箱(票 10 QUESTION.md Q1);拿到前保持 null,頁上就不顯示 Email 那個連結。
+// Email 由需求方 2026-11-13 指定(票 10 拷問);設成 null 頁上就不顯示 Email 那個連結。
 export function getContacts() {
     return {
-        email: null,
+        email: "tn710617@gmail.com",
         linkedin: import.meta.env.VITE_LINKEDIN_URL ?? null,
         medium: import.meta.env.VITE_MEDIUM_URL ?? null,
     }
@@ -75,8 +75,12 @@ export const introClaims = [
         ],
     },
     {
-        id: "keep_learning",
+        id: "ai_workflow",
         evidence: [
+            {
+                titleId: "about.evidence.ai_sop",
+                zh: {postId: 660, anchor: "14-建議建立固定-reviewer-agents"},
+            },
             {
                 titleId: "about.evidence.php_85",
                 zh: {postId: 640, anchor: "參考"},
@@ -84,10 +88,6 @@ export const introClaims = [
             {
                 titleId: "about.evidence.laravel_weekly",
                 zh: {postId: 644, anchor: "參考"},
-            },
-            {
-                titleId: "about.evidence.ai_sop",
-                zh: {postId: 660, anchor: "worktree"},
             },
         ],
     },
@@ -110,6 +110,8 @@ export const skillGroups = [
     {id: "security", tags: ["VAPT", "WireGuard", "SSH", "Cookie", "Networking"]},
     {id: "frontend", tags: ["React", "TypeScript", "JavaScript", "Browser", "CSS", "Tailwind CSS"]},
     {id: "blockchain", tags: ["Blockchain", "Ethereum", "MetaMask", "Blockchain Node", "Tron"]},
+    // AI 協作開發:只放已有文章撐的(AI 開發 SOP,文章 660);其餘概念等需求方的概念文章寫好再加進來(票 10 拷問,2026-11-13)。
+    {id: "ai", tags: ["Claude Code", "Multi-Agent Orchestration", "Git Worktree", "Human-in-the-Loop"]},
 ]
 
 // 頁上的區塊與導覽順序。id 同時是區塊的錨點。

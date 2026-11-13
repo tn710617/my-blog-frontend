@@ -95,7 +95,7 @@ export function getWorkExperiencesEn() {
                         <li>Export <span className={"font-bold"}>tens of thousands</span> of data to Excel and upload to
                             AWS S3 for download
                         </li>
-                        <li>Send <span className={"font-bold"}>hundreds of thousands</span> of coupons to <span
+                        <li>Send <span className={"font-bold"}>100,000</span> coupons to <span
                             className={"font-bold"}>fifty thousand</span> LINE users
                         </li>
                     </ul>

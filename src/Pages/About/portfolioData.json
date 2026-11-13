@@ -18,8 +18,11 @@
       "post_id": 418,
       "summary": "讓多台 Pokemon Go 裝置在同一個房間裡共享座標、一鍵複製的工具。",
       "tags": [
-        "Pokemon Go",
-        "Side Project"
+        "Laravel",
+        "Next.js",
+        "Laravel Reverb",
+        "WebSocket",
+        "Docker"
       ]
     },
     {
@@ -100,8 +103,11 @@
       "post_id": 476,
       "summary": "A tool that lets multiple Pokemon Go devices share coordinates in one room and copy them in one tap.",
       "tags": [
-        "Pokemon Go",
-        "Side Project"
+        "Laravel",
+        "Next.js",
+        "Laravel Reverb",
+        "WebSocket",
+        "Docker"
       ]
     },
     {
