@@ -20,3 +20,8 @@ code {
 .markdown > * {
   all: revert;
 }
+/* 從別頁帶段落錨點進來、捲到某個標題時,留出上方跟隨導覽列的高度(src/Pages/SinglePost/useScrollToHash.js)。
+   要寫在上面那條 all: revert 之後,否則會被它蓋掉。 */
+.markdown > :is(h2, h3, h4, h5, h6) {
+  scroll-margin-top: 5rem;
+}

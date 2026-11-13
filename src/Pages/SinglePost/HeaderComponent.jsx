@@ -1,43 +1,12 @@
 import React from "react";
-import {useRef, useEffect} from "react";
 
 export default function HeaderComponent(props = {}) {
     const node = props?.node || {}
     const tagName = node.tagName;
-    const ref = useRef(null);
 
     const handleHeaderClicked = (e) => {
         window.location.hash = `${e.target.id}`
     };
-
-    useEffect(() => {
-        const handleScroll = () => {
-            const { hash } = window.location;
-            const encodedId = encodeURIComponent(props.id);
-
-            if (ref.current && hash === `#${encodedId}`) {
-                // Calculate the element's position without scrolling
-                const elementPosition = ref.current.getBoundingClientRect().top + window.pageYOffset;
-
-                // Apply an offset (e.g., for a fixed navbar)
-                const offset = 60; // Adjust this value based on your navbar's height
-                const offsetPosition = elementPosition - offset;
-
-                // Now scroll to the calculated position with offset
-                window.scrollTo({
-                    top: elementPosition,
-                    behavior: "smooth"
-                });
-            }
-        };
-
-        // Delay the scroll operation to ensure the page and images are fully loaded
-        const timeoutId = setTimeout(handleScroll, 500);
-
-        // Clean up the timeout
-        return () => clearTimeout(timeoutId);
-    }, [props.id]);
-
 
     let HeaderTag = "h4"; // Default to h4
 
@@ -67,7 +36,6 @@ export default function HeaderComponent(props = {}) {
     return (
         <HeaderTag
             id={props.id}
-            ref={ref}
             onClick={handleHeaderClicked}
             className="font-bold cursor-pointer"
             style={{cursor: "pointer"}}

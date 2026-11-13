@@ -80,9 +80,14 @@ API 實際 base URL 在 `src/APIs/axios.js` 組成：`${VITE_API_URL}/${VITE_API
 
 - **只看畫面、不連後端**：用一次性容器跑 dev server，連接埠避開 3000，例如
   `docker run --rm -d --name <名字> -p 3009:3000 -v "$PWD":/app -w /app node:22.18.0-alpine sh -c "yarn dev --host 0.0.0.0"`
-  （先在同樣的容器裡 `yarn install` 過）。開 `http://localhost:3009/`。dev 模式讀 `.env.development`（API 打 `http://localhost/api`）；後端沒起時讀取類 API 會失敗，但版面照樣出來。⚠️ git worktree 裡沒有 `.env.development`（不進版控），這時 `VITE_API_URL`、`VITE_API_VERSION` 都是 `undefined`，API 請求會打到同源的 `/undefined/undefined/…`；首頁 `/` 會因為讀不到文章而整頁空白，拍登入小視窗改用 `/about`。
+  （先在同樣的容器裡 `yarn install` 過）。開 `http://localhost:3009/`。dev 模式讀 `.env.development`（API 打 `http://localhost/api`）；後端沒起時讀取類 API 會失敗，但版面照樣出來。⚠️ git worktree 裡沒有 `.env.development`（不進版控），這時 `VITE_API_URL`、`VITE_API_VERSION` 都是 `undefined`，API 請求會打到同源、以 `/undefined/` 開頭的路徑（2026-11-12 票 10 量到的是 `/undefined/categories?locale=en`、`/undefined/posts/487?locale=en`；攔截時用 `/\/undefined\//` 比對最穩）；首頁 `/` 會因為讀不到文章而整頁空白，拍登入小視窗改用 `/about`。
 - **登入小視窗**：未登入時按導覽列右上角的登入按鈕就會打開。
 - **要登入才看得到的頁**（例如 `/passkeys`）：`ProtectedRoute` 先看 localStorage 裡 zustand 的 `learn_or_die_auth_storage`（`state.isLoggedIn`）；沒有後端時可以先在 localStorage 寫 `learn_or_die_auth_storage` = `{"state":{"isLoggedIn":true},"version":0}`，再用瀏覽器自動化把 API 回應攔下來假造（例如 Playwright 的 `context.route`：`is-logged-in` 回 204、`passkeys` 回 `{data:[…]}`），只為截圖，不代表真的登入。語系可寫 `learn_or_die_locale_storage` = `{"state":{"locale":"zh-TW"},"version":0}`。
+- **要真實文章內容才看得出來的頁**（「關於我」、文章頁）：本機後端讀不到資料時（2026-11-12 票 10 時本機 `posts` 回 500），可以把要用的公開讀取 API 回應先存成 JSON 檔（`curl -H 'Accept: application/json' https://blog-api.learn-or-die.com/api/v1/posts/<id>` 這類只讀公開資料的 GET），放進 scratchpad 用 `python3 -m http.server <port> --bind 127.0.0.1` 開出來，再用 Playwright 的 `context.route(/\/undefined\//, …)` 把請求轉給它（`route.fetch({url})` + `route.fulfill({response})`）。截完把那個 http.server 關掉。
+- **幾個踩過的坑**（票 10）：
+  - **改了程式要重啟自己的 dev 容器**：2026-11-12 票 10 在 macOS 上量到 bind mount 沒把檔案異動事件送進容器，Vite 與 Tailwind 都拿不到新內容（新寫的 class 沒出現在 CSS 裡、舊的程式還在跑），`docker restart <自己的容器>` 之後才準。HMR 的 websocket 也連不上（它找 `:3000`，對外是別的連接埠），不影響截圖。
+  - **只差 `#錨點` 的 `page.goto` 沒有重新載入頁面**（票 10 量到：瀏覽器當成同頁跳錨點）：要量「帶錨點進來」先 `goto('about:blank')` 再 goto。
+  - **Playwright MCP 的截圖只能存在 repo 底下**（它的允許路徑是工作目錄與 `.playwright-mcp/`）：存進 `.playwright-mcp/` 再搬出 repo，收尾前刪掉那個目錄，它沒有被 `.gitignore` 擋。
 - 樣式：Tailwind 3（`tailwind.config.js`），共用元件在 `src/Components/`（`Modal.jsx` 是 Headless UI 的對話框，登入小視窗與確認刪除都用它），導覽列按鈕在 `src/Components/Nav/`。
 
 ## 測試

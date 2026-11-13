@@ -2,89 +2,171 @@
   "zh_TW": [
     {
       "title": "LearnOrDie Blog",
-      "description": "經過多年在軟體開發領域的磨練，我終於完成了這個自己一手打造的 SPA Blog，這不僅是技術實力的展現，更是我對未來持續學習的承諾。透過這個平台，我將分享所學，並持續優化，以提供更完善的使用體驗。無論是多語系支援、Metamask 登入，還是私密與公開文章的管理，這一切都是為了讓這個 Blog 更加符合我的需求和想像。",
       "imageUrl": "https://lh3.googleusercontent.com/pw/AP1GczPVVs7cE-tuIvPzMJyvkhM7cq_hNZuHOZJDzQMuOQzzbHYkIz_UD8USp-lNdlBYsUEM_dbMWNRcHJx2Ppbx4vgKCagwTs3787atm00MUSir2NpwAnla7XvAgNiuGbOaI0cQkortRwA-8euRtZFfbJwEgw=w1024-h576-s-no-gm?authuser=0",
-      "post_id": 116
+      "post_id": 116,
+      "summary": "一人從後端、前端到部署做完的多語系部落格,也就是你正在看的這個網站。",
+      "tags": [
+        "Laravel",
+        "React",
+        "MySQL",
+        "Tailwind CSS"
+      ]
     },
     {
       "title": "PGCS",
-      "description": "PGCS（Pokemon Go Coordinates Sharing）是一款專為擁有多台飛人裝置的玩家設計的座標分享工具。透過PGCS，玩家可以在不同裝置間輕鬆共享與管理座標，避免頻繁切換視窗、重複操作或遺漏座標，大大提升遊戲的便利性和效率，是專業玩家的理想選擇。",
       "imageUrl": "https://lh3.googleusercontent.com/pw/AP1GczOVupfMiB03RHiPeZJ3pLt7AmEt9BrNIAdbKZI-SNzr3gDq2nCADIhSmXml8PQBUL7x-Lr1QkV51xaUoyGlSxFd0BjeKDhfuQWyvooFhWpiieNHUa1pfdpdIJ9BUvZbFfazIkCsbXcJFp4MwaA3ZBEL3Q=w1792-h1024-s-no-gm?authuser=0",
-      "post_id": 418
+      "post_id": 418,
+      "summary": "讓多台 Pokemon Go 裝置在同一個房間裡共享座標、一鍵複製的工具。",
+      "tags": [
+        "Laravel",
+        "Next.js",
+        "Laravel Reverb",
+        "WebSocket",
+        "Docker"
+      ]
     },
     {
       "title": "EchossVIP",
-      "description": "這是一款結合實體店家電子印章與 LINE 延伸應用的服務，讓使用者透過 LINE 登入後，集點消費並管理會員資格與禮券，實現數位化的品牌互動與推廣。服務由 Laravel 開發，支援大量優惠券發放、會員卡管理、異步匯出等功能，並採用 AWS 服務進行高效部署與持續交付，適合各品牌提升顧客忠誠度與行銷效果。",
       "imageUrl": "https://lh3.googleusercontent.com/pw/AP1GczM2A_mK6kZmA9TBt2ES2T9b9P6Yk3oKF3dCYrtQSWteNMkQQdnsUSgLqTJWoeE04FLG-U9COBg5q2jWf-YIXZKwkf-bniLfeBC4iRDcn9eHeD9LNo4yYgM_GOi979bSI-eLwF2SDZgjdthKXRERMvTRFQ=w1792-h1024-s-no-gm?authuser=0",
-      "post_id": 423
+      "post_id": 423,
+      "summary": "結合實體電子印章與 LINE 的會員集點服務,以佇列漸進發送十萬張優惠券。",
+      "tags": [
+        "Laravel",
+        "AWS",
+        "Queue",
+        "LINE"
+      ]
     },
     {
       "title": "Choose",
-      "description": "這個服務允許企業或個人購買互動活動，員工可透過 APP 參加各類遊戲如抽獎、搶紅包、大樂透等，並與主持人實時互動。透過這些雙向溝通的活動，能有效提升活動氛圍與員工參與感，適合用於尾牙等公司大型活動。",
       "imageUrl": "https://lh3.googleusercontent.com/pw/AP1GczMFzy4zXovUzqDnwE3Y1m-O3HhMh-8_iJHDVK1fztG-i3-Db83ukNL_w0kFzlxStxsdoAYdFh_e1RvBKHM26GCPe1z-f1D3Q1ojsV7grcdXvlxbtMyo_Qnh99Rcpaf3IzMKDX6u-HFhri-ZInl4WweZWg=w1792-h1024-s-no-gm?authuser=0",
-      "post_id": 421
+      "post_id": 421,
+      "summary": "尾牙互動遊戲平台,以 SQS 削峰與自動擴縮扛住上千人同時搶紅包。",
+      "tags": [
+        "Laravel",
+        "AWS SQS",
+        "Auto Scaling",
+        "Redis"
+      ]
     },
     {
       "title": "日日考核",
-      "description": "這款服務幫助企業根據員工的學歷、年資及主管評分進行全面評估，有效支持企業內部績效管理與人力資源優化。通過這種系統化的評估，企業能更精準地發掘員工潛力，提升員工發展，從而增強公司整體競爭力。",
       "imageUrl": "https://lh3.googleusercontent.com/pw/AP1GczOcty6WzAYYs0-iuRHHlF-aKxhaShyDuQ1n1wi1s1l3i83UF55Q8sfjGmdE8sIB_-tA00V3SkdOwx8MfVZntpSFWTGVUQB9rJAgVPIIqFicAt5VLsyftZaLS_iRppGYzAqNv8HC6L2MtfHJapqdX87Jng=w1792-h1024-s-no-gm?authuser=0",
-      "post_id": 425
+      "post_id": 425,
+      "summary": "依員工學歷、年資與主管評分做評估的績效管理服務。",
+      "tags": [
+        "Express",
+        "GCP Cloud SQL",
+        "GCP Compute Engine"
+      ]
     },
     {
       "title": "OneDream",
-      "description": "OneDream 是一個專注於 NFT 交易的市場平台，提供合作廠商根據需求鑄造 NFT。用戶可以透過 MetaMask 錢包登入，平台強化了資安，避免 access token 泄漏風險。每個 NFT 提供多個版本，並支持演員或戲劇發行 NFT。此外，平台採用 Upgradable Contract 和 Lazy Mint 技術，提供靈活性並控制鑄造費用，讓買賣過程更高效。",
       "imageUrl": "https://lh3.googleusercontent.com/pw/AP1GczPfJIpVjdqUR3Nc7rAtQT4RBqsGKai9gG-Lf-MaKXLC1FAMt9cP3ahxXmgf8SLGBun7fG8GiHKzWHCdoCbbSnDwmvFEDvVO_yPzHnRSGonQPa15iNQGvvouNp_dNWSTyk3sbkNmgaPNwpgxhWqvm_L3jA=w1792-h1024-s-no-gm?authuser=0",
-      "post_id": 484
+      "post_id": 484,
+      "summary": "NFT 交易市場,MetaMask 錢包登入、可升級合約與 Lazy Mint。",
+      "tags": [
+        "MetaMask",
+        "Solidity",
+        "Upgradable Contract",
+        "Lazy Mint"
+      ]
     },
     {
       "title": "FortVax",
-      "description": "**FortVax** 是一款區塊鏈冷錢包應用，實體形態為信用卡大小的卡片。用戶只需靠近手機，即可自動感應連接。支援存取交易紀錄與 NFT，並可安全發起轉帳。提供便捷且安全的資產管理方式，適合區塊鏈愛好者使用。",
       "imageUrl": "https://lh3.googleusercontent.com/pw/AP1GczMIx_y6WjBZTfqF0JcUtO0JdCLYUe5bXch1Nm4vKGKaoOoUpMmVQWtIbNHrcpr2uw7SuVFchMWJ4HMeg-cWBLW8OmynnzO3zeEDjPnbHFXjDgjGff4XfUK3tzrysXK1BC0CGE-sfHbM5-wKel5-FhcheA=w1792-h1024-s-no-gm?authuser=0",
-      "post_id": 487
+      "post_id": 487,
+      "summary": "區塊鏈冷錢包的後端:多版本 API、API key rotation 與 Docker Swarm 高可用部署。",
+      "tags": [
+        "Docker Swarm",
+        "GCP",
+        "API Key Rotation"
+      ]
     }
   ],
   "en": [
     {
       "title": "LearnOrDie Blog",
-      "description": "After years of refining my software development skills, I’ve completed this SPA Blog from scratch. It showcases my technical expertise and dedication to continuous learning. Through this platform, I'll share my knowledge and optimize the experience. Features like multi-language support, Metamask login, and article management align with my vision for a personalized Blog.",
       "imageUrl": "https://lh3.googleusercontent.com/pw/AP1GczPVVs7cE-tuIvPzMJyvkhM7cq_hNZuHOZJDzQMuOQzzbHYkIz_UD8USp-lNdlBYsUEM_dbMWNRcHJx2Ppbx4vgKCagwTs3787atm00MUSir2NpwAnla7XvAgNiuGbOaI0cQkortRwA-8euRtZFfbJwEgw=w1024-h576-s-no-gm?authuser=0",
-      "post_id": 120
+      "post_id": 120,
+      "summary": "A multilingual blog I built alone, backend to frontend to deployment — the site you are reading.",
+      "tags": [
+        "Laravel",
+        "React",
+        "MySQL",
+        "Tailwind CSS"
+      ]
     },
     {
       "title": "PGCS",
-      "description": "PGCS (Pokemon Go Coordinates Sharing) is a coordinate sharing tool designed for players with multiple spoofing devices. Through PGCS, players can easily share and manage coordinates between different devices, avoiding frequent window switching, repetitive operations, or missing coordinates, greatly improving the convenience and efficiency of the game, and is the ideal choice for professional players.",
       "imageUrl": "https://lh3.googleusercontent.com/pw/AP1GczOVupfMiB03RHiPeZJ3pLt7AmEt9BrNIAdbKZI-SNzr3gDq2nCADIhSmXml8PQBUL7x-Lr1QkV51xaUoyGlSxFd0BjeKDhfuQWyvooFhWpiieNHUa1pfdpdIJ9BUvZbFfazIkCsbXcJFp4MwaA3ZBEL3Q=w1792-h1024-s-no-gm?authuser=0",
-      "post_id": 476
+      "post_id": 476,
+      "summary": "A tool that lets multiple Pokemon Go devices share coordinates in one room and copy them in one tap.",
+      "tags": [
+        "Laravel",
+        "Next.js",
+        "Laravel Reverb",
+        "WebSocket",
+        "Docker"
+      ]
     },
     {
       "title": "EchossVIP",
-      "description": "EchossVIP integrates electronic stamps with LINE apps, allowing users to log in via LINE, collect points, manage memberships, and receive vouchers. Developed with Laravel and deployed on AWS, it supports large-scale coupon issuance and membership management, enhancing brand loyalty and marketing effectiveness.",
       "imageUrl": "https://lh3.googleusercontent.com/pw/AP1GczM2A_mK6kZmA9TBt2ES2T9b9P6Yk3oKF3dCYrtQSWteNMkQQdnsUSgLqTJWoeE04FLG-U9COBg5q2jWf-YIXZKwkf-bniLfeBC4iRDcn9eHeD9LNo4yYgM_GOi979bSI-eLwF2SDZgjdthKXRERMvTRFQ=w1792-h1024-s-no-gm?authuser=0",
-      "post_id": 424
+      "post_id": 424,
+      "summary": "A loyalty service combining physical e-stamps with LINE, sending 100,000 coupons through gradually loaded queues.",
+      "tags": [
+        "Laravel",
+        "AWS",
+        "Queue",
+        "LINE"
+      ]
     },
     {
       "title": "Choose",
-      "description": "This service lets companies buy interactive activities where employees play games like lotteries and grab red envelopes via an app. Real-time interaction with the host boosts event atmosphere and participation, perfect for large company events like year-end parties.",
       "imageUrl": "https://lh3.googleusercontent.com/pw/AP1GczMFzy4zXovUzqDnwE3Y1m-O3HhMh-8_iJHDVK1fztG-i3-Db83ukNL_w0kFzlxStxsdoAYdFh_e1RvBKHM26GCPe1z-f1D3Q1ojsV7grcdXvlxbtMyo_Qnh99Rcpaf3IzMKDX6u-HFhri-ZInl4WweZWg=w1792-h1024-s-no-gm?authuser=0",
-      "post_id": 422
+      "post_id": 422,
+      "summary": "An interactive year-end party game platform that absorbs thousands of simultaneous red-packet grabs with SQS and auto scaling.",
+      "tags": [
+        "Laravel",
+        "AWS SQS",
+        "Auto Scaling",
+        "Redis"
+      ]
     },
     {
       "title": "Daily Assessment",
-      "description": "This service enables companies to evaluate employees based on education, seniority, and ratings, supporting performance management and HR optimization. It helps unlock employee potential and improve company competitiveness.",
       "imageUrl": "https://lh3.googleusercontent.com/pw/AP1GczOcty6WzAYYs0-iuRHHlF-aKxhaShyDuQ1n1wi1s1l3i83UF55Q8sfjGmdE8sIB_-tA00V3SkdOwx8MfVZntpSFWTGVUQB9rJAgVPIIqFicAt5VLsyftZaLS_iRppGYzAqNv8HC6L2MtfHJapqdX87Jng=w1792-h1024-s-no-gm?authuser=0",
-      "post_id": 477
+      "post_id": 477,
+      "summary": "A performance review service scoring employees by education, seniority and manager ratings.",
+      "tags": [
+        "Express",
+        "GCP Cloud SQL",
+        "GCP Compute Engine"
+      ]
     },
     {
       "title": "OneDream",
-      "description": "OneDream is a specialized NFT marketplace that allows partners to mint NFTs according to their needs. Users can log in through the MetaMask wallet, with enhanced security measures to prevent access token leakage. Each NFT offers multiple versions, and the platform supports NFT releases for actors or dramas. Additionally, OneDream implements Upgradable Contract and Lazy Mint technology, providing flexibility and controlling minting costs, making the buying and selling process more efficient.",
       "imageUrl": "https://lh3.googleusercontent.com/pw/AP1GczPfJIpVjdqUR3Nc7rAtQT4RBqsGKai9gG-Lf-MaKXLC1FAMt9cP3ahxXmgf8SLGBun7fG8GiHKzWHCdoCbbSnDwmvFEDvVO_yPzHnRSGonQPa15iNQGvvouNp_dNWSTyk3sbkNmgaPNwpgxhWqvm_L3jA=w1792-h1024-s-no-gm?authuser=0",
-      "post_id": 485
+      "post_id": 485,
+      "summary": "An NFT marketplace with MetaMask login, upgradable contracts and lazy minting.",
+      "tags": [
+        "MetaMask",
+        "Solidity",
+        "Upgradable Contract",
+        "Lazy Mint"
+      ]
     },
     {
       "title": "FortVax",
-      "description": "**FortVax** is a blockchain cold wallet application, designed as a card the size of a standard credit card. Users can pair it with their phone by simply bringing the card close. It supports accessing transaction records, managing NFTs, and securely initiating transfers. FortVax offers a convenient and secure way to manage digital assets, ideal for blockchain enthusiasts.",
       "imageUrl": "https://lh3.googleusercontent.com/pw/AP1GczMIx_y6WjBZTfqF0JcUtO0JdCLYUe5bXch1Nm4vKGKaoOoUpMmVQWtIbNHrcpr2uw7SuVFchMWJ4HMeg-cWBLW8OmynnzO3zeEDjPnbHFXjDgjGff4XfUK3tzrysXK1BC0CGE-sfHbM5-wKel5-FhcheA=w1792-h1024-s-no-gm?authuser=0",
-      "post_id": 488
+      "post_id": 488,
+      "summary": "Backend of a blockchain cold wallet: multi-version API, API key rotation and a high-availability Docker Swarm deployment.",
+      "tags": [
+        "Docker Swarm",
+        "GCP",
+        "API Key Rotation"
+      ]
     }
   ]
 }
